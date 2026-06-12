@@ -55,10 +55,15 @@
       -webkit-overflow-scrolling:touch; padding:4px; }
   .cell { width:12.5vmin; height:12.5vmin; min-width:74px; min-height:74px; background:#fffdf6;
       border-radius:18px; border:3px solid #e0c98f; display:flex; align-items:center; justify-content:center;
-      position:relative; }
+      position:relative; cursor:pointer; transition:transform .1s; }
+  .cell:active { transform:scale(.92); }
   .cell canvas { width:88%; height:88%; }
   .cell.uncaught canvas { filter:grayscale(1) brightness(.32) contrast(.7); opacity:.55; }
   .cell .stamp { position:absolute; right:-7px; top:-7px; font-size:3.4vmin; }
+  .cell.activeMon { border-color:#52d669; background:#f0fff2; animation:selPulse 1.3s infinite; }
+  .cell .sel { position:absolute; left:-8px; bottom:-8px; font-size:3.6vmin; filter:drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+  @keyframes selPulse { 0%,100%{box-shadow:0 0 0 4px rgba(82,214,105,.55), 0 0 18px rgba(82,214,105,.6)}
+      50%{box-shadow:0 0 0 6px rgba(82,214,105,.75), 0 0 26px rgba(82,214,105,.85)} }
   #btnCloseBook { position:absolute; right:2%; top:3%; width:10vmin; height:10vmin; min-width:60px;
       min-height:60px; background:linear-gradient(#ff8a80,#e0524a); font-size:5vmin; color:#fff; font-weight:800; }
 
@@ -158,7 +163,7 @@ let profile = null; // 'julian' | 'guest'
 function storageKey() { return 'juliansPokemon.' + profile; }
 function saveProgress() {
   if (!profile) return;
-  try { localStorage.setItem(storageKey(), JSON.stringify({ caught: G.caught })); } catch (e) {}
+  try { localStorage.setItem(storageKey(), JSON.stringify({ caught: G.caught, active: G.active })); } catch (e) {}
 }
 function loadProgress() {
   try {
@@ -168,10 +173,13 @@ function loadProgress() {
       if (d && Array.isArray(d.caught)) {
         for (let i = 0; i < Math.min(d.caught.length, G.caught.length); i++) G.caught[i] = d.caught[i] | 0;
       }
+      if (d && typeof d.active === 'number') G.active = d.active | 0;
     }
   } catch (e) {}
   G.caught[STARTER] = Math.max(1, G.caught[STARTER]);
   G.caughtCount = G.caught.reduce((n, c) => n + (c > 0 ? 1 : 0), 0);
+  // het actieve wezen moet gevangen zijn; anders terug naar de starter
+  if (!(G.active >= 0 && G.active < NSPECIES && G.caught[G.active] > 0)) G.active = STARTER;
 }
 
 // ============================================================ audio
@@ -2407,7 +2415,7 @@ const G = {
   onBoat: false,
   caught: new Array(NSPECIES).fill(0),
   caughtCount: 0,
-  follower: STARTER,
+  active: STARTER,
   trail: [],
   encounterCooldown: 0,
   transT: 0,
@@ -2545,7 +2553,7 @@ btnFlee.addEventListener('pointerdown', e => {
 function doAttack() {
   B.phase = 'pAtk'; B.pt = 0; B.didImpact = false;
   setBtns(false, false);
-  SFX.attackSnd(SPECIES[STARTER].type);
+  SFX.attackSnd(SPECIES[G.active].type);
 }
 function doThrow() {
   // mikken: gooi als de ring klein (groen) om het wezentje sluit
@@ -2571,7 +2579,7 @@ function updateBattle(dt) {
   const wildType = SPECIES[B.id].type;
   if (B.phase === 'intro') {
     B.pcIn = Math.min(1, B.pt / 0.5);
-    if (B.pt > 0.55 && B.pt - dt <= 0.55) { SFX.cry(B.id); SFX.cry(STARTER); }
+    if (B.pt > 0.55 && B.pt - dt <= 0.55) { SFX.cry(B.id); SFX.cry(G.active); }
     if (B.pt > 0.9) { B.phase = 'idle'; setBtns(true, false); }
   } else if (B.phase === 'pAtk') {
     B.pLunge = B.pt < 0.5 ? Math.sin(Math.min(B.pt / 0.5, 1) * Math.PI) : 0;
@@ -2580,7 +2588,7 @@ function updateBattle(dt) {
       if (B.hearts > 0) B.hearts--;
       B.wFlash = 1;
       SFX.hit(); SFX.heartPop();
-      spawnParticles(WILD.x, WILD.y, 16, 'star', [TYPECOL[SPECIES[STARTER].type], '#ffffff', '#ffd23d']);
+      spawnParticles(WILD.x, WILD.y, 16, 'star', [TYPECOL[SPECIES[G.active].type], '#ffffff', '#ffd23d']);
       if (B.hearts === 0) SFX.dizzy();
     }
     if (B.pt > 1.15) {
@@ -2790,7 +2798,7 @@ function drawBattle(g) {
   if (B.phase === 'revive') pcMood = B.pt < 0.7 ? 'dizzy' : 'happy';
   else if (B.phase === 'pAtk' && B.pLunge > 0.2) pcMood = 'attack';
   else if (B.phase === 'caught') pcMood = 'happy';
-  drawCreature(g, STARTER, pcX, PC.y, PC.S, G.t, pcMood, B.pFlash);
+  drawCreature(g, G.active, pcX, PC.y, PC.S, G.t, pcMood, B.pFlash);
 
   // wild wezentje
   const wScale = B.phase === 'intro' ? Math.min(1, B.pt / 0.5) : 1;
@@ -2817,7 +2825,7 @@ function drawBattle(g) {
   // aanval-effect onderweg
   if (B.phase === 'pAtk' && B.pt >= 0.22 && B.pt <= 0.62) {
     const prog = clamp((B.pt - 0.22) / 0.38, 0, 1);
-    drawFx(g, SPECIES[STARTER].type, PC.x + 70, PC.y - 30, WILD.x, WILD.y, prog, G.t);
+    drawFx(g, SPECIES[G.active].type, PC.x + 70, PC.y - 30, WILD.x, WILD.y, prog, G.t);
   }
   if (B.phase === 'eAtk' && B.pt >= 0.22 && B.pt <= 0.62) {
     const prog = clamp((B.pt - 0.22) / 0.38, 0, 1);
@@ -3049,7 +3057,7 @@ function drawWorld(g) {
   if (!G.onBoat) {
     if (G.trail.length) {
       const f = G.trail[0];
-      drawCreature(g, G.follower, f.x, f.y - 8, 13, G.t, 'idle', 0);
+      drawCreature(g, G.active, f.x, f.y - 8, 13, G.t, pl.moving ? 'happy' : 'idle', 0);
     }
     drawJulian(g, pl.x, pl.y, pl.dir, pl.moving ? 'walk' : 'idle', G.t, 1.15);
     if (tileAt(pl.x, pl.y) === T_TALL) {
@@ -3067,9 +3075,15 @@ function drawWorld(g) {
       drawTuft(g, pl.x + 4, pl.y - 6, 0.9, cur.style.tufts[0]);
     }
   } else {
+    // het actieve wezen zwemt/drijft vrolijk achter de boot aan
+    if (G.trail.length) {
+      const f = G.trail[0];
+      g.strokeStyle = 'rgba(255,255,255,0.4)'; g.lineWidth = 2;
+      g.beginPath(); g.ellipse(f.x, f.y + 7, 15 + Math.sin(G.t * 3) * 2, 5, 0, 0, TAU); g.stroke();
+      drawCreature(g, G.active, f.x, f.y - 4, 12, G.t, pl.moving ? 'happy' : 'idle', 0);
+    }
     drawJulian(g, pl.x, pl.y + 6, pl.dir, 'paddle', G.t, 1.15);
     drawBoat(g, pl.x, pl.y + 2, G.t);
-    drawCreature(g, G.follower, pl.x + 16, pl.y + 2, 9, G.t, 'idle', 0);
   }
   if (cur.lanterns) drawDusk(g);
   if (pl.moving && pl.tx !== null) {
@@ -3112,6 +3126,19 @@ for (let i = 0; i < NSPECIES; i++) {
   tc.width = 120; tc.height = 120;
   tc.getContext('2d').drawImage(thumbs[i], 0, 0);
   cell.appendChild(tc);
+  // tik op een gevangen wezen om het als actief wezen te kiezen
+  cell.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    if (!G.caught[i]) return; // lege plekjes doen niets
+    if (G.active !== i) {
+      G.active = i;
+      saveProgress();
+      SFX.cry(i); SFX.sparkle();
+    } else {
+      SFX.tap();
+    }
+    refreshBook();
+  });
   bookGrid.appendChild(cell);
   cells.push(cell);
 }
@@ -3125,6 +3152,16 @@ function refreshBook() {
         s.className = 'stamp'; s.textContent = '⭐';
         cells[i].appendChild(s);
       }
+    }
+    const isActive = i === G.active;
+    cells[i].classList.toggle('activeMon', isActive);
+    let sel = cells[i].querySelector('.sel');
+    if (isActive && !sel) {
+      sel = document.createElement('span');
+      sel.className = 'sel'; sel.textContent = '✅';
+      cells[i].appendChild(sel);
+    } else if (!isActive && sel) {
+      sel.remove();
     }
   }
   bookCount.textContent = G.caughtCount + ' / ' + NSPECIES;

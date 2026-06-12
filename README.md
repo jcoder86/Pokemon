@@ -6,7 +6,8 @@ Een vrolijk, tekstloos verzamelspelletje voor Julian (5 jaar), geïnspireerd op 
 - **Lopen:** tik ergens op het scherm, Julian loopt erheen.
 - **Reizen:** tik op de grot links of de poort boven om naar het jungle- of dorpsgebied te gaan — elk gebied heeft zijn eigen wezentjes; terug via de grot/poort daar.
 - **Varen:** loop gewoon het water in — Julian zit meteen in het bootje. Vaar naar de kant en hij loopt direct weer verder.
-- **Vechten:** in het hoge gras (en op het water) start een gevecht. Sparky valt aan met de 💥-knop; elk wezentje heeft zijn eigen type-aanval. Julians kant kan nooit echt verliezen. Weglopen kan altijd met de 🏃-knop linksboven.
+- **Vechten:** in het hoge gras (en op het water) start een gevecht. Julians actieve wezentje valt aan met de 💥-knop; elk wezentje heeft zijn eigen type-aanval. Julians kant kan nooit echt verliezen. Weglopen kan altijd met de 🏃-knop linksboven.
+- **Actief wezentje kiezen:** tik in het boek op een gevangen wezentje (groene gloed + vinkje = actief). Dat wezentje loopt achter Julian aan en vecht voor hem. Pikachu is de standaard en altijd beschikbaar.
 - **Vangen:** pas als de hartjes van het wilde wezentje leeg zijn. Mik met de bal: gooi als de ring groen wordt. Missen mag, gewoon opnieuw proberen.
 - **Boek:** de knop rechtsboven toont alle gevangen wezentjes (48 in totaal, verdeeld over de drie gebieden).
 - **Geluid uit:** de blauwe luidsprekerknop.
