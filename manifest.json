@@ -1,0 +1,24 @@
+{
+  "name": "Julian's Pokemon",
+  "short_name": "Pokemon",
+  "description": "Tekstloos Pokemon-verzamelspel voor Julian",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#1b2d1b",
+  "theme_color": "#1b2d1b",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
