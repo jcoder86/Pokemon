@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 170" width="240" height="340">
+  <!-- Julian-avatar, afgeleid van het aangeleverde source-artwork:
+       blond haar, blauwe ogen, groen jack met capuchon en oranje rits,
+       kaki short, witte sokken, bruine wandelschoenen. -->
+  <ellipse cx="60" cy="162" rx="34" ry="6" fill="rgba(40,60,30,0.2)"/>
+
+  <!-- benen -->
+  <rect x="44" y="118" width="12" height="22" fill="#f6c9a0"/>
+  <rect x="64" y="118" width="12" height="22" fill="#f6c9a0"/>
+  <!-- sokken -->
+  <rect x="43" y="134" width="14" height="10" rx="3" fill="#f2ede2"/>
+  <rect x="63" y="134" width="14" height="10" rx="3" fill="#f2ede2"/>
+  <!-- boots -->
+  <path d="M42 142 h16 l3 14 q0 4 -4 4 h-14 q-4 0 -4 -4 z" fill="#7a5230"/>
+  <path d="M62 142 h16 l3 14 q0 4 -4 4 h-14 q-4 0 -4 -4 z" fill="#7a5230"/>
+  <rect x="40" y="154" width="24" height="6" rx="3" fill="#5c3c22"/>
+  <rect x="60" y="154" width="24" height="6" rx="3" fill="#5c3c22"/>
+
+  <!-- short -->
+  <path d="M40 100 h40 l2 22 h-18 l-4 -8 -4 8 h-18 z" fill="#cba56a"/>
+  <rect x="40" y="116" width="14" height="5" fill="#a8854e"/>
+  <rect x="66" y="116" width="14" height="5" fill="#a8854e"/>
+
+  <!-- jack -->
+  <path d="M34 64 q-4 24 2 40 h48 q6 -16 2 -40 q-26 -12 -52 0 z" fill="#67813c"/>
+  <!-- capuchon-rand -->
+  <path d="M36 66 q24 -12 48 0 l-2 6 q-22 -10 -44 0 z" fill="#4c612b"/>
+  <!-- rits -->
+  <line x1="60" y1="68" x2="60" y2="104" stroke="#4c612b" stroke-width="4"/>
+  <line x1="60" y1="68" x2="60" y2="104" stroke="#e8762c" stroke-width="1.8"/>
+  <!-- armen -->
+  <path d="M34 66 q-10 4 -8 26 q0 4 4 4 q4 0 4 -4 q-1 -14 4 -20 z" fill="#67813c"/>
+  <path d="M86 66 q10 4 8 26 q0 4 -4 4 q-4 0 -4 -4 q1 -14 -4 -20 z" fill="#67813c"/>
+  <circle cx="29" cy="97" r="5" fill="#f6c9a0"/>
+  <circle cx="91" cy="97" r="5" fill="#f6c9a0"/>
+
+  <!-- hoofd -->
+  <circle cx="60" cy="40" r="24" fill="#f6c9a0"/>
+  <!-- haar -->
+  <path d="M36 40 a24 24 0 0 1 48 0 l0 -2
+           l-5 6 -5 -7 -5 6 -5 -7 -4 6 -5 -6 -5 7 -5 -6 -5 5 z" fill="#f7d04a"/>
+  <path d="M36 38 a24 25 0 0 1 48 0 q0 -10 -7 -16 q-8 -7 -17 -7 q-9 0 -17 7 q-7 6 -7 16 z" fill="#f7d04a"/>
+  <ellipse cx="60" cy="19" rx="12" ry="4" fill="#dca92e" opacity="0.7"/>
+
+  <!-- gezicht -->
+  <ellipse cx="51" cy="44" rx="5.2" ry="6" fill="#fff"/>
+  <ellipse cx="69" cy="44" rx="5.2" ry="6" fill="#fff"/>
+  <ellipse cx="51.5" cy="45" rx="3" ry="3.8" fill="#3f7fd6"/>
+  <ellipse cx="69.5" cy="45" rx="3" ry="3.8" fill="#3f7fd6"/>
+  <circle cx="52.6" cy="43.4" r="1.1" fill="#fff"/>
+  <circle cx="70.6" cy="43.4" r="1.1" fill="#fff"/>
+  <ellipse cx="43" cy="52" rx="4" ry="2.4" fill="rgba(255,120,120,0.4)"/>
+  <ellipse cx="77" cy="52" rx="4" ry="2.4" fill="rgba(255,120,120,0.4)"/>
+  <path d="M52 53 q8 8 16 0" stroke="#9c4f33" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+</svg>
