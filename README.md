@@ -3,7 +3,9 @@
 Een vrolijk, tekstloos verzamelspelletje voor Julian (5 jaar), geïnspireerd op de eerste generatie Pokémon — maar dan in kleur, zonder lezen, zonder verliezen. Alles zit in één bestand: `index.html`.
 
 - **Lopen:** tik ergens op het scherm, Julian loopt erheen.
-- **Vangen:** loop door het hoge gras, tik in het gevecht op de ster (aanvallen) of de bal (vangen).
+- **Vechten:** in het hoge gras start een gevecht. Sparky (Julians eigen wezentje) valt aan met de 💥-knop; elk wezentje heeft zijn eigen type-aanval (water, vuur, blad, bliksem...). Julians kant kan nooit echt verliezen.
+- **Vangen:** pas als de hartjes van het wilde wezentje leeg zijn. Mik met de bal: gooi als de ring groen wordt. Missen mag, gewoon opnieuw proberen.
+- **Varen:** stap bij het steigertje in het bootje en vaar over de vijver — daar zwemmen de waterwezentjes.
 - **Boek:** de knop rechtsboven toont alle gevangen wezentjes (24 in totaal).
 - **Geluid uit:** de blauwe luidsprekerknop.
 
