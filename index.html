@@ -1976,9 +1976,12 @@ function buildJungle() {
     if (m[y][x] === T_GRASS) m[y][x] = T_ROCK;
   // doorgang terug: grot rechts (rij 11)
   m[11][30] = T_PATH; m[11][31] = T_PATH; m[10][30] = T_GRASS; m[12][30] = T_GRASS;
+  // lantaarntjes langs de paadjes (lamp-posities in pixels)
+  const lanterns = [[4, 10], [12, 12], [21, 10], [27, 12], [17, 6], [15, 16], [29, 10]]
+    .map(([x, y]) => [x * TILE + 16, y * TILE + 16]);
   return {
     name: 'jungle', map: m, patches, waterPool: 'jwater',
-    pond: [0, 14, 13, 24], mill: null, houses: [],
+    pond: [0, 14, 13, 24], mill: null, houses: [], lanterns,
     portals: [
       { dest: 'hub', icon: 'cave', side: 'right',
         zone: [30.3 * TILE, 10 * TILE, 32 * TILE, 13 * TILE], tap: [28.6 * TILE, 8.5 * TILE, 32 * TILE, 14.5 * TILE],
@@ -2303,6 +2306,23 @@ function renderArea(area) {
         wg.beginPath(); wg.moveTo(fx, flagY); wg.lineTo(fx + 0.5 * TILE, flagY); wg.lineTo(fx + 0.25 * TILE, flagY + 0.45 * TILE); wg.closePath(); wg.fill();
       }
     }
+  }
+  // lantaarnpaaltjes (de gloed wordt live getekend)
+  if (area.lanterns) for (const [lx, ly] of area.lanterns) {
+    wg.fillStyle = 'rgba(20,40,20,0.25)';
+    wg.beginPath(); wg.ellipse(lx, ly + 12, 8, 3, 0, 0, TAU); wg.fill();
+    wg.fillStyle = '#4a3a26'; wg.fillRect(lx - 2, ly - 14, 4, 26);
+    wg.fillStyle = '#5e4a30'; wg.fillRect(lx - 2, ly - 14, 1.6, 26);
+    wg.fillRect(lx - 7, ly - 16, 14, 3.5);
+    wg.fillStyle = '#3a3430';
+    wg.fillRect(lx - 5.5, ly - 12, 11, 13);
+    wg.fillStyle = '#ffd86b';
+    wg.fillRect(lx - 4, ly - 10.5, 8, 10);
+    wg.fillStyle = '#fff3b8';
+    wg.fillRect(lx - 2, ly - 8.5, 4, 6);
+    wg.fillStyle = '#3a3430';
+    PG(wg, '#3a3430', [[lx - 6.5, ly - 12], [lx, ly - 17], [lx + 6.5, ly - 12]]);
+    wg.fillStyle = '#2a2622'; wg.fillRect(lx - 1.5, ly - 19, 3, 3);
   }
   // paddenstoeltjes
   if (st.shrooms) for (const [x, y] of [[2, 6], [29, 16], [3, 20], [26, 2]]) {
@@ -2907,6 +2927,13 @@ function updateWorld(dt) {
           }
         }
       } else {
+        // tegen (de zijkant van) een poort of doorgang aan gelopen? dan toch reizen
+        if ((G.portalCooldown || 0) <= 0) {
+          for (const po of cur.portals) {
+            const pad = [po.tap[0] - 30, po.tap[1] - 30, po.tap[2] + 30, po.tap[3] + 30];
+            if (inRect(nx, ny, pad) || inRect(pl.x, pl.y, pad)) { startTravel(po); return; }
+          }
+        }
         pl.moving = false; pl.tx = null;
         spawnParticles(pl.x, pl.y - 14, 4, 'dot');
       }
@@ -2938,7 +2965,11 @@ function updateWorld(dt) {
   if (G.sparkleT <= 0) {
     G.sparkleT = rand(0.5, 1.1);
     const roll = Math.random();
-    if (roll < 0.22) { // glinstering op het water
+    if (cur.lanterns && roll < 0.2) { // vuurvliegjes bij de lantaarntjes
+      const [lx, ly] = cur.lanterns[Math.floor(rand(0, cur.lanterns.length))];
+      G.particles.push({ x: lx + rand(-26, 26), y: ly + rand(-22, 8), vx: rand(-8, 8), vy: rand(-14, -6),
+        life: rand(0.9, 1.4), age: 0, type: 'dot', c: '#ffe9a8', r: 4, rot: 0, vrot: 0 });
+    } else if (roll < 0.22) { // glinstering op het water
       const pc = cur.pond;
       const wx = rand(pc[0], pc[2]) * TILE, wy = rand(pc[1], pc[3]) * TILE;
       if (tileAt(wx, wy) === T_WATER) G.particles.push({ x: wx, y: wy, vx: 0, vy: -10, life: 0.9, age: 0, type: 'star', c: '#dff4ff', r: 5, rot: 0, vrot: 2 });
@@ -2950,6 +2981,44 @@ function updateWorld(dt) {
       const sx = (p.x + rand(0.3, p.w - 0.3)) * TILE, sy = (p.y + rand(0.3, p.h - 0.3)) * TILE;
       G.particles.push({ x: sx, y: sy, vx: 0, vy: -14, life: 0.9, age: 0, type: 'star', c: '#fff8c8', r: 5, rot: 0, vrot: 2 });
     }
+  }
+}
+
+// gezellig-schemerige avondsfeer met lichtplekjes (alleen jungle)
+const lightCv = document.createElement('canvas');
+lightCv.width = VW; lightCv.height = VH;
+const lg2 = lightCv.getContext('2d');
+function drawDusk(g) {
+  lg2.globalCompositeOperation = 'source-over';
+  lg2.clearRect(0, 0, VW, VH);
+  lg2.fillStyle = 'rgba(18,26,58,0.3)';
+  lg2.fillRect(0, 0, VW, VH);
+  // lichtgaten: rond elk lantaarntje en ruim rond Julian zelf
+  lg2.globalCompositeOperation = 'destination-out';
+  const holes = [];
+  for (const [hx, hy] of cur.lanterns) holes.push([hx, hy - 8, 100]);
+  holes.push([G.player.x, G.player.y - 14, 165]);
+  let i = 0;
+  for (const [hx, hy, hr] of holes) {
+    const r = hr * (1 + Math.sin(G.t * 5 + i * 1.7) * 0.035);
+    const grd = lg2.createRadialGradient(hx, hy, r * 0.12, hx, hy, r);
+    grd.addColorStop(0, 'rgba(0,0,0,0.95)');
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    lg2.fillStyle = grd;
+    lg2.beginPath(); lg2.arc(hx, hy, r, 0, TAU); lg2.fill();
+    i++;
+  }
+  g.drawImage(lightCv, 0, 0, VW, VH);
+  // warme gloed bovenop de lantaarntjes
+  i = 0;
+  for (const [hx, hy] of cur.lanterns) {
+    const r = 62 * (1 + Math.sin(G.t * 6 + i * 2.3) * 0.06);
+    const grd = g.createRadialGradient(hx, hy - 8, 2, hx, hy - 8, r);
+    grd.addColorStop(0, 'rgba(255,214,107,0.32)');
+    grd.addColorStop(1, 'rgba(255,214,107,0)');
+    g.fillStyle = grd;
+    g.beginPath(); g.arc(hx, hy - 8, r, 0, TAU); g.fill();
+    i++;
   }
 }
 
@@ -3002,6 +3071,7 @@ function drawWorld(g) {
     drawBoat(g, pl.x, pl.y + 2, G.t);
     drawCreature(g, G.follower, pl.x + 16, pl.y + 2, 9, G.t, 'idle', 0);
   }
+  if (cur.lanterns) drawDusk(g);
   if (pl.moving && pl.tx !== null) {
     g.strokeStyle = 'rgba(255,255,255,0.75)'; g.lineWidth = 3;
     const r = 10 + Math.sin(G.t * 7) * 3;
