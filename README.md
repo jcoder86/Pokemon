@@ -4,10 +4,11 @@ Een vrolijk, tekstloos verzamelspelletje voor Julian (5 jaar), geïnspireerd op 
 
 - **Starten:** `START` speelt met Julians eigen, blijvende collectie; `Start as guest` speelt met een apart gast-geheugen dat Julians collectie nooit verandert.
 - **Lopen:** tik ergens op het scherm, Julian loopt erheen.
+- **Reizen:** tik op de grot links of de poort boven om naar het jungle- of dorpsgebied te gaan — elk gebied heeft zijn eigen wezentjes; terug via de grot/poort daar.
 - **Varen:** loop gewoon het water in — Julian zit meteen in het bootje. Vaar naar de kant en hij loopt direct weer verder.
 - **Vechten:** in het hoge gras (en op het water) start een gevecht. Sparky valt aan met de 💥-knop; elk wezentje heeft zijn eigen type-aanval. Julians kant kan nooit echt verliezen. Weglopen kan altijd met de 🏃-knop linksboven.
 - **Vangen:** pas als de hartjes van het wilde wezentje leeg zijn. Mik met de bal: gooi als de ring groen wordt. Missen mag, gewoon opnieuw proberen.
-- **Boek:** de knop rechtsboven toont alle gevangen wezentjes (24 in totaal).
+- **Boek:** de knop rechtsboven toont alle gevangen wezentjes (48 in totaal, verdeeld over de drie gebieden).
 - **Geluid uit:** de blauwe luidsprekerknop.
 
 Voortgang wordt per profiel bewaard in de browser (localStorage) en overleeft het sluiten van Safari.
