@@ -1178,8 +1178,8 @@ const D = {
     PG(g, '#f0f0e8', [[-S * 0.95, -S * 0.32], [-S * 1.12, -S * 0.78], [-S * 0.72, -S * 0.42]]);
     PG(g, gd, [[-S * 0.45, -S * 0.5], [-S * 0.35, -S * 0.78], [-S * 0.22, -S * 0.48]]);
     PG(g, gd, [[-S * 0.72, -S * 0.52], [-S * 0.68, -S * 0.72], [-S * 0.55, -S * 0.5]]);
-    stdEyes(g, S * 0.13, -S * 0.25, S * 0.1, '#2c2c2c', t, m, 33);
     g.save(); g.translate(-S * 0.62, 0);
+    stdEyes(g, S * 0.13, -S * 0.25, S * 0.1, '#2c2c2c', t, m, 33);
     smileM(g, 0, S * 0.05, S * 0.1, m);
     g.restore();
   },
@@ -1272,8 +1272,9 @@ const D = {
       E(g, br, -S * 0.55 + s * S * 0.38, -S * 0.42, S * 0.13, S * 0.1, s * 0.4);
       E(g, '#d8a878', -S * 0.55 + s * S * 0.38, -S * 0.42, S * 0.07, S * 0.05, s * 0.4);
     }
+    g.save(); g.translate(-S * 0.55, 0);
     stdEyes(g, S * 0.16, -S * 0.38, S * 0.11, '#2c2c2c', t, m, 37);
-    g.save(); g.translate(-S * 0.55, 0); g.restore();
+    g.restore();
   },
   eggies(g, S, t, m) { // mandje vrolijke eitjes
     const pk = '#f7c8d0', pd = '#e8a8b8';
@@ -1375,7 +1376,9 @@ const D = {
       E(g, '#ff7a1f', -S * 0.3 + i * S * 0.06, my, S * 0.17 * ms, S * 0.3 * ms, -0.4);
       E(g, '#ffd23d', -S * 0.3 + i * S * 0.06, my + S * 0.06, S * 0.09 * ms, S * 0.17 * ms, -0.4);
     }
-    stdEyes(g, S * 0.1, -S * 0.62, S * 0.1, '#2c5d8f', t, m, 41);
+    g.save(); g.translate(-S * 0.65, 0);
+    stdEyes(g, S * 0.1, -S * 0.64, S * 0.1, '#2c5d8f', t, m, 41);
+    g.restore();
   },
   leekduck(g, S, t, m) { // eendje met groene stengel
     const br = '#c8a068', cr = '#f0e0c0';
@@ -1968,11 +1971,10 @@ function buildJungle() {
   addBorder(m);
   const extraTrees = [[1,1],[2,1],[1,2],[30,1],[29,1],[30,22],[29,22],[28,22],[5,1],[9,1],[13,1],[18,1],[23,1],[27,1],
     [1,5],[1,8],[30,4],[30,7],[3,2],[28,2],[26,1],[2,5],[29,3],[12,1],[20,1],[30,16],[30,19],[29,17],[16,1],[24,2],
-    [2,11],[29,20],[28,20],[30,15],
-    // jungle-dichtheid: ook bomen midden op de kaart (paden en pollen blijven vrij)
-    [6,8],[7,9],[3,5],[2,7],[4,9],[3,9],[9,4],[4,4],[14,4],[15,5],[14,8],[15,9],[18,3],[17,4],[17,8],[19,9],
-    [27,4],[28,6],[26,3],[22,9],[25,9],[26,9],[28,9],[18,13],[21,13],[17,14],[20,14],[28,14],[24,13],[15,13],[14,13],
-    [19,2],[6,12],[7,13],[28,12]];
+    [29,20],[28,20],[30,15],
+    // jungle-accenten, vooral langs de randen en de bovenste/onderste banden (midden blijft open)
+    [3,5],[2,7],[4,9],[3,9],[4,4],[9,4],[14,4],[17,4],[18,3],[19,2],
+    [27,4],[26,3],[28,6],[28,9],[28,12],[28,14],[6,8],[6,13]];
   for (const [x, y] of extraTrees) if (m[y][x] === T_GRASS) m[y][x] = T_TREE;
   for (let x = 2; x <= 29; x++) if (m[11][x] === T_GRASS) m[11][x] = T_PATH;
   for (let y = 3; y <= 19; y++) if (m[y][16] === T_GRASS) m[y][16] = T_PATH;
@@ -1984,8 +1986,8 @@ function buildJungle() {
     { x: 10, y: 6,  w: 4, h: 3, pool: 'jungle' },
   ];
   addPatches(m, patches);
-  for (const [x, y] of [[4,12],[27,8],[12,3],[24,12],[8,9],[28,18],[19,16],[14,12],[3,13],
-    [10,9],[18,9],[13,12],[23,10],[7,12],[21,8],[12,13],[26,12],[9,12],[22,2]])
+  // rotsen verspreid, vooral aan de randen — het midden blijft vrij begaanbaar
+  for (const [x, y] of [[4,12],[27,8],[12,3],[22,2],[28,18],[3,13],[26,12],[8,9],[24,13],[2,18]])
     if (m[y][x] === T_GRASS) m[y][x] = T_ROCK;
   // doorgang terug: grot rechts (rij 11)
   m[11][30] = T_PATH; m[11][31] = T_PATH; m[10][30] = T_GRASS; m[12][30] = T_GRASS;
@@ -2001,7 +2003,7 @@ function buildJungle() {
         walk: [30.9 * TILE, 11.5 * TILE], spawn: [2.4 * TILE, 11.5 * TILE] },
     ],
     style: {
-      g1: '#55993c', g2: '#4d9136', path: '#b4ae9e', sand: '#d8c890', water: '#3a98c8',
+      g1: '#3f7e2e', g2: '#387528', path: '#b4ae9e', sand: '#d8c890', water: '#3a98c8',
       tallBase: '#3a8128', bush: '#1f5c18', bushTop: '#2c701f',
       tufts: ['#236018', '#2f7a20', '#3f9230'], canopy: ['#2c7022', '#33802a'], canopyDk: ['#245c1c', '#2a6822'],
       trunk: '#6e4626', trunkDk: '#54341c', flowers: false, shrooms: true, vines: true, cobble: true,
@@ -2405,6 +2407,83 @@ function solidAt(px, py) {
 function blocked(x, y) {
   return solidAt(x - 7, y - 2) || solidAt(x + 7, y - 2) || solidAt(x - 7, y - 11) || solidAt(x + 7, y - 11);
 }
+// ---- eenvoudige pathfinding (BFS over tegels) zodat een tik altijd aankomt
+function pathWalkable(tx, ty) {
+  if (tx < 0 || ty < 0 || tx >= MW || ty >= MH) return false;
+  return !blocked(tx * TILE + TILE / 2, ty * TILE + TILE / 2);
+}
+function clearLine(x1, y1, x2, y2) {
+  const d = Math.hypot(x2 - x1, y2 - y1), n = Math.ceil(d / 6);
+  for (let i = 1; i < n; i++) { const k = i / n; if (blocked(lerp(x1, x2, k), lerp(y1, y2, k))) return false; }
+  return true;
+}
+function findPath(sx, sy, txp, typ) {
+  const W = MW, H = MH, key = (x, y) => y * W + x;
+  const stx = clamp(Math.floor(sx / TILE), 0, W - 1), sty = clamp(Math.floor(sy / TILE), 0, H - 1);
+  let gtx = clamp(Math.floor(txp / TILE), 0, W - 1), gty = clamp(Math.floor(typ / TILE), 0, H - 1);
+  let goalPx = txp, goalPy = typ;
+  // doel zelf geblokkeerd (boom/rots)? dichtstbijzijnde vrije tegel kiezen
+  if (!pathWalkable(gtx, gty)) {
+    let best = null, bd = 1e9;
+    for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
+      if (!pathWalkable(tx, ty)) continue;
+      const dd = (tx - gtx) * (tx - gtx) + (ty - gty) * (ty - gty);
+      if (dd < bd) { bd = dd; best = [tx, ty]; }
+    }
+    if (best) { gtx = best[0]; gty = best[1]; goalPx = gtx * TILE + TILE / 2; goalPy = gty * TILE + TILE / 2; }
+  }
+  let bstx = stx, bsty = sty;
+  if (!pathWalkable(bstx, bsty)) { // speler op rare/geblokkeerde tegel: snap naar dichtstbijzijnde vrije
+    let best = null, bd = 1e9;
+    for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
+      if (!pathWalkable(tx, ty)) continue;
+      const dd = (tx - bstx) * (tx - bstx) + (ty - bsty) * (ty - bsty);
+      if (dd < bd) { bd = dd; best = [tx, ty]; }
+    }
+    if (best) { bstx = best[0]; bsty = best[1]; } else return [[goalPx, goalPy]];
+  }
+  const prev = new Int32Array(W * H).fill(-2); // -2 onbezocht, -1 start
+  prev[key(bstx, bsty)] = -1;
+  const q = [key(bstx, bsty)]; let head = 0, found = false;
+  const gk = key(gtx, gty);
+  while (head < q.length) {
+    const cur = q[head++];
+    if (cur === gk) { found = true; break; }
+    const cx = cur % W, cy = (cur - cx) / W;
+    const nb = [[cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]];
+    for (const [nx, ny] of nb) {
+      if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+      const k = key(nx, ny);
+      if (prev[k] !== -2 || !pathWalkable(nx, ny)) continue;
+      prev[k] = cur; q.push(k);
+    }
+  }
+  if (!found) return [[goalPx, goalPy]];
+  const tiles = [];
+  for (let cur = gk; cur !== -1; cur = prev[cur]) {
+    const cx = cur % W, cy = (cur - cx) / W;
+    tiles.push([cx * TILE + TILE / 2, cy * TILE + TILE / 2]);
+  }
+  tiles.reverse(); tiles.shift(); // begin-tegel weg
+  if (!blocked(goalPx, goalPy)) {
+    if (tiles.length) tiles[tiles.length - 1] = [goalPx, goalPy]; else tiles.push([goalPx, goalPy]);
+  }
+  // gladstrijken: sla tussenpunten over zolang er vrij zicht is
+  const out = []; let curX = sx, curY = sy, i = 0;
+  while (i < tiles.length) {
+    let j = tiles.length - 1;
+    for (; j > i; j--) if (clearLine(curX, curY, tiles[j][0], tiles[j][1])) break;
+    out.push(tiles[j]); curX = tiles[j][0]; curY = tiles[j][1]; i = j + 1;
+  }
+  return out.length ? out : [[goalPx, goalPy]];
+}
+function walkTo(px, py) {
+  const pl = G.player;
+  px = clamp(px, TILE * 0.5, VW - TILE * 0.5);
+  py = clamp(py, TILE * 0.5, VH - TILE * 0.5);
+  pl.path = findPath(pl.x, pl.y, px, py);
+  pl.tx = px; pl.ty = py; pl.moving = true;
+}
 function patchPoolAt(px, py) {
   const tx = Math.floor(px / TILE), ty = Math.floor(py / TILE);
   for (const p of cur.patches)
@@ -2478,7 +2557,7 @@ function inRect(x, y, r) { return x >= r[0] && x <= r[2] && y >= r[1] && y <= r[
 function startTravel(po) {
   G.state = 'travelOut'; G.transT = 0;
   G.travelDest = po.dest; G.travelSpawn = po.spawn;
-  G.player.moving = false; G.player.tx = null;
+  G.player.moving = false; G.player.tx = null; G.player.path = null;
   SFX.uiOpen(); SFX.rustle();
 }
 function setArea(name) {
@@ -2509,7 +2588,7 @@ function startEncounter(pool) {
   B.wFlash = 0; B.pFlash = 0; B.pLunge = 0; B.wLunge = 0; B.pcIn = 0;
   B.onWater = G.onBoat;
   G.state = 'toBattle'; G.transT = 0;
-  G.player.moving = false; G.player.tx = null;
+  G.player.moving = false; G.player.tx = null; G.player.path = null;
   setBtns(false, false);
   SFX.rustle(); SFX.battleStart();
 }
@@ -2529,18 +2608,15 @@ cv.addEventListener('pointerdown', e => {
   const p = canvasPos(e);
   if (G.state === 'world') {
     SFX.tap();
-    const pl = G.player;
-    // groot tik-doel op de doorgangen: loop er automatisch naartoe
+    // groot tik-doel op de doorgangen: loop er via het pad naartoe
     for (const po of cur.portals) {
       if (inRect(p.x, p.y, po.tap)) {
-        pl.tx = po.walk[0]; pl.ty = po.walk[1]; pl.moving = true;
+        walkTo(po.walk[0], po.walk[1]);
         spawnParticles(po.walk[0], po.walk[1], 5, 'star', ['#fff8c8', '#ffd23d']);
         return;
       }
     }
-    pl.tx = clamp(p.x, TILE * 0.9, VW - TILE * 0.7);
-    pl.ty = clamp(p.y, TILE * 0.9, VH - TILE * 0.6);
-    pl.moving = true;
+    walkTo(p.x, p.y);
     spawnParticles(p.x, p.y, 3, 'dot');
   } else if (G.state === 'battle') {
     // vergevingsgezind: elke tik doet de actie van dat moment
@@ -2907,48 +2983,44 @@ function drawBall(g, x, y, r) {
 function updateWorld(dt) {
   const pl = G.player;
   G.encounterCooldown = Math.max(0, G.encounterCooldown - dt);
-  if (pl.moving && pl.tx !== null) {
-    const dx = pl.tx - pl.x, dy = pl.ty - pl.y, d = Math.hypot(dx, dy);
-    const step = (G.onBoat ? 195 : 175) * dt;
-    if (d < step) { pl.moving = false; pl.tx = null; }
-    else {
-      const nx = pl.x + dx / d * step, ny = pl.y + dy / d * step;
+  if (pl.moving && pl.path && pl.path.length) {
+    let budget = (G.onBoat ? 195 : 175) * dt, moved = false;
+    while (budget > 0 && pl.path.length) {
+      const wp = pl.path[0];
+      const dx = wp[0] - pl.x, dy = wp[1] - pl.y, d = Math.hypot(dx, dy);
       pl.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 3 : 2) : (dy > 0 ? 0 : 1);
-      if (!blocked(nx, ny)) {
-        pl.x = nx; pl.y = ny;
-        pl.stepT += dt;
-        if (pl.stepT > 0.22) {
-          pl.stepT = 0; pl.stepN++;
-          if (G.onBoat) { SFX.paddle(pl.stepN); spawnParticles(pl.x - dx / d * 18, pl.y - dy / d * 18 + 6, 1, 'dot', ['rgba(255,255,255,0.8)', '#cfe8f8']); }
-          else SFX.step(pl.stepN);
-        }
-        const tileKey = Math.floor(pl.x / TILE) + ',' + Math.floor(pl.y / TILE);
-        if (tileKey !== pl.lastTile) {
-          pl.lastTile = tileKey;
-          if (!G.onBoat && tileAt(pl.x, pl.y) === T_TALL) {
-            pl.grassSteps++;
-            const force = G.caughtCount <= 1 && pl.grassSteps >= 3;
-            if (G.encounterCooldown <= 0 && (force || Math.random() < 0.16)) {
-              G.encounterCooldown = 3.5;
-              startEncounter(patchPoolAt(pl.x, pl.y));
-            }
-          } else if (G.onBoat && tileAt(pl.x, pl.y) === T_WATER) {
-            if (G.encounterCooldown <= 0 && Math.random() < 0.15) {
-              G.encounterCooldown = 3.5;
-              startEncounter(cur.waterPool);
-            }
-          }
-        }
+      if (d <= budget) {
+        pl.x = wp[0]; pl.y = wp[1]; budget -= d; pl.path.shift(); moved = true;
       } else {
-        // tegen (de zijkant van) de poort zelf aan gelopen? dan toch reizen
-        if ((G.portalCooldown || 0) <= 0) {
-          for (const po of cur.portals) {
-            const pad = [po.zone[0] - 26, po.zone[1] - 26, po.zone[2] + 26, po.zone[3] + 26];
-            if (inRect(nx, ny, pad) || inRect(pl.x, pl.y, pad)) { startTravel(po); return; }
+        const nx = pl.x + dx / d * budget, ny = pl.y + dy / d * budget;
+        if (!blocked(nx, ny)) { pl.x = nx; pl.y = ny; moved = true; } else { pl.path.shift(); }
+        budget = 0;
+      }
+    }
+    if (!pl.path.length) { pl.moving = false; pl.tx = null; }
+    if (moved) {
+      pl.stepT += dt;
+      if (pl.stepT > 0.22) {
+        pl.stepT = 0; pl.stepN++;
+        if (G.onBoat) { SFX.paddle(pl.stepN); spawnParticles(pl.x, pl.y + 6, 1, 'dot', ['rgba(255,255,255,0.8)', '#cfe8f8']); }
+        else SFX.step(pl.stepN);
+      }
+      const tileKey = Math.floor(pl.x / TILE) + ',' + Math.floor(pl.y / TILE);
+      if (tileKey !== pl.lastTile) {
+        pl.lastTile = tileKey;
+        if (!G.onBoat && tileAt(pl.x, pl.y) === T_TALL) {
+          pl.grassSteps++;
+          const force = G.caughtCount <= 1 && pl.grassSteps >= 3;
+          if (G.encounterCooldown <= 0 && (force || Math.random() < 0.16)) {
+            G.encounterCooldown = 3.5;
+            startEncounter(patchPoolAt(pl.x, pl.y));
+          }
+        } else if (G.onBoat && tileAt(pl.x, pl.y) === T_WATER) {
+          if (G.encounterCooldown <= 0 && Math.random() < 0.15) {
+            G.encounterCooldown = 3.5;
+            startEncounter(cur.waterPool);
           }
         }
-        pl.moving = false; pl.tx = null;
-        spawnParticles(pl.x, pl.y - 14, 4, 'dot');
       }
     }
   }
@@ -3230,7 +3302,7 @@ function frame(now) {
       setArea(G.travelDest);
       const pl = G.player;
       pl.x = G.travelSpawn[0]; pl.y = G.travelSpawn[1];
-      pl.moving = false; pl.tx = null;
+      pl.moving = false; pl.tx = null; pl.path = null;
       G.onBoat = tileAt(pl.x, pl.y) === T_WATER;
       G.state = 'travelIn'; G.transT = 0;
       SFX.uiClose();
