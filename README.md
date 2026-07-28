@@ -1,6 +1,6 @@
 # Julian's Pokemon
 
-Een vrolijk, tekstloos Pokémon-achtig verzamelspel voor Julian (5 jaar): drie gebieden (weide-hub, jungle met lantaarntjes, dorp/boerderij), 48 in code getekende wezentjes, beurtgevechten met type-aanvallen, een mik-vangspel, een bootje en een verzamelboek waarin je je actieve metgezel kiest. Alles zit in één bestand (`index.html`) met `start.png` (startscherm) en `icon.png` (app-icoon) als enige afbeeldingen. Volledig offline speelbaar in Safari op iPad, landscape.
+Een vrolijk, tekstloos Pokémon-achtig verzamelspel voor Julian (5 jaar): drie gebieden (weide-hub, jungle met lantaarntjes, dorp/boerderij), 150 in code getekende wezentjes (compleet, net als generatie 1), beurtgevechten met type-aanvallen, een mik-vangspel, een bootje en een verzamelboek waarin je je actieve metgezel kiest. Alles zit in één bestand (`index.html`) met `start.png` (startscherm) en `icon.png` (app-icoon) als enige afbeeldingen. Volledig offline speelbaar in Safari op iPad, landscape.
 
 - **Starten:** `START` = Julians blijvende profiel; `Start as guest` = los gast-geheugen.
 - **Lopen/varen:** tik ergens — Julian loopt erheen en stapt aan de waterlijn vanzelf in/uit het bootje.

@@ -56,9 +56,9 @@
       flex-direction:column; align-items:center; }
   #bookHeader { display:flex; align-items:center; gap:12px; margin-bottom:1.4vmin; font-weight:800;
       font-size:4.6vmin; color:#7a5b25; }
-  #bookGrid { display:grid; grid-template-columns:repeat(6, 1fr); gap:1.3vmin; overflow-y:auto;
+  #bookGrid { display:grid; grid-template-columns:repeat(8, 1fr); gap:1.1vmin; overflow-y:auto;
       overflow-x:hidden; min-height:0; touch-action:pan-y; -webkit-overflow-scrolling:touch; padding:4px; }
-  .cell { width:12.5vmin; height:12.5vmin; min-width:74px; min-height:74px; background:#fffdf6;
+  .cell { width:10.6vmin; height:10.6vmin; min-width:66px; min-height:66px; background:#fffdf6;
       border-radius:18px; border:3px solid #e0c98f; display:flex; align-items:center; justify-content:center;
       position:relative; cursor:pointer; transition:transform .1s; }
   .cell:active { transform:scale(.92); }
@@ -1539,6 +1539,386 @@ const D = {
   },
 };
 
+// ============================================================ parametrische wezen-motor
+// Tien body-plannen + losse onderdelen (oren, horens, staarten, vleugels, armen,
+// patronen). Elk nieuw wezen is zo een compacte spec in plaats van een eigen
+// tekenfunctie; de stijl blijft identiek aan de handgetekende wezens.
+function volEll(g, col, x, y, rx, ry) {            // bol lichaamsdeel met volume
+  E(g, shade(col, 0.78), x, y + ry * 0.16, rx, ry);
+  E(g, col, x, y, rx, ry);
+  E(g, shade(col, 1.16), x - rx * 0.30, y - ry * 0.36, rx * 0.50, ry * 0.40);
+}
+function pawRow(g, S, s, bx, by, rx, n, wide) {    // pootjes onder een lichaam
+  for (let i = 0; i < n; i++) {
+    const d = n === 2 ? (i * 2 - 1) : (i - (n - 1) / 2) * 2 / (n - 1);
+    const lx = bx + d * rx * (wide || 0.62);
+    E(g, shade(s.a, 0.86), lx, by + S * 0.06, S * 0.16, S * 0.2);
+    E(g, s.c, lx, by + S * 0.2, S * 0.15, S * 0.1);
+  }
+}
+function drawEars(g, S, t, s, hx, hy, hr) {
+  const wig = Math.sin(t * 2.2) * 0.05;
+  for (const d of [-1, 1]) {
+    g.save(); g.translate(hx + d * hr * 0.68, hy - hr * 0.58); g.rotate(d * (0.32 + wig));
+    switch (s.ear) {
+      case 'round': E(g, s.a, 0, -hr * 0.2, hr * 0.34, hr * 0.34); E(g, s.c, 0, -hr * 0.18, hr * 0.18, hr * 0.18); break;
+      case 'pointy': PG(g, s.a, [[-hr * 0.26, hr * 0.12], [0, -hr * 0.78], [hr * 0.3, hr * 0.06]]);
+                     PG(g, s.b, [[-hr * 0.12, hr * 0.02], [0, -hr * 0.55], [hr * 0.15, -hr * 0.01]]); break;
+      case 'long':   E(g, s.a, 0, -hr * 0.58, hr * 0.2, hr * 0.66); E(g, s.c, 0, -hr * 0.58, hr * 0.1, hr * 0.46); break;
+      case 'cat':    PG(g, s.a, [[-hr * 0.3, hr * 0.14], [0, -hr * 0.66], [hr * 0.34, hr * 0.08]]);
+                     PG(g, '#ffb6c6', [[-hr * 0.15, hr * 0.04], [0, -hr * 0.44], [hr * 0.17, 0]]); break;
+      case 'leaf':   E(g, '#5fae3c', 0, -hr * 0.46, hr * 0.22, hr * 0.5, 0.18);
+                     LN(g, '#3f8c2c', hr * 0.06, [[0, hr * 0.04], [0, -hr * 0.88]]); break;
+      case 'fin':    PG(g, s.c, [[-hr * 0.1, hr * 0.16], [hr * 0.06, -hr * 0.62], [hr * 0.38, hr * 0.1]]); break;
+      case 'tuft':   for (let i = -1; i <= 1; i++) E(g, s.a, i * hr * 0.15, -hr * 0.3 - Math.abs(i) * hr * 0.06, hr * 0.09, hr * 0.28); break;
+      case 'floppy': E(g, s.a, d * hr * 0.16, -hr * 0.05, hr * 0.22, hr * 0.44, d * 0.5); break;
+    }
+    g.restore();
+  }
+}
+// staarten, horens en vleugels worden iets vergroot getekend zodat ze duidelijk
+// buiten het silhouet uitsteken (belangrijk op een klein iPad-scherm)
+function drawHorn(g, S, t, s, hx, hy, hr) {
+  g.save(); g.translate(hx, hy); g.scale(1.24, 1.24); _horn(g, S, t, s, 0, 0, hr); g.restore();
+}
+function _horn(g, S, t, s, hx, hy, hr) {
+  const iv = '#f2ecdc';
+  switch (s.horn) {
+    case 'single': PG(g, iv, [[hx - hr * 0.15, hy - hr * 0.8], [hx, hy - hr * 1.5], [hx + hr * 0.15, hy - hr * 0.8]]);
+                   PG(g, '#d8d0bc', [[hx, hy - hr * 0.8], [hx, hy - hr * 1.5], [hx + hr * 0.15, hy - hr * 0.8]]); break;
+    case 'double': for (const d of [-1, 1]) {
+                     PG(g, iv, [[hx + d * hr * 0.3, hy - hr * 0.68], [hx + d * hr * 0.56, hy - hr * 1.26], [hx + d * hr * 0.6, hy - hr * 0.58]]);
+                   } break;
+    case 'crest':  for (let i = -1; i <= 1; i++) PG(g, s.b, [[hx + i * hr * 0.32 - hr * 0.15, hy - hr * 0.74],
+                     [hx + i * hr * 0.32, hy - hr * 1.24 + Math.abs(i) * hr * 0.24], [hx + i * hr * 0.32 + hr * 0.15, hy - hr * 0.74]]); break;
+    case 'spiral': ARC(g, iv, hx, hy - hr * 1.02, hr * 0.3, 0.55, 4.3, hr * 0.13); break;
+    case 'gem':    g.save(); g.translate(hx, hy - hr * 1.0); g.rotate(Math.sin(t * 1.4) * 0.2);
+                   g.fillStyle = '#ffd23d'; starPath(g, 0, 0, hr * 0.28, hr * 0.12); g.fill();
+                   E(g, '#fff3b8', -hr * 0.06, -hr * 0.06, hr * 0.07, hr * 0.07); g.restore(); break;
+    case 'plume':  for (let i = 0; i < 3; i++) E(g, i % 2 ? s.b : s.c, hx + (i - 1) * hr * 0.26, hy - hr * (1.0 + Math.sin(t * 3 + i) * 0.06),
+                     hr * 0.16, hr * 0.34, (i - 1) * 0.4); break;
+  }
+}
+function drawTail(g, S, t, s, bx, by, br) {
+  g.save(); g.translate(bx, by); g.scale(1.34, 1.34); _tail(g, S, t, s, 0, 0, br); g.restore();
+}
+function _tail(g, S, t, s, bx, by, br) {
+  const sw = Math.sin(t * 2.4) * 0.14;
+  g.save(); g.translate(bx + br * 0.82, by + br * 0.08); g.rotate(-0.3 + sw);
+  switch (s.tail) {
+    case 'puff':  E(g, s.a, br * 0.3, -br * 0.12, br * 0.36, br * 0.32); E(g, s.c, br * 0.44, -br * 0.24, br * 0.18, br * 0.16); break;
+    case 'thin':  LN(g, s.a, S * 0.08, [[0, 0], [br * 0.5, -br * 0.24], [br * 0.74, -br * 0.6]]);
+                  E(g, s.c, br * 0.76, -br * 0.64, S * 0.09, S * 0.09); break;
+    case 'flame': { const f = 1 + Math.sin(t * 7) * 0.14;
+                  LN(g, s.a, S * 0.13, [[0, 0], [br * 0.42, -br * 0.16]]);
+                  E(g, 'rgba(255,122,31,0.35)', br * 0.56, -br * 0.4, S * 0.22 * f, S * 0.34 * f);
+                  E(g, '#ff7a1f', br * 0.56, -br * 0.4, S * 0.16 * f, S * 0.26 * f);
+                  E(g, '#ffd23d', br * 0.56, -br * 0.34, S * 0.08 * f, S * 0.15 * f); break; }
+    case 'leaf':  LN(g, '#4f9c30', S * 0.05, [[0, 0], [br * 0.5, -br * 0.36]]);
+                  E(g, '#5fae3c', br * 0.56, -br * 0.42, br * 0.32, br * 0.16, -0.5); break;
+    case 'fin':   PG(g, s.c, [[0, -br * 0.24], [br * 0.72, -br * 0.72], [br * 0.76, br * 0.22], [0, br * 0.2]]);
+                  LN(g, shade(s.b, 0.9), S * 0.035, [[br * 0.1, -br * 0.16], [br * 0.6, -br * 0.5]]); break;
+    case 'bolt':  PG(g, '#ffd83d', [[0, 0], [br * 0.56, -br * 0.34], [br * 0.4, -br * 0.3], [br * 0.84, -br * 0.82],
+                    [br * 0.64, -br * 0.32], [br * 0.88, -br * 0.36], [br * 0.32, br * 0.22]]); break;
+    case 'curl':  ARC(g, s.a, br * 0.36, -br * 0.16, br * 0.3, Math.PI * 0.35, Math.PI * 1.95, S * 0.11); break;
+    case 'club':  LN(g, s.a, S * 0.1, [[0, 0], [br * 0.48, -br * 0.2]]); E(g, s.b, br * 0.62, -br * 0.26, br * 0.24, br * 0.22); break;
+    case 'drop':  E(g, s.a, br * 0.36, 0, br * 0.36, br * 0.22, -0.3); E(g, s.c, br * 0.56, -br * 0.08, br * 0.14, br * 0.1); break;
+    case 'spike': PG(g, s.b, [[0, -br * 0.1], [br * 0.8, -br * 0.5], [br * 0.5, br * 0.1]]); break;
+    case 'trio':  for (let i = -1; i <= 1; i++) { g.save(); g.rotate(i * 0.4);
+                    LN(g, s.a, S * 0.1, [[0, 0], [br * 0.5, -br * 0.18]]); E(g, s.c, br * 0.58, -br * 0.2, br * 0.16, br * 0.14); g.restore(); } break;
+  }
+  g.restore();
+}
+function drawWings(g, S, t, s, bx, by, br) {
+  g.save(); g.translate(bx, by); g.scale(1.2, 1.2); _wings(g, S, t, s, 0, 0, br); g.restore();
+}
+function _wings(g, S, t, s, bx, by, br) {
+  const flap = Math.sin(t * (s.wing === 'insect' ? 13 : 4.5)) * 0.3;
+  for (const d of [-1, 1]) {
+    g.save(); g.translate(bx + d * br * 0.6, by - br * 0.3); g.rotate(d * ((s.wa || 0.18) + flap));
+    switch (s.wing) {
+      case 'feather': g.fillStyle = s.b; g.beginPath(); g.moveTo(0, -br * 0.1);
+                      g.quadraticCurveTo(d * br * 0.7, -br * 0.98, d * br * 1.34, -br * 0.28);
+                      g.quadraticCurveTo(d * br * 1.06, br * 0.3, d * br * 0.16, br * 0.36);
+                      g.closePath(); g.fill();
+                      for (let i = 0; i < 3; i++)
+                        LN(g, shade(s.b, 0.76), S * 0.035, [[d * br * (0.22 + i * 0.1), br * 0.16],
+                          [d * br * (0.86 + i * 0.16), -br * (0.34 - i * 0.2)]]); break;
+      case 'bat':     PG(g, s.b, [[0, 0], [d * br * 0.92, -br * 0.54], [d * br * 1.04, br * 0.06], [d * br * 0.64, 0],
+                        [d * br * 0.72, br * 0.38], [d * br * 0.28, br * 0.22]]);
+                      LN(g, shade(s.b, 0.8), S * 0.03, [[d * br * 0.12, 0], [d * br * 0.86, -br * 0.42]]); break;
+      case 'insect':  E(g, 'rgba(240,248,255,0.78)', d * br * 0.56, -br * 0.12, br * 0.62, br * 0.28, d * 0.3);
+                      E(g, 'rgba(222,234,250,0.7)', d * br * 0.46, br * 0.2, br * 0.42, br * 0.18, d * -0.22); break;
+      case 'fairy':   E(g, 'rgba(255,238,248,0.85)', d * br * 0.5, -br * 0.22, br * 0.44, br * 0.3, d * 0.42);
+                      E(g, 'rgba(255,228,242,0.7)', d * br * 0.42, br * 0.14, br * 0.32, br * 0.22, d * 0.2); break;
+      case 'flamew':  { const f = 1 + Math.sin(t * 6 + d) * 0.1;
+                      E(g, 'rgba(255,122,31,0.4)', d * br * 0.6, -br * 0.2, br * 0.6 * f, br * 0.34 * f, d * 0.3);
+                      E(g, '#ff9a3d', d * br * 0.55, -br * 0.18, br * 0.44 * f, br * 0.24 * f, d * 0.3);
+                      E(g, '#ffd23d', d * br * 0.45, -br * 0.14, br * 0.26, br * 0.14, d * 0.3); break; }
+    }
+    g.restore();
+  }
+}
+function drawArms(g, S, t, s, bx, by, br) {
+  const sw = Math.sin(t * 2.2) * 0.12;
+  const pairs = s.arm === 'four' ? [[-1, 0], [1, 0], [-1, 1], [1, 1]] : [[-1, 0], [1, 0]];
+  for (const [d, k] of pairs) {
+    g.save(); g.translate(bx + d * br * 0.8, by - br * 0.16 + k * br * 0.44); g.rotate(d * (0.34 + sw));
+    switch (s.arm) {
+      case 'stub':   E(g, s.a, d * br * 0.12, br * 0.14, br * 0.2, br * 0.26, d * 0.3); break;
+      case 'muscle':
+      case 'four':   E(g, s.a, d * br * 0.16, br * 0.04, br * 0.26, br * 0.2, d * 0.4);
+                     E(g, shade(s.a, 1.12), d * br * 0.36, br * 0.22, br * 0.2, br * 0.18); break;
+      case 'claw':   LN(g, s.a, S * 0.1, [[0, 0], [d * br * 0.34, br * 0.24]]);
+                     for (let i = -1; i <= 1; i++) LN(g, s.c, S * 0.05, [[d * br * 0.34, br * 0.24], [d * br * 0.58, br * 0.18 + i * br * 0.14]]); break;
+      case 'pincer': E(g, s.a, d * br * 0.24, br * 0.1, br * 0.24, br * 0.18, d * 0.3);
+                     PG(g, s.a, [[d * br * 0.34, 0], [d * br * 0.66, -br * 0.26], [d * br * 0.62, br * 0.1]]);
+                     PG(g, shade(s.a, 1.12), [[d * br * 0.36, br * 0.18], [d * br * 0.64, br * 0.3], [d * br * 0.6, br * 0.06]]); break;
+      case 'tentacle': g.strokeStyle = s.a; g.lineWidth = S * 0.09; g.lineCap = 'round';
+                     g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(d * br * 0.42, br * 0.42, d * br * 0.24, br * 0.86); g.stroke(); break;
+      case 'glove':  LN(g, s.a, S * 0.09, [[0, 0], [d * br * 0.3, br * 0.2]]);
+                     E(g, '#e0524a', d * br * 0.44, br * 0.28, br * 0.2, br * 0.18); break;
+      case 'float':  E(g, s.a, d * br * 0.42, br * 0.24, br * 0.2, br * 0.18); break;
+    }
+    g.restore();
+  }
+}
+function drawPattern(g, S, t, s, bx, by, rx, ry) {
+  const d2 = shade(s.a, 0.76);
+  switch (s.pat) {
+    case 'spots': for (const p of [[-0.42, -0.12, 0.2], [0.36, 0.12, 0.17], [0.04, 0.4, 0.14], [-0.16, 0.2, 0.11]])
+                    E(g, d2, bx + rx * p[0], by + ry * p[1], rx * p[2], ry * p[2] * 1.25); break;
+    case 'stripes': for (let i = -1; i <= 1; i++) ARC(g, d2, bx, by - ry * 0.62, rx * (0.74 + i * 0.24), Math.PI * 0.26, Math.PI * 0.74, S * 0.07); break;
+    case 'band':  g.save(); g.beginPath(); g.ellipse(bx, by, rx, ry, 0, 0, TAU); g.clip();
+                  g.fillStyle = d2; g.fillRect(bx - rx, by - ry * 0.16, rx * 2, ry * 0.4); g.restore(); break;
+    case 'swirl': ARC(g, d2, bx, by + ry * 0.08, rx * 0.42, 0, Math.PI * 1.6, S * 0.06);
+                  ARC(g, d2, bx - rx * 0.05, by + ry * 0.04, rx * 0.2, Math.PI * 0.5, Math.PI * 2.1, S * 0.05); break;
+    case 'plates': for (let i = 0; i < 3; i++) ARC(g, d2, bx, by + ry * 0.52, rx * (0.44 + i * 0.23), Math.PI * 1.14, Math.PI * 1.86, S * 0.06); break;
+    case 'scales': for (let r = 0; r < 2; r++) for (let i = -1; i <= 1; i++)
+                    ARC(g, d2, bx + i * rx * 0.36, by + ry * (0.1 + r * 0.34), rx * 0.18, Math.PI, TAU, S * 0.04); break;
+    case 'dots':  for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + 0.5;
+                    E(g, d2, bx + Math.cos(a) * rx * 0.5, by + Math.sin(a) * ry * 0.5, rx * 0.09, ry * 0.09); } break;
+  }
+}
+function drawFace(g, S, t, m, s, hx, hy, hr, seed) {
+  g.save(); g.translate(hx, 0);
+  if (s.sn) {                                     // snuitje voor dier-achtige koppen
+    E(g, s.c, 0, hy + hr * 0.44, hr * 0.48, hr * 0.34);
+    E(g, shade(s.c, 0.94), 0, hy + hr * 0.5, hr * 0.34, hr * 0.22);
+  }
+  const er = hr * (s.bigeye ? 0.34 : 0.27);
+  stdEyes(g, hr * 0.4, hy - hr * 0.04, er, s.eye || '#2c2c2c', t, m, seed);
+  const my = hy + hr * 0.44;
+  if (s.mouth === 'beak') {
+    PG(g, '#f5a623', [[-hr * 0.22, my - hr * 0.12], [hr * 0.22, my - hr * 0.12], [0, my + hr * 0.24]]);
+    PG(g, '#e08a3d', [[-hr * 0.22, my - hr * 0.12], [hr * 0.22, my - hr * 0.12], [0, my + hr * 0.04]]);
+  } else if (s.mouth === 'fang') {
+    smileM(g, 0, my, hr * 0.3, m);
+    PG(g, '#fff', [[-hr * 0.24, my - hr * 0.02], [-hr * 0.13, my + hr * 0.2], [-hr * 0.04, my - hr * 0.02]]);
+    PG(g, '#fff', [[hr * 0.24, my - hr * 0.02], [hr * 0.13, my + hr * 0.2], [hr * 0.04, my - hr * 0.02]]);
+  } else if (s.mouth === 'w') {
+    ARC(g, '#5b3a2e', -hr * 0.14, my, hr * 0.15, 0.2, Math.PI - 0.2, S * 0.035);
+    ARC(g, '#5b3a2e', hr * 0.14, my, hr * 0.15, 0.2, Math.PI - 0.2, S * 0.035);
+  } else if (s.mouth === 'tongue') {
+    smileM(g, 0, my, hr * 0.3, 'happy');
+    E(g, '#ff8c9e', 0, my + hr * 0.26, hr * 0.16, hr * 0.22);
+  } else if (s.mouth !== 'none') smileM(g, 0, my, hr * 0.3, m);
+  if (s.sn) PG(g, '#5b3a2e', [[-hr * 0.09, hy + hr * 0.24], [hr * 0.09, hy + hr * 0.24], [0, hy + hr * 0.36]]);
+  if (s.ck) cheeks(g, hr * 0.74, hy + hr * 0.32, hr * 0.18, s.ckc);
+  g.restore();
+}
+// ---- de body-plannen -------------------------------------------------------
+const PLAN = {
+  quad(g, S, t, m, s) {                                    // viervoeter, vooraanzicht
+    const by = S * 0.32, brx = S * 0.66, bry = S * 0.48, hy = -S * 0.44, hr = S * 0.46;
+    if (s.tail) drawTail(g, S, t, s, 0, by, S * 0.58);
+    pawRow(g, S, s, 0, by + bry * 0.7, brx, 4, 0.66);
+    volEll(g, s.a, 0, by, brx, bry);
+    E(g, s.c, 0, by + bry * 0.36, brx * 0.56, bry * 0.5);
+    drawPattern(g, S, t, s, 0, by, brx, bry);
+    if (s.wing) drawWings(g, S, t, s, 0, by, S * 0.56);
+    volEll(g, s.a, 0, hy, hr, hr * 0.9);
+    E(g, s.c, 0, hy + hr * 0.34, hr * 0.44, hr * 0.3);
+    if (s.ear) drawEars(g, S, t, s, 0, hy, hr);
+    if (s.horn) drawHorn(g, S, t, s, 0, hy, hr);
+    drawFace(g, S, t, m, s, 0, hy, hr, s.sd);
+  },
+  biped(g, S, t, m, s) {                                   // rechtop staand
+    const by = S * 0.26, brx = S * 0.52, bry = S * 0.56, hy = -S * 0.58, hr = S * 0.44;
+    if (s.tail) drawTail(g, S, t, s, 0, by + S * 0.2, S * 0.5);
+    for (const d of [-1, 1]) {
+      E(g, shade(s.a, 0.88), d * S * 0.26, S * 0.74, S * 0.18, S * 0.24);
+      E(g, s.c, d * S * 0.28, S * 0.94, S * 0.19, S * 0.11);
+    }
+    if (s.wing) drawWings(g, S, t, s, 0, by - S * 0.1, S * 0.54);
+    volEll(g, s.a, 0, by, brx, bry);
+    E(g, s.c, 0, by + bry * 0.26, brx * 0.6, bry * 0.56);
+    drawPattern(g, S, t, s, 0, by, brx, bry);
+    drawArms(g, S, t, s, 0, by, S * 0.52);
+    volEll(g, s.a, 0, hy, hr, hr * 0.94);
+    if (s.ear) drawEars(g, S, t, s, 0, hy, hr);
+    if (s.horn) drawHorn(g, S, t, s, 0, hy, hr);
+    drawFace(g, S, t, m, s, 0, hy, hr, s.sd);
+  },
+  blob(g, S, t, m, s) {                                    // ronde klont, kop = lichaam
+    const by = S * 0.06, brx = S * 0.86, bry = S * 0.82;
+    if (s.tail) drawTail(g, S, t, s, 0, by + S * 0.3, S * 0.7);
+    for (const d of [-1, 1]) E(g, shade(s.a, 0.86), d * S * 0.38, S * 0.86, S * 0.2, S * 0.13);
+    volEll(g, s.a, 0, by, brx, bry);
+    E(g, s.c, 0, by + bry * 0.38, brx * 0.58, bry * 0.44);
+    drawPattern(g, S, t, s, 0, by, brx, bry);
+    if (s.arm) drawArms(g, S, t, s, 0, by, S * 0.82);
+    if (s.ear) drawEars(g, S, t, s, 0, by - S * 0.24, S * 0.6);
+    if (s.horn) drawHorn(g, S, t, s, 0, by - S * 0.2, S * 0.62);
+    drawFace(g, S, t, m, s, 0, by - S * 0.12, S * 0.56, s.sd);
+  },
+  bird(g, S, t, m, s) {
+    const by = S * 0.22, brx = S * 0.6, bry = S * 0.54, hy = -S * 0.5, hr = S * 0.4;
+    if (s.tail) drawTail(g, S, t, s, 0, by, S * 0.56);
+    for (const d of [-1, 1]) LN(g, '#e0a040', S * 0.07, [[d * S * 0.22, S * 0.7], [d * S * 0.24, S * 0.96]]);
+    for (const d of [-1, 1]) LN(g, '#e0a040', S * 0.05, [[d * S * 0.24, S * 0.96], [d * S * 0.38, S * 0.98]]);
+    drawWings(g, S, t, { ...s, wing: s.wing || 'feather', wa: 0.62 }, 0, by, S * 0.6);
+    volEll(g, s.a, 0, by, brx, bry);
+    E(g, s.c, 0, by + bry * 0.3, brx * 0.58, bry * 0.5);
+    drawPattern(g, S, t, s, 0, by, brx, bry);
+    volEll(g, s.a, 0, hy, hr, hr * 0.92);
+    if (s.horn) drawHorn(g, S, t, s, 0, hy, hr);
+    if (s.ear) drawEars(g, S, t, s, 0, hy, hr);
+    drawFace(g, S, t, m, { ...s, mouth: s.mouth || 'beak' }, 0, hy, hr, s.sd);
+  },
+  fish(g, S, t, m, s) {                                     // zwemmer, zijaanzicht
+    const wob = Math.sin(t * 2.6) * 0.05;
+    g.save(); g.rotate(wob);
+    const brx = S * 0.86, bry = S * 0.58;
+    PG(g, s.b, [[brx * 0.62, 0], [brx * 1.42, -bry * 0.78], [brx * 1.36, bry * 0.74]]);   // staartvin
+    PG(g, s.b, [[-brx * 0.2, -bry * 0.72], [0, -bry * 1.34], [brx * 0.3, -bry * 0.6]]);   // rugvin
+    volEll(g, s.a, 0, 0, brx, bry);
+    E(g, s.c, 0, bry * 0.34, brx * 0.66, bry * 0.46);
+    drawPattern(g, S, t, s, 0, 0, brx, bry);
+    E(g, s.b, -brx * 0.34, bry * 0.42, brx * 0.26, bry * 0.16, 0.5);                      // buikvin
+    E(g, s.b, brx * 0.34, bry * 0.42, brx * 0.26, bry * 0.16, -0.5);
+    if (s.horn) drawHorn(g, S, t, s, 0, -bry * 0.5, S * 0.42);
+    if (s.ear) drawEars(g, S, t, s, 0, -bry * 0.4, S * 0.4);
+    drawFace(g, S, t, m, s, 0, -bry * 0.14, S * 0.44, s.sd);
+    g.restore();
+  },
+  bug(g, S, t, m, s) {                                      // insect met segmenten
+    const seg = s.seg || 2;
+    for (let i = seg; i >= 1; i--) {
+      const sx = S * (0.24 + i * 0.34), sy = S * 0.3 + Math.sin(t * 3 + i) * S * 0.05, r = S * (0.44 - i * 0.06);
+      volEll(g, s.a, sx, sy, r, r);
+      ARC(g, shade(s.a, 0.76), sx, sy, r * 0.94, -0.7, 0.7, S * 0.035);
+    }
+    for (let i = 0; i < 3; i++) {
+      const lx = -S * 0.05 + i * S * 0.3;
+      LN(g, shade(s.a, 0.7), S * 0.05, [[lx, S * 0.46], [lx - S * 0.1, S * 0.94]]);
+      LN(g, shade(s.a, 0.7), S * 0.05, [[lx, S * 0.46], [lx + S * 0.16, S * 0.92]]);
+    }
+    const hx = -S * 0.36, hr = S * 0.46;
+    if (s.wing) drawWings(g, S, t, s, hx + S * 0.2, S * 0.1, S * 0.5);
+    volEll(g, s.a, hx, 0, hr, hr * 0.96);
+    for (const d of [-1, 1]) {
+      LN(g, shade(s.a, 0.7), S * 0.045, [[hx + d * hr * 0.3, -hr * 0.7], [hx + d * hr * 0.5, -hr * 1.2]]);
+      E(g, shade(s.a, 0.7), hx + d * hr * 0.52, -hr * 1.24, S * 0.07, S * 0.07);
+    }
+    if (s.horn) drawHorn(g, S, t, s, hx, 0, hr);
+    drawFace(g, S, t, m, s, hx, 0, hr, s.sd);
+  },
+  serp(g, S, t, m, s) {                                     // slang / draakje
+    const sway = Math.sin(t * 2) * 0.06;
+    g.save(); g.rotate(sway);
+    g.strokeStyle = shade(s.a, 0.84); g.lineWidth = S * 0.42; g.lineCap = 'round';
+    g.beginPath(); g.arc(S * 0.06, S * 0.5, S * 0.5, -0.25, Math.PI * 1.1); g.stroke();
+    g.strokeStyle = s.a; g.lineWidth = S * 0.38;
+    g.beginPath(); g.arc(S * 0.06, S * 0.48, S * 0.5, -0.25, Math.PI * 1.1); g.stroke();
+    g.strokeStyle = s.c; g.lineWidth = S * 0.14;
+    g.beginPath(); g.arc(S * 0.06, S * 0.58, S * 0.52, 0.2, Math.PI * 0.85); g.stroke();
+    if (s.tail) drawTail(g, S, t, s, S * 0.2, S * 0.45, S * 0.5);
+    g.strokeStyle = s.a; g.lineWidth = S * 0.36;
+    g.beginPath(); g.moveTo(-S * 0.4, S * 0.5); g.quadraticCurveTo(-S * 0.56, -S * 0.05, -S * 0.18, -S * 0.5); g.stroke();
+    const hx = -S * 0.14, hy = -S * 0.66, hr = S * 0.42;
+    volEll(g, s.a, hx, hy, hr, hr * 0.84);
+    if (s.ear) drawEars(g, S, t, s, hx, hy, hr);
+    if (s.horn) drawHorn(g, S, t, s, hx, hy, hr);
+    drawFace(g, S, t, m, s, hx, hy, hr, s.sd);
+    g.restore();
+  },
+  float(g, S, t, m, s) {                                    // zwevend wezen
+    const by = 0, brx = S * 0.78, bry = S * 0.74;
+    for (let i = 0; i < 7; i++) {
+      const a = i / 7 * TAU + t * 0.5, rr = S * (0.16 + Math.sin(t * 3 + i * 1.7) * 0.04);
+      E(g, 'rgba(255,255,255,0.13)', Math.cos(a) * brx * 1.16, Math.sin(a) * bry * 1.1, rr, rr);
+    }
+    if (s.tail) drawTail(g, S, t, s, 0, by + S * 0.2, S * 0.62);
+    volEll(g, s.a, 0, by, brx, bry);
+    E(g, s.c, 0, by + bry * 0.38, brx * 0.5, bry * 0.4);
+    drawPattern(g, S, t, s, 0, by, brx, bry);
+    if (s.arm) drawArms(g, S, t, s, 0, by, S * 0.74);
+    if (s.wing) drawWings(g, S, t, s, 0, by, S * 0.7);
+    if (s.ear) drawEars(g, S, t, s, 0, by - S * 0.2, S * 0.56);
+    if (s.horn) drawHorn(g, S, t, s, 0, by - S * 0.18, S * 0.56);
+    drawFace(g, S, t, m, s, 0, by - S * 0.1, S * 0.54, s.sd);
+  },
+  plant(g, S, t, m, s) {                                    // steel met bloem-/bolkop
+    const sway = Math.sin(t * 1.9) * S * 0.05;
+    LN(g, '#4f9c30', S * 0.13, [[0, S * 0.96], [sway * 0.6, S * 0.16], [sway, -S * 0.2]]);
+    for (const d of [-1, 1]) {
+      g.save(); g.translate(d * S * 0.06, S * 0.42); g.rotate(d * (0.95 + Math.sin(t * 2.2 + d) * 0.1));
+      E(g, '#5fae3c', d * S * 0.3, 0, S * 0.34, S * 0.13);
+      LN(g, '#3f8c2c', S * 0.035, [[0, 0], [d * S * 0.6, 0]]);
+      g.restore();
+    }
+    PG(g, '#3f8c2c', [[-S * 0.3, S * 0.96], [-S * 0.6, S * 1.04], [-S * 0.12, S * 1.0]]);
+    PG(g, '#3f8c2c', [[S * 0.3, S * 0.96], [S * 0.6, S * 1.04], [S * 0.12, S * 1.0]]);
+    g.save(); g.translate(sway, -S * 0.42);
+    if (s.pet) {                                            // bloemblaadjes rond de kop
+      for (let i = 0; i < 8; i++) {
+        const a = i / 8 * TAU + Math.sin(t * 1.6) * 0.03;
+        g.save(); g.translate(Math.cos(a) * S * 0.5, Math.sin(a) * S * 0.5); g.rotate(a + Math.PI / 2);
+        E(g, i % 2 ? s.b : s.a, 0, 0, S * 0.16, S * 0.3); g.restore();
+      }
+    }
+    volEll(g, s.a, 0, 0, S * 0.5, S * 0.52);
+    if (s.horn) drawHorn(g, S, t, s, 0, 0, S * 0.5);
+    if (s.ear) drawEars(g, S, t, s, 0, 0, S * 0.5);
+    drawFace(g, S, t, m, s, 0, 0, S * 0.48, s.sd);
+    g.restore();
+  },
+  shell(g, S, t, m, s) {                                    // schelp / schaaldier
+    const by = S * 0.14;
+    if (s.arm) drawArms(g, S, t, s, 0, by, S * 0.66);
+    volEll(g, s.c, 0, by + S * 0.28, S * 0.6, S * 0.4);      // zacht lijf
+    g.save(); g.translate(0, by); g.rotate(Math.sin(t * 1.8) * 0.05);
+    E(g, shade(s.a, 0.8), 0, S * 0.06, S * 0.82, S * 0.66);
+    g.fillStyle = s.a;
+    g.beginPath(); g.moveTo(-S * 0.82, S * 0.1); g.arc(0, S * 0.1, S * 0.82, Math.PI, 0); g.closePath(); g.fill();
+    for (let i = -2; i <= 2; i++)
+      LN(g, shade(s.a, 0.72), S * 0.045, [[0, S * 0.08], [Math.cos(Math.PI + (i + 2.5) * 0.42) * S * 0.8, S * 0.08 + Math.sin(Math.PI + (i + 2.5) * 0.42) * S * 0.62]]);
+    E(g, shade(s.a, 1.18), -S * 0.24, -S * 0.24, S * 0.24, S * 0.16);
+    if (s.spike) for (let i = -2; i <= 2; i++) {
+      const a = Math.PI + (i + 2.5) * 0.42;
+      PG(g, s.b, [[Math.cos(a) * S * 0.76, S * 0.08 + Math.sin(a) * S * 0.6],
+                  [Math.cos(a) * S * 1.15, S * 0.08 + Math.sin(a) * S * 0.95],
+                  [Math.cos(a + 0.2) * S * 0.76, S * 0.08 + Math.sin(a + 0.2) * S * 0.6]]);
+    }
+    g.restore();
+    drawFace(g, S, t, m, s, 0, by + S * 0.3, S * 0.36, s.sd);
+  },
+};
+// bouwtype: kleine wezens zijn echt kleiner, sterke echt groter en steviger
+const BD = { small: 0.82, big: 1.14, '': 1 };
+// bouw voor elke spec een tekenfunctie in dezelfde vorm als de handgetekende wezens
+function makeDraw(s) {
+  const k = BD[s.bd || ''];
+  return function (g, S, t, m) {
+    g.save();
+    g.translate(0, S * (1 - k));                  // voetjes blijven op de grond
+    g.scale(k, k);
+    PLAN[s.pl](g, S, t, m, s);
+    g.restore();
+  };
+}
+
 const SPECIES = [
   { hp: 3, draw: 'bulby',      type: 'grass',    pools: ['meadow', 'forest'] },
   { hp: 3, draw: 'flamlet',    type: 'fire',     pools: ['meadow'] },
@@ -1591,6 +1971,134 @@ const SPECIES = [
   { hp: 3, draw: 'maggy',      type: 'electric', pools: ['village'], fly: true },
   { hp: 3, draw: 'sealy',      type: 'water',    pools: ['vwater'] },
 ];
+// ---- 102 extra wezens als compacte specs (eigen ontwerpen, gen-1 geinspireerd)
+const PARAM = [
+  // groei-vormen van de starters en maatjes
+  { id:'bulbud',    pl:'quad',  a:'#6fc7a8', b:'#4da085', c:'#f2ecd0', ear:'leaf',   tail:'leaf',  pat:'spots',  eye:'#c0392b', ck:1, type:'grass',    hp:4, pools:['meadow'] },
+  { id:'bulbloom',  pl:'quad',  a:'#5fb894', b:'#3f8c72', c:'#f2ecd0', ear:'leaf',   horn:'plume', pat:'spots',  eye:'#c0392b', type:'grass',    hp:5, pools:['forest'] },
+  { id:'flamteen',  pl:'biped', a:'#ff8a3d', b:'#e0662a', c:'#ffe2b8', ear:'pointy', tail:'flame', arm:'stub',   eye:'#2c5d8f', mouth:'fang', type:'fire', hp:4, pools:['meadow'] },
+  { id:'flamewing', pl:'biped', a:'#ff7a2f', b:'#d8551f', c:'#ffd8a8', horn:'double',tail:'flame', arm:'claw', wing:'flamew', eye:'#2c5d8f', mouth:'fang', type:'fire', hp:5, pools:['forest'] },
+  { id:'splashteen',pl:'biped', a:'#7fc8e8', b:'#4f9cc0', c:'#f4e9c8', ear:'fin',    tail:'curl',  arm:'stub', pat:'plates', eye:'#7a4a2e', ck:1, type:'water', hp:4, pools:['water'] },
+  { id:'splashtank',pl:'biped', a:'#68b4dc', b:'#3f88b0', c:'#e8d8ae', horn:'crest', tail:'fin',   arm:'muscle', pat:'plates', eye:'#7a4a2e', type:'water', hp:5, pools:['water'] },
+  { id:'sparkbig',  pl:'biped', a:'#f0a02c', b:'#c8781c', c:'#ffe8a8', ear:'pointy', tail:'bolt',  arm:'stub', eye:'#3b2b1e', ck:1, ckc:'rgba(255,120,140,0.5)', type:'electric', hp:4, pools:['meadow'] },
+  { id:'pufftall',  pl:'blob',  a:'#ffc2d8', b:'#e89ab8', c:'#fff0f6', ear:'long',   bigeye:1,     eye:'#3fa7d6', ck:1, type:'fairy',    hp:4, pools:['meadow'] },
+  // kruipers en kevers
+  { id:'cocoon',    pl:'bug',   a:'#8fd06a', b:'#68a848', c:'#dff2c0', seg:1, mouth:'none', eye:'#2c2c2c', type:'bug', hp:2, pools:['forest'] },
+  { id:'stingworm', pl:'bug',   a:'#f0d878', b:'#c8ac48', c:'#fff4c8', seg:1, horn:'single', eye:'#c0392b', type:'poison', hp:1, pools:['forest'] },
+  { id:'cocoyellow',pl:'bug',   a:'#f2d24a', b:'#c8a828', c:'#fff0b8', seg:1, mouth:'none', eye:'#2c2c2c', type:'bug', hp:2, pools:['forest'] },
+  { id:'stingbee',  pl:'bug',   a:'#f5c518', b:'#c89a10', c:'#fff3c0', seg:2, wing:'insect', horn:'double', mouth:'fang', eye:'#c0392b', type:'poison', hp:4, pools:['forest'] },
+  { id:'mothpurp',  pl:'bug',   a:'#9a7ad0', b:'#7a5ab0', c:'#e8dcf8', seg:2, wing:'insect', bigeye:1, eye:'#e8455a', type:'poison', hp:3, pools:['jungle'], fly:1 },
+  { id:'shroomlet', pl:'bug',   a:'#e8843f', b:'#c06228', c:'#ffd8b0', seg:2, horn:'plume', eye:'#2c2c2c', type:'bug', hp:2, pools:['jungle'] },
+  { id:'stagbug',   pl:'bug',   a:'#a8763f', b:'#7f5628', c:'#e0c090', seg:2, horn:'double', mouth:'fang', eye:'#e8b428', type:'bug', hp:4, pools:['jungle'] },
+  { id:'scarab',    pl:'bug',   a:'#5f9ad0', b:'#3f74a8', c:'#cfe4f8', seg:2, horn:'single', pat:'dots', eye:'#2c2c2c', type:'bug', hp:3, pools:['jungle'] },
+  // vogels
+  { id:'birdmid',   pl:'bird',  a:'#c09258', b:'#966c3c', c:'#f4e3c2', horn:'plume', tail:'fin',  pat:'stripes', eye:'#2c2c2c', type:'wind', hp:3, pools:['meadow'] },
+  { id:'birdking',  pl:'bird',  a:'#c8a068', b:'#9a7040', c:'#f8ecd4', horn:'plume', tail:'trio', pat:'stripes', eye:'#c0392b', type:'wind', hp:4, pools:['forest'] },
+  { id:'sparrowy',  pl:'bird',  a:'#a87a4a', b:'#7f5630', c:'#e8d2a8', tail:'spike', eye:'#2c2c2c', type:'wind', hp:2, pools:['meadow'] },
+  { id:'sparrowbig',pl:'bird',  a:'#b08454', b:'#845e34', c:'#f0dcb4', horn:'plume', tail:'spike', eye:'#c0392b', type:'wind', hp:4, pools:['village'] },
+  { id:'triobird',  pl:'bird',  a:'#8a6a45', b:'#63492c', c:'#e8d0a0', tail:'trio', horn:'plume', eye:'#2c2c2c', type:'normal', hp:4, pools:['village'] },
+  { id:'icebird',   pl:'bird',  a:'#7fd4f0', b:'#4aa8d8', c:'#eafaff', horn:'crest', tail:'fin', wing:'feather', eye:'#2c5d8f', type:'water', hp:5, pools:['jwater'], fly:1 },
+  { id:'voltbird',  pl:'bird',  a:'#ffd83d', b:'#d8a818', c:'#fff4c0', horn:'crest', tail:'bolt', wing:'feather', eye:'#3b2b1e', type:'electric', hp:5, pools:['village'], fly:1 },
+  { id:'firebird',  pl:'bird',  a:'#ff8a3d', b:'#e05a20', c:'#ffdcb0', horn:'plume', tail:'flame', wing:'flamew', eye:'#c0392b', type:'fire', hp:5, pools:['jungle'], fly:1 },
+  // dorp en boerderij
+  { id:'rattybig',  pl:'quad',  a:'#b08a58', b:'#8a6438', c:'#f0e0c0', ear:'round', tail:'thin', mouth:'fang', eye:'#c0392b', type:'normal', hp:3, pools:['village'] },
+  { id:'catgem',    pl:'quad',  a:'#f0e0c0', b:'#c8b490', c:'#fdf6e4', ear:'cat', horn:'gem', tail:'curl', eye:'#3b6e4f', type:'normal', hp:4, pools:['village'] },
+  { id:'pouchmom',  pl:'biped', a:'#c8a068', b:'#9a7440', c:'#f4e3c2', ear:'round', tail:'club', arm:'muscle', pat:'band', eye:'#2c2c2c', type:'normal', hp:4, pools:['village'] },
+  { id:'licktongue',pl:'biped', a:'#f2b8c8', b:'#d08ea0', c:'#fde4ec', tail:'thin', arm:'stub', mouth:'tongue', eye:'#2c2c2c', type:'normal', hp:3, pools:['village'] },
+  { id:'eggnurse',  pl:'blob',  a:'#ffc8d8', b:'#e8a0b8', c:'#fff2f6', ear:'tuft', bigeye:1, eye:'#2c2c2c', ck:1, type:'fairy', hp:3, pools:['village'] },
+  { id:'mimeclown', pl:'biped', a:'#f4b8d0', b:'#d890b0', c:'#fdf0f6', ear:'round', arm:'glove', eye:'#2c5d8f', ck:1, type:'psychic', hp:3, pools:['village'] },
+  { id:'dreamtapir',pl:'biped', a:'#e8c46a', b:'#b8944a', c:'#8a6a45', ear:'round', arm:'stub', pat:'band', eye:'#2c2c2c', type:'psychic', hp:3, pools:['village'] },
+  { id:'dreambig',  pl:'biped', a:'#f2d86a', b:'#c8ac40', c:'#f8f0d0', ear:'round', arm:'stub', horn:'gem', eye:'#7a4a2e', type:'psychic', hp:4, pools:['village'] },
+  // vossen en honden
+  { id:'vulpnine',  pl:'quad',  a:'#f4e8d8', b:'#d8c8b0', c:'#fdf8f0', ear:'pointy', tail:'trio', horn:'plume', eye:'#c0392b', type:'fire', hp:4, pools:['jungle'] },
+  { id:'pupbig',    pl:'quad',  a:'#f0a04a', b:'#c0742a', c:'#fdeacd', ear:'pointy', tail:'puff', pat:'stripes', mouth:'fang', eye:'#6a4426', type:'fire', hp:5, pools:['meadow'] },
+  { id:'foxwater',  pl:'quad',  a:'#7fc8e8', b:'#4f9cc0', c:'#eafaff', ear:'fin', tail:'fin', horn:'crest', eye:'#2c5d8f', type:'water', hp:4, pools:['water'] },
+  { id:'foxvolt',   pl:'quad',  a:'#ffe066', b:'#d8b420', c:'#fff8d0', ear:'pointy', tail:'spike', horn:'crest', eye:'#3b2b1e', ck:1, type:'electric', hp:4, pools:['meadow'] },
+  { id:'foxfire',   pl:'quad',  a:'#f07a4a', b:'#c8502a', c:'#ffe0c0', ear:'pointy', tail:'puff', horn:'plume', eye:'#6a4426', type:'fire', hp:4, pools:['meadow'] },
+  { id:'ponyfire',  pl:'quad',  a:'#f8f0e0', b:'#d8c8b0', c:'#fffaf2', ear:'pointy', tail:'flame', horn:'single', eye:'#2c5d8f', type:'fire', hp:4, pools:['village'] },
+  // gif en gas
+  { id:'cobrapurp', pl:'serp',  a:'#9a5fc8', b:'#7440a0', c:'#f0d060', horn:'crest', mouth:'fang', pat:'band', eye:'#d8b428', type:'poison', hp:4, pools:['jungle'] },
+  { id:'flapbig',   pl:'float', a:'#8a6fd6', b:'#6a4fb6', c:'#c8b4f0', wing:'bat', mouth:'fang', eye:'#e8455a', type:'wind', hp:3, pools:['jungle'], fly:1 },
+  { id:'sludge',    pl:'blob',  a:'#9a7ac0', b:'#75589a', c:'#c0a8dc', mouth:'fang', bigeye:1, eye:'#2c2c2c', type:'poison', hp:3, pools:['jungle'] },
+  { id:'sludgebig', pl:'blob',  a:'#8a6ab0', b:'#66468a', c:'#b498d0', mouth:'fang', arm:'stub', bigeye:1, eye:'#2c2c2c', type:'poison', hp:4, pools:['jungle'] },
+  { id:'gasball',   pl:'float', a:'#a06ae0', b:'#7f48b8', c:'#d8c0f8', mouth:'fang', pat:'dots', eye:'#2c2c2c', type:'poison', hp:2, pools:['jungle'], fly:1 },
+  { id:'gastwin',   pl:'float', a:'#9060d0', b:'#6f3ea8', c:'#cdb0f0', mouth:'fang', pat:'dots', arm:'float', eye:'#2c2c2c', type:'poison', hp:4, pools:['jungle'], fly:1 },
+  { id:'boohand',   pl:'float', a:'#5a4384', b:'#3e2c60', c:'#8a6fd6', mouth:'fang', arm:'float', bigeye:1, eye:'#e8455a', type:'ghost', hp:3, pools:['jungle'], fly:1 },
+  { id:'boobig',    pl:'biped', a:'#4a3370', b:'#31204f', c:'#7a5ab0', ear:'pointy', arm:'stub', tail:'spike', mouth:'fang', bigeye:1, eye:'#e8455a', type:'ghost', hp:5, pools:['jungle'] },
+  // planten
+  { id:'weedgloom', pl:'plant', a:'#7a86d6', b:'#5a66b0', c:'#e0e4f8', pet:1, mouth:'tongue', eye:'#d6455a', type:'grass', hp:3, pools:['jungle'] },
+  { id:'weedbloom', pl:'plant', a:'#e0596a', b:'#b8384a', c:'#ffd8dc', pet:1, horn:'plume', eye:'#2c2c2c', type:'grass', hp:4, pools:['jungle'] },
+  { id:'bellmid',   pl:'plant', a:'#f7d54a', b:'#d8b02a', c:'#fff0b0', ear:'leaf', mouth:'w', eye:'#2c2c2c', type:'grass', hp:3, pools:['jungle'] },
+  { id:'bellbig',   pl:'plant', a:'#e8d24a', b:'#b8a02a', c:'#fff4c0', ear:'leaf', horn:'plume', mouth:'fang', eye:'#2c2c2c', type:'grass', hp:4, pools:['jungle'] },
+  { id:'palmtree',  pl:'plant', a:'#d8b878', b:'#a88a50', c:'#f4e8c8', horn:'plume', ear:'leaf', bigeye:1, eye:'#2c2c2c', type:'psychic', hp:4, pools:['jungle'] },
+  { id:'sporebud',  pl:'plant', a:'#9ad86a', b:'#6fae3c', c:'#e4f8cc', ear:'leaf', eye:'#c0392b', ck:1, type:'grass', hp:2, pools:['jungle'] },
+  // rots en grond
+  { id:'rockmid',   pl:'blob',  a:'#9aa3ad', b:'#7a838d', c:'#c2cad2', arm:'muscle', pat:'plates', mouth:'fang', eye:'#2c2c2c', type:'rock', hp:4, pools:['jungle'] },
+  { id:'rockbig',   pl:'blob',  a:'#8a929c', b:'#6a727c', c:'#b8c0c8', arm:'muscle', pat:'plates', horn:'crest', mouth:'fang', eye:'#2c2c2c', type:'rock', hp:5, pools:['jungle'] },
+  { id:'moletrio',  pl:'blob',  a:'#a9744f', b:'#7f5232', c:'#d8a878', ear:'tuft', bigeye:1, eye:'#2c2c2c', type:'rock', hp:3, pools:['jungle'] },
+  { id:'sandspike', pl:'biped', a:'#e8c46a', b:'#b8944a', c:'#f7ecd0', arm:'claw', tail:'spike', pat:'plates', horn:'crest', eye:'#2c2c2c', type:'rock', hp:4, pools:['jungle'] },
+  { id:'rhinobig',  pl:'biped', a:'#a8a8b4', b:'#84849a', c:'#d0d0dc', horn:'single', tail:'club', arm:'claw', pat:'plates', mouth:'fang', eye:'#2c2c2c', type:'rock', hp:5, pools:['jungle'] },
+  { id:'bonekid',   pl:'biped', a:'#c8a878', b:'#9a7c4e', c:'#f0ead8', horn:'double', tail:'thin', arm:'stub', eye:'#e8455a', type:'rock', hp:2, pools:['jungle'] },
+  { id:'bonebig',   pl:'biped', a:'#b89868', b:'#8a6c42', c:'#f0ead8', horn:'double', tail:'club', arm:'claw', mouth:'fang', eye:'#e8455a', type:'rock', hp:4, pools:['jungle'] },
+  { id:'pterowing', pl:'bird',  a:'#9a92a8', b:'#6f6880', c:'#d0c8dc', wing:'bat', horn:'crest', mouth:'fang', tail:'spike', eye:'#c0392b', type:'rock', hp:5, pools:['jungle'], fly:1 },
+  // krachtpatsers
+  { id:'muscpup',   pl:'biped', a:'#8fb0c8', b:'#6a889c', c:'#dceaf2', arm:'muscle', eye:'#c0392b', type:'normal', hp:3, pools:['jungle'] },
+  { id:'muscmid',   pl:'biped', a:'#7fa4c0', b:'#5a7c94', c:'#d0e2ee', arm:'muscle', pat:'band', eye:'#c0392b', type:'normal', hp:4, pools:['jungle'] },
+  { id:'muscbig',   pl:'biped', a:'#6f98b8', b:'#4e708c', c:'#c8dcea', arm:'four', pat:'band', mouth:'fang', eye:'#c0392b', type:'normal', hp:4, pools:['jungle'] },
+  { id:'kicklegs',  pl:'biped', a:'#b08a58', b:'#87683c', c:'#e8d8b8', arm:'stub', eye:'#2c2c2c', mouth:'none', type:'normal', hp:4, pools:['village'] },
+  { id:'punchglove',pl:'biped', a:'#c09468', b:'#96704a', c:'#f0e0c0', arm:'glove', eye:'#2c2c2c', type:'normal', hp:4, pools:['village'] },
+  { id:'monkorage', pl:'biped', a:'#e8dcc8', b:'#b8ac98', c:'#f8f2e8', ear:'round', tail:'curl', arm:'muscle', mouth:'fang', eye:'#c0392b', type:'normal', hp:4, pools:['jungle'] },
+  // water
+  { id:'tadmid',    pl:'blob',  a:'#6fb6e8', b:'#4a90c0', c:'#ffffff', pat:'swirl', arm:'stub', eye:'#2c2c2c', ck:1, type:'water', hp:3, pools:['water'] },
+  { id:'tadbig',    pl:'biped', a:'#5fa8dc', b:'#3d80b0', c:'#ffffff', pat:'swirl', arm:'muscle', eye:'#2c2c2c', type:'water', hp:4, pools:['water'] },
+  { id:'duckblue',  pl:'biped', a:'#6fb0e0', b:'#4888b8', c:'#e8f4ff', horn:'gem', arm:'stub', tail:'fin', mouth:'beak', eye:'#c0392b', type:'water', hp:4, pools:['water'] },
+  { id:'jellyblue', pl:'float', a:'#7fc4ec', b:'#4f9cc0', c:'#e0f2ff', arm:'tentacle', bigeye:1, eye:'#c0392b', mouth:'none', type:'water', hp:2, pools:['water'], fly:1 },
+  { id:'jellybig',  pl:'float', a:'#6fb4e0', b:'#4488b4', c:'#d8ecfc', arm:'tentacle', horn:'gem', bigeye:1, eye:'#c0392b', mouth:'none', type:'water', hp:4, pools:['water'], fly:1 },
+  { id:'shellclam', pl:'shell', a:'#8a7ad0', b:'#6858a8', c:'#f8e8f0', mouth:'fang', eye:'#2c2c2c', type:'water', hp:2, pools:['water'] },
+  { id:'shellspike',pl:'shell', a:'#6f5fc0', b:'#4e3f98', c:'#e8dcf8', spike:1, mouth:'fang', eye:'#2c2c2c', type:'water', hp:4, pools:['water'] },
+  { id:'seahorsebig',pl:'fish', a:'#5fb0d8', b:'#3f88b0', c:'#d8f0fa', horn:'crest', ear:'fin', eye:'#2c5d8f', type:'water', hp:3, pools:['jwater'] },
+  { id:'goldbig',   pl:'fish',  a:'#ff8a4d', b:'#e0602a', c:'#fff0e0', horn:'single', pat:'spots', eye:'#2c2c2c', type:'water', hp:3, pools:['vwater'] },
+  { id:'sealbig',   pl:'fish',  a:'#f0f4f8', b:'#c8d4dc', c:'#ffffff', horn:'single', ear:'fin', eye:'#2c2c2c', ck:1, type:'water', hp:4, pools:['vwater'] },
+  { id:'lakebeast', pl:'fish',  a:'#7fb8e0', b:'#5090b8', c:'#f0e8d8', ear:'round', pat:'plates', horn:'crest', eye:'#2c5d8f', ck:1, type:'water', hp:5, pools:['water'] },
+  { id:'ragedragon',pl:'serp',  a:'#5f9ad0', b:'#3f74a8', c:'#f0e0a0', horn:'crest', mouth:'fang', pat:'scales', eye:'#c0392b', type:'water', hp:5, pools:['water'] },
+  { id:'ammoshell', pl:'shell', a:'#8fb4d8', b:'#6488ac', c:'#f0e8d0', arm:'tentacle', bigeye:1, eye:'#2c2c2c', type:'water', hp:2, pools:['jwater'] },
+  { id:'ammobig',   pl:'shell', a:'#7fa4c8', b:'#54789c', c:'#e8e0c8', arm:'tentacle', spike:1, mouth:'fang', eye:'#c0392b', type:'water', hp:4, pools:['jwater'] },
+  { id:'triloshell',pl:'shell', a:'#a8804f', b:'#7c5c34', c:'#e0c8a0', bigeye:1, mouth:'none', eye:'#c0392b', type:'rock', hp:2, pools:['jwater'] },
+  { id:'trilobig',  pl:'biped', a:'#a8804f', b:'#7c5c34', c:'#e0c8a0', arm:'claw', horn:'crest', mouth:'fang', eye:'#c0392b', type:'rock', hp:4, pools:['jwater'] },
+  { id:'twinklebig',pl:'float', a:'#9a7ad0', b:'#7458a8', c:'#f0e0f8', horn:'gem', pat:'dots', mouth:'none', eye:'#2c2c2c', type:'water', hp:4, pools:['vwater'], fly:1 },
+  { id:'kingcrab',  pl:'blob',  a:'#e8543f', b:'#c03828', c:'#ffd0c0', arm:'pincer', eye:'#2c2c2c', mouth:'w', type:'water', hp:4, pools:['vwater'] },
+  // psychisch en elektrisch
+  { id:'psykit',    pl:'biped', a:'#f0c860', b:'#c09c38', c:'#8a6a45', ear:'pointy', tail:'thin', arm:'stub', eye:'#2c2c2c', mouth:'none', type:'psychic', hp:2, pools:['village'] },
+  { id:'psymid',    pl:'biped', a:'#f2d060', b:'#c8a438', c:'#8a6a45', ear:'pointy', tail:'club', arm:'claw', horn:'plume', eye:'#c0392b', type:'psychic', hp:3, pools:['village'] },
+  { id:'psybig',    pl:'biped', a:'#f4d868', b:'#ccaa40', c:'#8a6a45', ear:'pointy', tail:'club', arm:'claw', horn:'crest', mouth:'none', eye:'#c0392b', type:'psychic', hp:4, pools:['village'] },
+  { id:'magtrio',   pl:'float', a:'#b8c0cc', b:'#8a929e', c:'#e0e8f0', horn:'gem', pat:'dots', mouth:'none', bigeye:1, eye:'#2c3440', type:'electric', hp:4, pools:['village'], fly:1 },
+  { id:'zapbuzz',   pl:'biped', a:'#ffd83d', b:'#d8ac18', c:'#3b3b3b', arm:'muscle', pat:'stripes', horn:'crest', eye:'#2c2c2c', ck:1, type:'electric', hp:4, pools:['village'] },
+  { id:'flamduck',  pl:'biped', a:'#e8543f', b:'#b83a28', c:'#ffd8a8', horn:'plume', tail:'flame', arm:'claw', mouth:'beak', eye:'#f0d060', type:'fire', hp:4, pools:['jungle'] },
+  { id:'icelady',   pl:'biped', a:'#c88ad0', b:'#9c60a8', c:'#f8e0e8', ear:'long', arm:'stub', horn:'plume', eye:'#2c5d8f', type:'psychic', hp:4, pools:['village'] },
+  { id:'polybird',  pl:'float', a:'#7fb0e8', b:'#e88ab0', c:'#e8f2ff', mouth:'beak', horn:'crest', bigeye:1, eye:'#2c5d8f', type:'psychic', hp:3, pools:['village'], fly:1 },
+  // stekelvrienden en legendes
+  { id:'nidoblue',  pl:'quad',  a:'#8fb8e0', b:'#6690b8', c:'#e0eefa', ear:'long', horn:'single', tail:'thin', pat:'spots', eye:'#c0392b', type:'poison', hp:2, pools:['meadow'] },
+  { id:'nidoqueen', pl:'biped', a:'#7fa8d4', b:'#5580a8', c:'#d8e8f6', horn:'single', tail:'club', arm:'claw', pat:'plates', mouth:'fang', eye:'#c0392b', type:'poison', hp:4, pools:['jungle'] },
+  { id:'nidopurp',  pl:'quad',  a:'#b490d8', b:'#8a68ac', c:'#eee0f8', ear:'long', horn:'single', tail:'spike', pat:'spots', eye:'#c0392b', type:'poison', hp:2, pools:['meadow'] },
+  { id:'nidoking',  pl:'biped', a:'#a880cc', b:'#7c58a0', c:'#e6d4f4', horn:'single', tail:'club', arm:'claw', pat:'plates', mouth:'fang', eye:'#c0392b', type:'poison', hp:4, pools:['jungle'] },
+  { id:'moonbig',   pl:'biped', a:'#f8d0dc', b:'#d8a4b4', c:'#fff0f4', ear:'pointy', wing:'fairy', tail:'curl', arm:'stub', horn:'gem', eye:'#8a5a3a', ck:1, type:'fairy', hp:4, pools:['village'] },
+  { id:'dozeybig',  pl:'biped', a:'#f2a0b6', b:'#c87a90', c:'#f7e6d6', ear:'round', tail:'drop', arm:'stub', eye:'#2c2c2c', type:'psychic', hp:4, pools:['water'] },
+  { id:'snekmid',   pl:'serp',  a:'#8fb0e8', b:'#6688bc', c:'#f4f8ff', ear:'fin', horn:'gem', eye:'#5a3f8a', type:'water', hp:4, pools:['water'] },
+  { id:'snekbig',   pl:'biped', a:'#f0b840', b:'#c08e20', c:'#fff0c8', wing:'fairy', horn:'double', tail:'thin', arm:'stub', eye:'#2c5d8f', type:'wind', hp:4, pools:['forest'] },
+  { id:'psycat',    pl:'biped', a:'#e8e0f0', b:'#b8a8d0', c:'#c8a8e8', ear:'pointy', tail:'thin', arm:'stub', horn:'crest', eye:'#8a5ac8', mouth:'none', type:'psychic', hp:5, pools:['jungle'] },
+  { id:'kittylegend',pl:'float',a:'#ffc2d8', b:'#e89ab8', c:'#fff0f6', ear:'pointy', tail:'thin', arm:'float', bigeye:1, eye:'#4a9fdb', ck:1, type:'psychic', hp:5, pools:['meadow'], fly:1 },
+];
+// registreer de tekenfuncties en vul de wezen-lijst aan
+PARAM.forEach((s, i) => {
+  s.sd = 48 + i;
+  if (!s.bd) s.bd = s.hp >= 5 ? 'big' : (s.hp <= 2 ? 'small' : '');
+  if (s.pl === 'quad' && !('sn' in s)) s.sn = 1;   // viervoeters krijgen een snuitje
+  D[s.id] = makeDraw(s);
+  const e = { hp: s.hp, draw: s.id, type: s.type, pools: s.pools };
+  if (s.fly) e.fly = true;
+  SPECIES.push(e);
+});
+
 const NSPECIES = SPECIES.length;
 const STARTER = 3;
 const TYPECOL = { water: '#58b6ff', fire: '#ff7a1f', grass: '#6fc750', electric: '#ffd23d', wind: '#e8f4ff',
@@ -1600,6 +2108,9 @@ const TYPECOL = { water: '#58b6ff', fire: '#ff7a1f', grass: '#6fc750', electric:
 // scratch-canvas: alle wezentjes krijgen hier een licht/schaduw-pass en evt. raak-flits
 const scr = document.createElement('canvas'); scr.width = 960; scr.height = 960;
 const sg = scr.getContext('2d');
+// tweede scratch: silhouet voor de zachte contourlijn rond elk wezen
+const scr2 = document.createElement('canvas'); scr2.width = 960; scr2.height = 960;
+const sg2 = scr2.getContext('2d');
 
 function drawCreature(g, id, x, y, S, t, mood, flash) {
   const sp = SPECIES[id];
@@ -1633,6 +2144,17 @@ function drawCreature(g, id, x, y, S, t, mood, flash) {
   }
   sg.restore();
   sg.globalCompositeOperation = 'source-over';
+  // zachte donkere contour: maakt elk wezen scherper tegen de achtergrond
+  sg2.setTransform(1, 0, 0, 1, 0, 0);
+  sg2.clearRect(0, 0, 960, 960);
+  sg2.drawImage(scr, 0, 0);
+  sg2.globalCompositeOperation = 'source-atop';
+  sg2.fillStyle = 'rgba(26,42,24,0.5)';
+  sg2.fillRect(0, 0, 960, 960);
+  sg2.globalCompositeOperation = 'source-over';
+  const ow = Math.max(1.6, S * 0.035);
+  for (const [ox, oy] of [[-ow, 0], [ow, 0], [0, -ow], [0, ow]])
+    g.drawImage(scr2, 0, 0, 960, 960, x - 240 + shake + ox, y + bob - 240 + oy, 480, 480);
   g.drawImage(scr, 0, 0, 960, 960, x - 240 + shake, y + bob - 240, 480, 480);
   if (mood === 'dizzy') {
     g.fillStyle = '#ffd23d';
