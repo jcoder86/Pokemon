@@ -5,7 +5,9 @@ Een vrolijk, tekstloos Pokémon-achtig verzamelspel voor Julian (5 jaar): drie g
 - **Starten:** `START` = Julians blijvende profiel; `Start as guest` = los gast-geheugen.
 - **Lopen/varen:** tik ergens — Julian loopt erheen en stapt aan de waterlijn vanzelf in/uit het bootje.
 - **Reizen:** tik op de rotspoort links of de houten poort boven; terug via de poort in elk gebied.
-- **Vechten:** het actieve wezentje (kies in het boek, groene gloed = actief) valt aan met de 💥-knop; vangen met het mik-spelletje zodra de hartjes leeg zijn; vluchten kan altijd met 🏃.
+- **Vechten:** het actieve wezentje (kies in het boek, groene gloed = actief) valt aan met de 💥-knop. Mik met de ring: klein = raak, allerkleinst (goud) = dubbele klap. Vangen gaat met hetzelfde mik-spelletje zodra de hartjes leeg zijn; vluchten kan altijd met 🏃.
+- **Flauwvallen:** raken de hartjes van je maatje op, dan gaat het slapen en opent het boek zodat Julian meteen een ander wezentje kiest. Na het gevecht is de slaper weer helemaal fit. Elk wezentje vecht met het aantal hartjes dat het zelf heeft.
+- **Boek in het gevecht:** de 📖-knop werkt ook tijdens een gevecht.
 
 ## Lokaal openen
 

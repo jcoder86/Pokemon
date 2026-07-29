@@ -67,6 +67,9 @@
   .cell .stamp { position:absolute; right:-7px; top:-7px; font-size:3.4vmin; }
   .cell.activeMon { border-color:#52d669; background:#f0fff2; animation:selPulse 1.3s infinite; }
   .cell .sel { position:absolute; left:-8px; bottom:-8px; font-size:3.6vmin; filter:drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+  .cell.asleep { opacity:.55; }
+  .cell.asleep canvas { filter:grayscale(.6) brightness(.85); }
+  .cell .zzz { position:absolute; left:-6px; bottom:-6px; font-size:3.4vmin; filter:drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
   @keyframes selPulse { 0%,100%{box-shadow:0 0 0 4px rgba(82,214,105,.55), 0 0 18px rgba(82,214,105,.6)}
       50%{box-shadow:0 0 0 6px rgba(82,214,105,.75), 0 0 26px rgba(82,214,105,.85)} }
   #btnCloseBook { position:absolute; right:2%; top:3%; width:10vmin; height:10vmin; min-width:60px;
@@ -170,25 +173,71 @@ function canvasPos(e) {
 // ============================================================ opslag (twee gescheiden profielen)
 let profile = null; // 'julian' | 'guest'
 function storageKey() { return 'juliansPokemon.' + profile; }
+// De volgorde van het boek is een keer veranderd; oude opslag was op positie
+// gebaseerd. Daarom bewaren we nu op naam en rekenen we oude opslag netjes om,
+// zodat eerder gevangen wezens niet verloren gaan.
+const OLD_ORDER_48 = ['bulby','flamlet','splashy','sparky','puffball','flapper','foxy','wormie','flutterby',
+  'birdie','splashking','duckles','taddy','weedie','rocko','boo','kitcoin','dozey','snoozle','vulpetta','sandy',
+  'pinchy','twinkle','snek','rocksnake','moley','bellbud','fuzzy','shroomcrab','vineball','monko','serpurple',
+  'mantis','rhino','seahorse','goldfish','pupper','bully','eggies','duobird','ratty','flamepony','leekduck',
+  'moonpink','buzzbee','sunbloom','maggy','sealy'];
+const OLD_ORDER_EXTRA = ['bulbud','bulbloom','flamteen','flamewing','splashteen','splashtank','sparkbig','pufftall',
+  'cocoon','stingworm','cocoyellow','stingbee','mothpurp','shroomlet','stagbug','scarab','birdmid','birdking',
+  'sparrowy','sparrowbig','triobird','icebird','voltbird','firebird','rattybig','catgem','pouchmom','licktongue',
+  'eggnurse','mimeclown','dreamtapir','dreambig','vulpnine','pupbig','foxwater','foxvolt','foxfire','ponyfire',
+  'cobrapurp','flapbig','sludge','sludgebig','gasball','gastwin','boohand','boobig','weedgloom','weedbloom',
+  'bellmid','bellbig','palmtree','sporebud','rockmid','rockbig','moletrio','sandspike','rhinobig','bonekid',
+  'bonebig','pterowing','muscpup','muscmid','muscbig','kicklegs','punchglove','monkorage','tadmid','tadbig',
+  'duckblue','jellyblue','jellybig','shellclam','shellspike','seahorsebig','goldbig','sealbig','lakebeast',
+  'ragedragon','ammoshell','ammobig','triloshell','trilobig','twinklebig','kingcrab','psykit','psymid','psybig',
+  'magtrio','zapbuzz','flamduck','icelady','polybird','nidoblue','nidoqueen','nidopurp','nidoking','moonbig',
+  'dozeybig','snekmid','snekbig','psycat','kittylegend'];
+const RENAMED = { bulbud:'ivyleaf', bulbloom:'bloomback', flamteen:'flamejaw', splashteen:'shellteen',
+  splashtank:'shelltank', sparkbig:'voltbig', cocoon:'cocoongreen', stingworm:'wormsting',
+  cocoyellow:'cocoonyellow', stingbee:'buzzbee', mothpurp:'mothdust', shroomlet:'sporebug', stagbug:'pinsbug',
+  scarab:'pinsbug', vulpnine:'ninetail', cobrapurp:'cobrahood', flapbig:'batbig', sludge:'sludgeblob',
+  sludgebig:'sludgeking', weedgloom:'gloomdrip', weedbloom:'bloomcap', bellmid:'bellhang', bellbig:'bellpitch',
+  palmtree:'palmhead', sporebud:'bellhang', rockmid:'rockarm', rockbig:'rockking', pterowing:'stonewing',
+  jellyblue:'jellyfloat', jellybig:'jellycrown', polybird:'polyblock', nidoblue:'spikeblue',
+  nidoqueen:'spikequeen', nidopurp:'spikepurp', nidoking:'spikeking', moonbig:'moonfae', snekbig:'dragonwing' };
 function saveProgress() {
   if (!profile) return;
-  try { localStorage.setItem(storageKey(), JSON.stringify({ caught: G.caught, active: G.active })); } catch (e) {}
+  const caught = {};
+  for (let i = 0; i < NSPECIES; i++) if (G.caught[i] > 0) caught[SPECIES[i].draw] = G.caught[i];
+  try {
+    localStorage.setItem(storageKey(), JSON.stringify({ v: 2, caught, active: SPECIES[G.active].draw }));
+  } catch (e) {}
 }
 function loadProgress() {
+  let activeName = null;
   try {
     const raw = localStorage.getItem(storageKey());
     if (raw) {
       const d = JSON.parse(raw);
-      if (d && Array.isArray(d.caught)) {
-        for (let i = 0; i < Math.min(d.caught.length, G.caught.length); i++) G.caught[i] = d.caught[i] | 0;
+      const add = (name, n) => {
+        const nm = RENAMED[name] || name;
+        const idx = IDX_BY_NAME[nm];
+        if (idx !== undefined) G.caught[idx] = Math.max(G.caught[idx], n || 1);
+      };
+      if (d && d.v === 2 && d.caught && !Array.isArray(d.caught)) {
+        for (const nm in d.caught) add(nm, d.caught[nm]);
+        if (typeof d.active === 'string') activeName = RENAMED[d.active] || d.active;
+      } else if (d && Array.isArray(d.caught)) {          // oude opslag op positie
+        const order = OLD_ORDER_48.concat(OLD_ORDER_EXTRA);
+        for (let i = 0; i < d.caught.length; i++) {
+          if (!(d.caught[i] > 0) || i >= order.length) continue;
+          add(order[i], d.caught[i]);
+        }
+        if (typeof d.active === 'number' && order[d.active]) activeName = RENAMED[order[d.active]] || order[d.active];
       }
-      if (d && typeof d.active === 'number') G.active = d.active | 0;
     }
   } catch (e) {}
   G.caught[STARTER] = Math.max(1, G.caught[STARTER]);
   G.caughtCount = G.caught.reduce((n, c) => n + (c > 0 ? 1 : 0), 0);
+  G.active = (activeName !== null && IDX_BY_NAME[activeName] !== undefined) ? IDX_BY_NAME[activeName] : STARTER;
   // het actieve wezen moet gevangen zijn; anders terug naar de starter
-  if (!(G.active >= 0 && G.active < NSPECIES && G.caught[G.active] > 0)) G.active = STARTER;
+  if (!(G.caught[G.active] > 0)) G.active = STARTER;
+  saveProgress();                                          // meteen in het nieuwe formaat bewaren
 }
 
 // ============================================================ audio
@@ -354,6 +403,11 @@ function stdEyes(g, dx, y, r, iris, t, mood, seed) {
   if (mood === 'happy') {
     g.strokeStyle = '#3b3b3b'; g.lineWidth = Math.max(1.2, r * 0.45); g.lineCap = 'round';
     for (const s of [-1, 1]) { g.beginPath(); g.arc(s * dx, y + r * 0.35, r * 0.8, Math.PI + 0.5, TAU - 0.5); g.stroke(); }
+    return;
+  }
+  if (mood === 'sleep') {                       // rustig dichte oogjes
+    g.strokeStyle = '#3b3b3b'; g.lineWidth = Math.max(1.2, r * 0.4); g.lineCap = 'round';
+    for (const s of [-1, 1]) { g.beginPath(); g.arc(s * dx, y - r * 0.2, r * 0.8, 0.3, Math.PI - 0.3); g.stroke(); }
     return;
   }
   const blink = ((t * 0.9 + seed * 0.77) % 3.3) < 0.1;
@@ -4179,8 +4233,40 @@ const SPECIES = [
   { hp: 3, draw: 'spikeblue2',  type: 'poison',   pools: ['meadow'] },
   { hp: 3, draw: 'spikepurp2',  type: 'poison',   pools: ['forest'] },
 ];
+// Volgorde van het verzamelboek: net als in generatie 1, dus de starters en hun
+// groeivormen netjes naast elkaar vooraan.
+const DEX = {
+  bulby: 1, ivyleaf: 2, bloomback: 3, flamlet: 4, flamejaw: 5, flamewing: 6,
+  splashy: 7, shellteen: 8, shelltank: 9, wormie: 10, cocoongreen: 11, flutterby: 12,
+  wormsting: 13, cocoonyellow: 14, buzzbee: 15, birdie: 16, birdmid: 17, birdking: 18,
+  ratty: 19, rattybig: 20, sparrowy: 21, sparrowbig: 22, serpurple: 23, cobrahood: 24,
+  sparky: 25, voltbig: 26, sandy: 27, sandspike: 28, spikeblue: 29, spikeblue2: 30,
+  spikequeen: 31, spikepurp: 32, spikepurp2: 33, spikeking: 34, moonpink: 35, moonfae: 36,
+  vulpetta: 37, ninetail: 38, puffball: 39, pufftall: 40, flapper: 41, batbig: 42,
+  weedie: 43, gloomdrip: 44, bloomcap: 45, sunbloom: 45.5, sporebug: 46, shroomcrab: 47,
+  fuzzy: 48, mothdust: 49, moley: 50, moletrio: 51, kitcoin: 52, catgem: 53,
+  duckles: 54, duckblue: 55, monko: 56, monkorage: 57, pupper: 58, pupbig: 59,
+  taddy: 60, tadmid: 61, tadbig: 62, psykit: 63, psymid: 64, psybig: 65,
+  muscpup: 66, muscmid: 67, muscbig: 68, bellbud: 69, bellhang: 70, bellpitch: 71,
+  jellyfloat: 72, jellycrown: 73, rocko: 74, rockarm: 75, rockking: 76, flamepony: 77,
+  ponyfire: 78, dozey: 79, dozeybig: 80, maggy: 81, magtrio: 82, leekduck: 83,
+  duobird: 84, triobird: 85, sealy: 86, sealbig: 87, sludgeblob: 88, sludgeking: 89,
+  shellclam: 90, shellspike: 91, boo: 92, boohand: 93, boobig: 94, rocksnake: 95,
+  dreamtapir: 96, dreambig: 97, pinchy: 98, kingcrab: 99, gasball: 109, gastwin: 110,
+  eggies: 102, palmhead: 103, bonekid: 104, bonebig: 105, kicklegs: 106, punchglove: 107,
+  licktongue: 108, rhino: 111, rhinobig: 112, eggnurse: 113, vineball: 114, pouchmom: 115,
+  seahorse: 116, seahorsebig: 117, goldfish: 118, goldbig: 119, twinkle: 120, twinklebig: 121,
+  mimeclown: 122, mantis: 123, icelady: 124, zapbuzz: 125, flamduck: 126, pinsbug: 127,
+  bully: 128, splashking: 129, ragedragon: 130, lakebeast: 131, blobpink: 132, foxy: 133,
+  foxwater: 134, foxvolt: 135, foxfire: 136, polyblock: 137, ammoshell: 138, ammobig: 139,
+  triloshell: 140, trilobig: 141, stonewing: 142, snoozle: 143, icebird: 144, voltbird: 145,
+  firebird: 146, snek: 147, snekmid: 148, dragonwing: 149, psycat: 150, kittylegend: 151,
+};
+SPECIES.sort((a, b) => (DEX[a.draw] || 999) - (DEX[b.draw] || 999));
 const NSPECIES = SPECIES.length;
-const STARTER = 3;
+const STARTER = SPECIES.findIndex(s => s.draw === 'sparky');
+const IDX_BY_NAME = {};
+SPECIES.forEach((s, i) => { IDX_BY_NAME[s.draw] = i; });
 const TYPECOL = { water: '#58b6ff', fire: '#ff7a1f', grass: '#6fc750', electric: '#ffd23d', wind: '#e8f4ff',
                   bug: '#9adb4f', rock: '#a8927a', ghost: '#a06ae0', fairy: '#ff9ec6', psychic: '#e070c0',
                   poison: '#9a5fc8', normal: '#ffd23d' };
@@ -4207,7 +4293,8 @@ function drawCreature(g, id, x, y, S, t, mood, flash) {
   sg.save(); sg.setTransform(2, 0, 0, 2, 0, 0); sg.clearRect(0, 0, 480, 480);
   sg.translate(240, 240); sg.scale(br, 2 - br);
   if (mood === 'attack') sg.rotate(0.1);
-  D[sp.draw](sg, S, t, mood);
+  if (mood === 'faint') { sg.translate(-S * 0.25, S * 0.65); sg.rotate(-1.42); }   // languit op de grond
+  D[sp.draw](sg, S, t, mood === 'faint' ? 'sleep' : mood);
   sg.setTransform(2, 0, 0, 2, 0, 0);
   sg.globalCompositeOperation = 'source-atop';
   const shGrad = sg.createLinearGradient(0, 240 - S * 0.2, 0, 240 + S * 1.05);
@@ -4242,6 +4329,17 @@ function drawCreature(g, id, x, y, S, t, mood, flash) {
       const a = t * 3 + i * TAU / 3;
       starPath(g, x + Math.cos(a) * S * 0.85, y + bob - S * 1.2 + Math.sin(a) * S * 0.16, S * 0.13, S * 0.06);
       g.fill();
+    }
+  }
+  if (mood === 'faint') {                      // slaapbelletjes
+    for (let i = 0; i < 3; i++) {
+      const k = ((t * 0.7 + i * 0.33) % 1);
+      g.save();
+      g.globalAlpha = 0.85 * (1 - k);
+      g.fillStyle = '#ffffff';
+      g.font = 'bold ' + (S * (0.3 + k * 0.3)) + 'px sans-serif';
+      g.fillText('z', x + S * (0.5 + k * 0.7), y - S * (0.4 + k * 1.1));
+      g.restore();
     }
   }
 }
@@ -5098,7 +5196,8 @@ function patchPoolAt(px, py) {
 }
 // ============================================================ game state
 const G = {
-  state: 'world',          // world | toBattle | battle | toWorld | travelOut | travelIn | book
+  state: 'world',          // world | toBattle | battle | toWorld | travelOut | travelIn
+  bookOpen: false,         // pokedex kan open staan boven wereld en gevecht
   t: 0,
   area: 'hub',
   player: { x: 15.5 * TILE, y: 13.2 * TILE, tx: null, ty: null, dir: 0, moving: false, lastTile: '', stepT: 0, stepN: 0, grassSteps: 0 },
@@ -5120,8 +5219,9 @@ for (let i = 0; i < 3; i++)
 const WILD = { x: 720, y: 300, S: 78 };
 const PC = { x: 300, y: 480, S: 60 };
 const B = { // gevecht
-  id: 0, hearts: 3, max: 3, pHearts: 3, phase: 'intro', pt: 0,
+  id: 0, hearts: 3, max: 3, pHearts: 3, pMax: 3, phase: 'intro', pt: 0,
   missCount: 0, willCatch: false, isNew: false, onWater: false,
+  dmg: 1, perfect: false, fainted: -1,
   wFlash: 0, pFlash: 0, pLunge: 0, wLunge: 0, didImpact: false, ringR: 999, ball: null, wobbles: 0, pcIn: 0,
 };
 
@@ -5189,7 +5289,9 @@ function startEncounter(pool) {
   B.id = pickSpecies(pool);
   B.max = SPECIES[B.id].hp || 3; // hartjes passend bij het wezen
   B.hearts = B.max;
-  B.pHearts = 5;
+  B.pMax = SPECIES[G.active].hp || 3;   // Julians maatje houdt zijn eigen hartjes
+  B.pHearts = B.pMax;
+  B.fainted = -1;
   B.phase = 'intro'; B.pt = 0; B.missCount = 0; B.ball = null;
   B.wFlash = 0; B.pFlash = 0; B.pLunge = 0; B.wLunge = 0; B.pcIn = 0;
   B.onWater = G.onBoat;
@@ -5238,9 +5340,15 @@ btnFlee.addEventListener('pointerdown', e => {
 });
 
 function doAttack() {
+  // mikken bij de aanval: hoe kleiner de ring, hoe harder de klap
+  const perfect = B.ringR <= WILD.S * 0.95;
+  const hit = B.ringR <= WILD.S * 1.45;
+  B.dmg = perfect ? 2 : (hit ? 1 : 0);
+  B.perfect = perfect;
   B.phase = 'pAtk'; B.pt = 0; B.didImpact = false;
   setBtns(false, false);
-  SFX.attackSnd(SPECIES[G.active].type);
+  if (B.dmg > 0) SFX.attackSnd(SPECIES[G.active].type);
+  else SFX.wobble();
 }
 function doThrow() {
   // mikken: gooi als de ring klein (groen) om het wezentje sluit
@@ -5262,21 +5370,31 @@ function updateBattle(dt) {
   B.pt += dt;
   B.wFlash = Math.max(0, B.wFlash - dt * 2.5);
   B.pFlash = Math.max(0, B.pFlash - dt * 2.5);
-  btnFlee.style.display = (B.phase !== 'caught' && B.phase !== 'throw') ? 'flex' : 'none';
+  btnFlee.style.display = (B.phase !== 'caught' && B.phase !== 'throw' &&
+    B.phase !== 'faint' && B.phase !== 'swap') ? 'flex' : 'none';
   const wildType = SPECIES[B.id].type;
   if (B.phase === 'intro') {
     B.pcIn = Math.min(1, B.pt / 0.5);
     if (B.pt > 0.55 && B.pt - dt <= 0.55) { SFX.cry(B.id); SFX.cry(G.active); }
     if (B.pt > 0.9) { B.phase = 'idle'; setBtns(true, false); }
+  } else if (B.phase === 'idle') {
+    B.ringR = WILD.S * (0.75 + (0.5 + 0.5 * Math.sin(B.pt * 3.4)) * 1.5);   // mikring voor de aanval
   } else if (B.phase === 'pAtk') {
     B.pLunge = B.pt < 0.5 ? Math.sin(Math.min(B.pt / 0.5, 1) * Math.PI) : 0;
     if (!B.didImpact && B.pt >= 0.6) {
       B.didImpact = true;
-      if (B.hearts > 0) B.hearts--;
-      B.wFlash = 1;
-      SFX.hit(); SFX.heartPop();
-      spawnParticles(WILD.x, WILD.y, 16, 'star', [TYPECOL[SPECIES[G.active].type], '#ffffff', '#ffd23d']);
-      if (B.hearts === 0) SFX.dizzy();
+      if (B.dmg > 0) {
+        B.hearts = Math.max(0, B.hearts - B.dmg);
+        B.wFlash = 1;
+        SFX.hit(); SFX.heartPop();
+        if (B.perfect) { SFX.sparkle(); SFX.heartPop(); }
+        spawnParticles(WILD.x, WILD.y, B.perfect ? 26 : 16, 'star',
+          [TYPECOL[SPECIES[G.active].type], '#ffffff', '#ffd23d']);
+        if (B.hearts === 0) SFX.dizzy();
+      } else {
+        SFX.giggle();                                    // net ernaast: gewoon nog een keer
+        spawnParticles(WILD.x + 90, WILD.y, 6, 'dot', ['#ffffff']);
+      }
     }
     if (B.pt > 1.15) {
       if (B.hearts === 0) { B.phase = 'aim'; B.pt = 0; setBtns(false, true); }
@@ -5290,18 +5408,34 @@ function updateBattle(dt) {
       B.pFlash = 1;
       SFX.hitSoft();
       spawnParticles(PC.x, PC.y, 10, 'star', [TYPECOL[wildType], '#ffffff']);
+      if (B.pHearts === 0) SFX.dizzy();
     }
     if (B.pt > 1.15) {
-      if (B.pHearts === 0) { B.phase = 'revive'; B.pt = 0; }
-      else { B.phase = 'idle'; setBtns(true, false); }
+      if (B.pHearts === 0) { B.phase = 'faint'; B.pt = 0; B.fainted = G.active; }
+      else { B.phase = 'idle'; B.pt = 0; setBtns(true, false); }
     }
+  } else if (B.phase === 'faint') {
+    if (B.pt > 1.1) {
+      // een ander gevangen maatje beschikbaar? dan mag Julian wisselen
+      let others = 0;
+      for (let i = 0; i < NSPECIES; i++) if (G.caught[i] > 0 && i !== B.fainted) others++;
+      if (others > 0) { B.phase = 'swap'; B.pt = 0; setBtns(false, false); openBook(); }
+      else { B.phase = 'revive'; B.pt = 0; }
+    }
+  } else if (B.phase === 'swap') {
+    setBtns(false, false);                               // wachten tot er gekozen is
+  } else if (B.phase === 'swapIn') {
+    B.pcIn = Math.min(1, B.pt / 0.45);
+    if (B.pt > 0.5 && B.pt - dt <= 0.5) SFX.cry(G.active);
+    if (B.pt > 0.75) { B.phase = 'idle'; B.pt = 0; setBtns(true, false); }
   } else if (B.phase === 'revive') {
     if (B.pt > 0.7 && B.pt - dt <= 0.7) {
       SFX.revive();
-      B.pHearts = 5;
+      B.pHearts = B.pMax;
+      B.fainted = -1;
       spawnParticles(PC.x, PC.y - 30, 18, 'star', ['#ffd23d', '#8fe05f', '#ffffff']);
     }
-    if (B.pt > 1.3) { B.phase = 'idle'; setBtns(true, false); }
+    if (B.pt > 1.3) { B.phase = 'idle'; B.pt = 0; setBtns(true, false); }
   } else if (B.phase === 'aim') {
     B.ringR = WILD.S * (0.75 + (0.5 + 0.5 * Math.sin(B.pt * 3.4)) * 1.5);
   } else if (B.phase === 'throw') {
@@ -5482,10 +5616,12 @@ function drawBattle(g) {
   // Julians eigen wezentje
   const pcX = lerp(-90, PC.x, B.pcIn) + B.pLunge * 150;
   let pcMood = 'idle';
-  if (B.phase === 'revive') pcMood = B.pt < 0.7 ? 'dizzy' : 'happy';
+  if (B.phase === 'faint' || B.phase === 'swap') pcMood = 'faint';
+  else if (B.phase === 'revive') pcMood = B.pt < 0.7 ? 'faint' : 'happy';
   else if (B.phase === 'pAtk' && B.pLunge > 0.2) pcMood = 'attack';
   else if (B.phase === 'caught') pcMood = 'happy';
-  drawCreature(g, G.active, pcX, PC.y, PC.S, G.t, pcMood, B.pFlash);
+  const pcId = (B.phase === 'faint' || B.phase === 'swap') && B.fainted >= 0 ? B.fainted : G.active;
+  drawCreature(g, pcId, pcX, PC.y, PC.S, G.t, pcMood, B.pFlash);
 
   // wild wezentje
   const wScale = B.phase === 'intro' ? Math.min(1, B.pt / 0.5) : 1;
@@ -5506,7 +5642,7 @@ function drawBattle(g) {
   // hartjes
   if (B.phase !== 'caught') {
     drawHeartsRow(g, WILD.x, 130, B.hearts, B.max, 24, G.t);
-    drawHeartsRow(g, PC.x, PC.y - 125, B.pHearts, 5, 13, G.t + 1);
+    drawHeartsRow(g, PC.x, PC.y - 125, B.pHearts, B.pMax, 13, G.t + 1);
   }
 
   // aanval-effect onderweg
@@ -5519,7 +5655,39 @@ function drawBattle(g) {
     drawFx(g, SPECIES[B.id].type, WILD.x - 80, WILD.y, PC.x, PC.y - 20, prog, G.t);
   }
 
-  // mik-ring
+  // mik-ring voor de aanval: klein = raak, allerkleinst = dubbele klap
+  if (B.phase === 'idle') {
+    const perfect = B.ringR <= WILD.S * 0.95, hit = B.ringR <= WILD.S * 1.45;
+    g.save();
+    g.strokeStyle = perfect ? '#ffd23d' : (hit ? '#52d669' : 'rgba(255,180,120,0.85)');
+    g.lineWidth = perfect ? 11 : (hit ? 9 : 6);
+    g.setLineDash([16, 11]); g.lineDashOffset = -G.t * 46;
+    g.beginPath(); g.arc(WILD.x, WILD.y, B.ringR, 0, TAU); g.stroke();
+    g.restore();
+    // vaste binnenring laat zien hoe klein het moet worden
+    g.save();
+    g.strokeStyle = 'rgba(255,255,255,0.5)'; g.lineWidth = 3;
+    g.setLineDash([7, 9]);
+    g.beginPath(); g.arc(WILD.x, WILD.y, WILD.S * 0.95, 0, TAU); g.stroke();
+    g.restore();
+    if (perfect) {
+      g.fillStyle = '#ffd23d';
+      for (let i = 0; i < 5; i++) {
+        const a = G.t * 3 + i * TAU / 5;
+        starPath(g, WILD.x + Math.cos(a) * (B.ringR + 26), WILD.y + Math.sin(a) * (B.ringR + 26), 12, 5);
+        g.fill();
+      }
+    }
+  }
+  // dubbele-klap teken
+  if (B.phase === 'pAtk' && B.perfect && B.pt > 0.6 && B.pt < 1.1) {
+    g.fillStyle = '#ffd23d';
+    for (let i = 0; i < 8; i++) {
+      const a = i / 8 * TAU + G.t * 2;
+      starPath(g, WILD.x + Math.cos(a) * 120, WILD.y + Math.sin(a) * 120, 16, 7); g.fill();
+    }
+  }
+  // mik-ring voor de bal
   if (B.phase === 'aim') {
     const sweet = B.ringR <= WILD.S * 1.35;
     g.save();
@@ -5818,6 +5986,8 @@ for (let i = 0; i < NSPECIES; i++) {
     e.stopPropagation();
     if (moved) return;          // dit was een scroll-veeg
     if (!G.caught[i]) return;   // lege plekjes doen niets
+    const swapping = G.state === 'battle' && B.phase === 'swap';
+    if (swapping && i === B.fainted) { SFX.tap(); return; }   // die slaapt nog
     if (G.active !== i) {
       G.active = i;
       saveProgress();
@@ -5826,6 +5996,15 @@ for (let i = 0; i < NSPECIES; i++) {
       SFX.tap();
     }
     refreshBook();
+    if (swapping) {                                            // meteen verder vechten
+      B.pMax = SPECIES[G.active].hp || 3;
+      B.pHearts = B.pMax;
+      B.phase = 'swapIn'; B.pt = 0; B.pcIn = 0; B.fainted = -1;
+      bookOverlay.style.display = 'none';
+      G.bookOpen = false;
+      SFX.revive();
+      spawnParticles(PC.x, PC.y - 30, 18, 'star', ['#ffd23d', '#8fe05f', '#ffffff']);
+    }
   });
   bookGrid.appendChild(cell);
   cells.push(cell);
@@ -5841,7 +6020,15 @@ function refreshBook() {
         cells[i].appendChild(s);
       }
     }
-    const isActive = i === G.active;
+    const sleeping = G.state === 'battle' && B.phase === 'swap' && i === B.fainted;
+    cells[i].classList.toggle('asleep', sleeping);
+    let zzz = cells[i].querySelector('.zzz');
+    if (sleeping && !zzz) {
+      zzz = document.createElement('span');
+      zzz.className = 'zzz'; zzz.textContent = '💤';
+      cells[i].appendChild(zzz);
+    } else if (!sleeping && zzz) zzz.remove();
+    const isActive = i === G.active && !sleeping;
     cells[i].classList.toggle('activeMon', isActive);
     let sel = cells[i].querySelector('.sel');
     if (isActive && !sel) {
@@ -5855,16 +6042,18 @@ function refreshBook() {
   bookCount.textContent = G.caughtCount + ' / ' + NSPECIES;
 }
 function openBook() {
-  if (G.state !== 'world') return;
+  if (G.state !== 'world' && G.state !== 'battle') return;
   SFX.uiOpen();
-  G.state = 'book';
+  G.bookOpen = true;
   refreshBook();
   bookOverlay.style.display = 'flex';
 }
 function closeBook() {
+  // tijdens een gevecht met een flauwgevallen maatje moet er eerst gekozen worden
+  if (G.bookOpen && G.state === 'battle' && B.phase === 'swap') { SFX.tap(); return; }
   SFX.uiClose();
   bookOverlay.style.display = 'none';
-  if (G.state === 'book') G.state = 'world';
+  G.bookOpen = false;
 }
 document.getElementById('btnBook').addEventListener('pointerdown', e => { e.stopPropagation(); openBook(); });
 document.getElementById('btnCloseBook').addEventListener('pointerdown', e => { e.stopPropagation(); closeBook(); });
@@ -5899,7 +6088,8 @@ function frame(now) {
   if (dt > 0.1) dt = 0.1;
   G.t += dt;
 
-  if (G.state === 'world') { updateWorld(dt); updateParticles(dt); }
+  if (G.bookOpen) { /* boek open: de wereld en het gevecht wachten even */ }
+  else if (G.state === 'world') { updateWorld(dt); updateParticles(dt); }
   else if (G.state === 'battle') { updateBattle(dt); updateParticles(dt); }
   else if (G.state === 'toBattle') {
     G.transT += dt; updateParticles(dt);
@@ -5923,7 +6113,7 @@ function frame(now) {
     if (G.transT >= 0.55) G.state = 'world';
   }
 
-  if (G.state === 'world' || G.state === 'book') drawWorld(ctx);
+  if (G.state === 'world') drawWorld(ctx);
   else if (G.state === 'battle') drawBattle(ctx);
   else if (G.state === 'toBattle' || G.state === 'travelOut') {
     drawWorld(ctx);
