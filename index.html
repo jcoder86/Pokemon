@@ -4263,6 +4263,50 @@ const DEX = {
   firebird: 146, snek: 147, snekmid: 148, dragonwing: 149, psycat: 150, kittylegend: 151,
 };
 SPECIES.sort((a, b) => (DEX[a.draw] || 999) - (DEX[b.draw] || 999));
+// Waar woont welk wezen? Verdeeld over de vijf gebieden, passend bij het thema.
+const POOLS = {
+  // weide-hub: de rustige beginroute
+  bulby:['meadow'], ivyleaf:['forest'], flamlet:['meadow'], flamejaw:['forest'], splashy:['water'],
+  wormie:['forest'], cocoongreen:['forest'], flutterby:['meadow'], wormsting:['forest'], cocoonyellow:['forest'],
+  birdie:['meadow'], birdmid:['meadow'], birdking:['forest'], ratty:['meadow','village'], sparrowy:['meadow'],
+  spikeblue:['meadow'], spikepurp:['meadow'], puffball:['meadow','village'], weedie:['forest','jungle'],
+  taddy:['water','bwater'], goldfish:['water','bwater'], splashking:['water','bwater','swater'],
+  foxy:['meadow'], kittylegend:['meadow'],
+  // jungle: donker bos, gif, spoken en vechters
+  bloomback:['jungle'], flamewing:['jungle'], buzzbee:['jungle'], serpurple:['jungle'], cobrahood:['jungle'],
+  spikeblue2:['jungle'], spikequeen:['jungle'], spikepurp2:['jungle'], spikeking:['jungle'],
+  flapper:['jungle','snow'], batbig:['jungle','snow'], gloomdrip:['jungle'], bloomcap:['jungle'],
+  sporebug:['jungle'], shroomcrab:['jungle'], fuzzy:['jungle'], mothdust:['jungle'], monko:['jungle'],
+  monkorage:['jungle'], bellbud:['jungle'], bellhang:['jungle'], bellpitch:['jungle'], rocko:['jungle','snow'],
+  sludgeblob:['jungle'], sludgeking:['jungle'], boo:['jungle'], boohand:['jungle'], boobig:['jungle'],
+  eggies:['jungle'], gasball:['jungle'], gastwin:['jungle'], vineball:['jungle'], mantis:['jungle'],
+  flamduck:['jungle'], pinsbug:['jungle'], firebird:['jungle'], psycat:['jungle'],
+  // dorp en boerderij: tamme dieren, vogels en denkers
+  rattybig:['village'], sparrowbig:['village'], voltbig:['village'], vulpetta:['village'], ninetail:['village'],
+  pufftall:['village'], sunbloom:['village'], moley:['village','beach'], moletrio:['village'], kitcoin:['village'],
+  catgem:['village'], pupper:['village'], pupbig:['village'], psykit:['village'], psymid:['village'],
+  psybig:['village'], flamepony:['village'], ponyfire:['village'], maggy:['village'], magtrio:['village'],
+  leekduck:['village'], duobird:['village'], triobird:['village'], dreamtapir:['village'], dreambig:['village'],
+  kicklegs:['village'], punchglove:['village'], licktongue:['village'], eggnurse:['village'], pouchmom:['village'],
+  mimeclown:['village'], zapbuzz:['village'], bully:['village'], blobpink:['village'], foxvolt:['village'],
+  foxfire:['village'], polyblock:['village'],
+  // strand en zee: schelpen, krabben en zwemmers
+  shellteen:['beach'], shelltank:['beach'], sandy:['beach'], sandspike:['beach'], duckles:['beach'],
+  duckblue:['beach'], tadmid:['bwater'], tadbig:['bwater'], jellyfloat:['bwater'], jellycrown:['bwater'],
+  dozey:['bwater'], dozeybig:['bwater'], shellclam:['bwater'], pinchy:['beach'], kingcrab:['beach'],
+  palmhead:['beach'], seahorse:['bwater'], seahorsebig:['bwater'], goldbig:['bwater'], twinkle:['bwater'],
+  twinklebig:['bwater'], ragedragon:['bwater'], foxwater:['beach'], ammoshell:['bwater'], ammobig:['bwater'],
+  triloshell:['bwater'], trilobig:['beach'],
+  // besneeuwde bergen: ijs, rots en zeldzame draken
+  moonpink:['snow'], moonfae:['snow'], muscpup:['snow'], muscmid:['snow'], muscbig:['snow'],
+  rockarm:['snow'], rockking:['snow'], sealy:['swater'], sealbig:['swater'], shellspike:['swater'],
+  rocksnake:['snow'], bonekid:['snow'], bonebig:['snow'], rhino:['snow'], rhinobig:['snow'],
+  snoozle:['snow'], icelady:['snow'], lakebeast:['swater'], stonewing:['snow'], icebird:['swater'],
+  voltbird:['snow'], snek:['swater'], snekmid:['swater'], dragonwing:['snow'],
+};
+SPECIES.forEach(s => { if (POOLS[s.draw]) s.pools = POOLS[s.draw]; });
+// zeldzaamheid: kleine wezens kom je vaak tegen, imposante zelden, legendes bijna nooit
+const LEGENDARY = { icebird: 1, voltbird: 1, firebird: 1, psycat: 1, kittylegend: 1, dragonwing: 1, stonewing: 1 };
 const NSPECIES = SPECIES.length;
 const STARTER = SPECIES.findIndex(s => s.draw === 'sparky');
 const IDX_BY_NAME = {};
@@ -4645,9 +4689,12 @@ function buildHub() {
   ];
   addPatches(m, patches);
   for (const [x, y] of [[3,12],[28,13],[12,2],[25,9]]) if (m[y][x] === T_GRASS) m[y][x] = T_ROCK;
-  // doorgangen: grot links (rij 11), poort boven (kolom 15/16)
+  // doorgangen: rotspoort links (rij 11), houten poort boven (kolom 15/16),
+  // ijspoort rechts (rij 11) en palmpoort onder (kolom 15/16)
   m[11][0] = T_PATH; m[11][1] = T_PATH; m[10][1] = T_GRASS; m[12][1] = T_GRASS;
   m[0][15] = T_PATH; m[1][15] = T_PATH; m[0][16] = T_PATH; m[1][16] = T_PATH;
+  m[11][30] = T_PATH; m[11][31] = T_PATH; m[10][30] = T_GRASS; m[12][30] = T_GRASS;
+  for (let y = 20; y <= 23; y++) { m[y][15] = T_PATH; m[y][16] = T_PATH; }
   return {
     name: 'hub', map: m, patches, waterPool: 'water',
     pond: [20, 14, 32, 24], mill: null, houses: [],
@@ -4658,6 +4705,12 @@ function buildHub() {
       { dest: 'village', icon: 'gate', side: 'top',
         zone: [14 * TILE, 0, 18 * TILE, 1.6 * TILE], tap: [13 * TILE, 0, 19 * TILE, 3.2 * TILE],
         walk: [16 * TILE, 1.0 * TILE], spawn: [16 * TILE, 21.2 * TILE] },
+      { dest: 'snow', icon: 'icegate', side: 'right',
+        zone: [30.4 * TILE, 10.6 * TILE, 32 * TILE, 12.4 * TILE], tap: [28.8 * TILE, 9.3 * TILE, 32 * TILE, 13.7 * TILE],
+        walk: [30.9 * TILE, 11.5 * TILE], spawn: [2.4 * TILE, 11.5 * TILE] },
+      { dest: 'beach', icon: 'palmgate', side: 'bottom',
+        zone: [14 * TILE, 22.4 * TILE, 18 * TILE, 24 * TILE], tap: [13 * TILE, 21 * TILE, 19 * TILE, 24 * TILE],
+        walk: [16 * TILE, 22.9 * TILE], spawn: [16 * TILE, 2.6 * TILE] },
     ],
     style: {
       g1: '#8ecf57', g2: '#84c64f', path: '#e0c184', sand: '#ecd9a0', water: '#4aa8e0',
@@ -4772,6 +4825,94 @@ function buildVillage() {
   };
 }
 
+function buildBeach() {
+  const m = newMap();
+  // een brede baai die van onderen de kaart in loopt
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+    const dx = (x - 16) / 17, dy = (y - 27.5) / 10.5;
+    if (dx * dx + dy * dy < 1) m[y][x] = T_WATER;
+  }
+  addSandRing(m);
+  addBorder(m);
+  // palmen langs de randen en verspreid over het duin
+  const palms = [[1,1],[2,1],[1,2],[30,1],[29,1],[1,5],[1,9],[30,5],[30,9],[3,2],[28,2],[26,1],[6,1],[11,1],[21,1],
+    [1,13],[30,13],[2,7],[29,7],[5,4],[25,4],[9,6],[23,6],[13,3],[19,3],[3,11],[28,11],[7,9],[24,9],[11,12],[21,12]];
+  for (const [x, y] of palms) if (m[y][x] === T_GRASS) m[y][x] = T_TREE;
+  // houten vlonderpad van de poort naar het water
+  for (let y = 1; y <= 15; y++) { if (m[y][15] === T_GRASS) m[y][15] = T_PATH; if (m[y][16] === T_GRASS) m[y][16] = T_PATH; }
+  for (let x = 4; x <= 27; x++) if (m[10][x] === T_GRASS) m[10][x] = T_PATH;
+  const patches = [
+    { x: 4,  y: 3,  w: 6, h: 4, pool: 'beach' },
+    { x: 21, y: 3,  w: 6, h: 4, pool: 'beach' },
+    { x: 3,  y: 12, w: 5, h: 4, pool: 'beach' },
+    { x: 24, y: 12, w: 5, h: 4, pool: 'beach' },
+    { x: 12, y: 6,  w: 4, h: 3, pool: 'beach' },
+  ];
+  addPatches(m, patches);
+  // rotsblokken in de branding
+  for (const [x, y] of [[6,8],[26,8],[13,13],[19,13],[9,15],[23,15]]) if (m[y][x] === T_GRASS) m[y][x] = T_ROCK;
+  // doorgang terug: palmpoort boven (kolom 15/16)
+  m[0][15] = T_PATH; m[1][15] = T_PATH; m[0][16] = T_PATH; m[1][16] = T_PATH;
+  return {
+    name: 'beach', map: m, patches, waterPool: 'bwater',
+    pond: [4, 16, 28, 24], mill: null, houses: [],
+    portals: [
+      { dest: 'hub', icon: 'palmgate', side: 'top',
+        zone: [14 * TILE, 0, 18 * TILE, 1.6 * TILE], tap: [13 * TILE, 0, 19 * TILE, 3.2 * TILE],
+        walk: [16 * TILE, 1.0 * TILE], spawn: [16 * TILE, 21.2 * TILE] },
+    ],
+    style: {
+      g1: '#f2dfa8', g2: '#ecd79c', path: '#c89a5c', sand: '#f8ecc8', water: '#3fc4d8',
+      tallBase: '#d8cf7c', bush: '#a8a848', bushTop: '#c2c25c',
+      tufts: ['#b0aa4c', '#c8c05e', '#ded87a'], canopy: ['#4fae4a', '#57b852'], canopyDk: ['#3f8c3a', '#478f42'],
+      trunk: '#b08450', trunkDk: '#8a6438',
+      palms: true, shells: true, boardwalk: true, seafoam: true, flowers: false, shrooms: false,
+    },
+  };
+}
+
+function buildSnow() {
+  const m = newMap();
+  addPond(m, 8.5, 7.5, 6.0, 4.4);          // bevroren meertje
+  addSandRing(m);
+  addBorder(m);
+  const pines = [[1,1],[2,1],[1,2],[30,1],[29,1],[1,21],[1,22],[2,22],[30,22],[29,22],[5,1],[9,1],[14,1],[19,1],[24,1],
+    [28,1],[1,5],[1,11],[1,16],[30,5],[30,10],[30,15],[30,19],[3,2],[27,2],[2,19],[6,20],[12,21],[18,21],[24,20],
+    [22,4],[26,6],[17,3],[13,5],[20,8],[27,12],[4,14],[8,17],[15,18],[23,16],[11,10]];
+  for (const [x, y] of pines) if (m[y][x] === T_GRASS) m[y][x] = T_TREE;
+  for (let x = 2; x <= 29; x++) if (m[11][x] === T_GRASS) m[11][x] = T_PATH;
+  for (let y = 11; y <= 20; y++) if (m[y][17] === T_GRASS) m[y][17] = T_PATH;
+  const patches = [
+    { x: 20, y: 3,  w: 6, h: 4, pool: 'snow' },
+    { x: 4,  y: 15, w: 6, h: 4, pool: 'snow' },
+    { x: 21, y: 14, w: 5, h: 5, pool: 'snow' },
+    { x: 12, y: 13, w: 4, h: 4, pool: 'snow' },
+    { x: 13, y: 7,  w: 4, h: 3, pool: 'snow' },
+  ];
+  addPatches(m, patches);
+  // besneeuwde rotsblokken
+  for (const [x, y] of [[6,12],[25,10],[16,5],[10,19],[28,17],[3,9],[19,19],[14,16]])
+    if (m[y][x] === T_GRASS) m[y][x] = T_ROCK;
+  // doorgang terug: ijspoort links (rij 11)
+  m[11][0] = T_PATH; m[11][1] = T_PATH; m[10][1] = T_GRASS; m[12][1] = T_GRASS;
+  return {
+    name: 'snow', map: m, patches, waterPool: 'swater',
+    pond: [3, 4, 15, 12], mill: null, houses: [],
+    portals: [
+      { dest: 'hub', icon: 'icegate', side: 'left',
+        zone: [0, 10.6 * TILE, 1.6 * TILE, 12.4 * TILE], tap: [0, 9.3 * TILE, 3.2 * TILE, 13.7 * TILE],
+        walk: [1.1 * TILE, 11.5 * TILE], spawn: [28.6 * TILE, 11.5 * TILE] },
+    ],
+    style: {
+      g1: '#eef4fa', g2: '#e4ecf6', path: '#c8d4e2', sand: '#dce6f0', water: '#a8dcf0',
+      tallBase: '#cfe0ee', bush: '#6f8ea8', bushTop: '#8aa8c0',
+      tufts: ['#7f9cb4', '#98b4c8', '#b4ccdc'], canopy: ['#2f6a54', '#357a5e'], canopyDk: ['#25543f', '#2b6149'],
+      trunk: '#6a5238', trunkDk: '#4e3c28',
+      pines: true, snowy: true, ice: true, flowers: false, shrooms: false,
+    },
+  };
+}
+
 // ---- gedeelde renderer voor de statische ondergrond + bosjes-laag van een gebied
 function drawTuft(g, gx, gy, s, c) {
   g.fillStyle = c;
@@ -4805,6 +4946,20 @@ function renderArea(area) {
         wg.beginPath(); wg.ellipse(px + 14, py + 24, 6, 4.5, 0.1, 0, TAU); wg.fill();
         wg.fillStyle = 'rgba(60,60,50,0.18)';
         wg.beginPath(); wg.ellipse(px + 26, py + 25, 4.5, 3.5, 0, 0, TAU); wg.fill();
+      } else if (st.boardwalk) {                           // houten vlonderpad
+        wg.fillStyle = '#b8894f'; wg.fillRect(px, py, TILE, TILE);
+        wg.fillStyle = '#a2743f';
+        for (let i = 0; i < 3; i++) wg.fillRect(px, py + 1 + i * 11, TILE, 9);
+        wg.fillStyle = 'rgba(255,235,190,0.35)';
+        for (let i = 0; i < 3; i++) wg.fillRect(px, py + 1 + i * 11, TILE, 2);
+        wg.fillStyle = 'rgba(90,60,30,0.35)';
+        wg.fillRect(px + (h > 0.5 ? 10 : 20), py, 2, TILE);
+      } else if (st.snowy) {                               // aangestampt sneeuwpad
+        wg.fillStyle = st.path; wg.fillRect(px, py, TILE, TILE);
+        wg.fillStyle = 'rgba(255,255,255,0.6)';
+        if (h > 0.4) { wg.beginPath(); wg.ellipse(px + 8 + h * 14, py + 10 + h * 10, 6, 3, 0, 0, TAU); wg.fill(); }
+        wg.fillStyle = 'rgba(150,175,200,0.35)';
+        if (h > 0.7) { wg.beginPath(); wg.ellipse(px + 20 - h * 8, py + 22, 5, 2.6, 0, 0, TAU); wg.fill(); }
       } else {
         wg.fillStyle = 'rgba(160,120,60,0.25)';
         if (h > 0.5) wg.fillRect(px + 6 + h * 10, py + 8 + h * 8, 5, 4);
@@ -4815,11 +4970,33 @@ function renderArea(area) {
       if (h > 0.6) { wg.beginPath(); wg.arc(px + 10 + h * 10, py + 12 + h * 8, 1.5, 0, TAU); wg.fill(); }
     } else if (t === T_WATER) {
       wg.fillStyle = st.water; wg.fillRect(px, py, TILE, TILE);
-      wg.strokeStyle = 'rgba(255,255,255,0.18)'; wg.lineWidth = 1.5;
-      if (h > 0.55) { wg.beginPath(); wg.arc(px + 8 + h * 14, py + 8 + h * 12, 3.5, 0, Math.PI, true); wg.stroke(); }
+      if (st.ice) {                                        // ijskoud water met drijvende ijsschotsen
+        wg.strokeStyle = 'rgba(255,255,255,0.3)'; wg.lineWidth = 1.5;
+        if (h > 0.5) { wg.beginPath(); wg.arc(px + 8 + h * 12, py + 9 + h * 10, 3.5, 0, Math.PI, true); wg.stroke(); }
+        if (h > 0.62) {
+          const fx = px + 5 + h * 12, fy = py + 8 + (h * 23 % 1) * 14, r = 5 + h * 5;
+          wg.fillStyle = 'rgba(226,244,255,0.92)';
+          wg.beginPath();
+          wg.moveTo(fx - r, fy); wg.lineTo(fx - r * 0.4, fy - r * 0.75); wg.lineTo(fx + r * 0.6, fy - r * 0.6);
+          wg.lineTo(fx + r, fy + r * 0.35); wg.lineTo(fx - r * 0.2, fy + r * 0.7);
+          wg.closePath(); wg.fill();
+          wg.fillStyle = 'rgba(255,255,255,0.95)';
+          wg.beginPath();
+          wg.moveTo(fx - r * 0.8, fy - r * 0.1); wg.lineTo(fx - r * 0.3, fy - r * 0.62);
+          wg.lineTo(fx + r * 0.35, fy - r * 0.45); wg.lineTo(fx - r * 0.1, fy + r * 0.05);
+          wg.closePath(); wg.fill();
+        }
+      } else {
+        wg.strokeStyle = 'rgba(255,255,255,0.18)'; wg.lineWidth = 1.5;
+        if (h > 0.55) { wg.beginPath(); wg.arc(px + 8 + h * 14, py + 8 + h * 12, 3.5, 0, Math.PI, true); wg.stroke(); }
+        if (st.seafoam && h > 0.7) {                       // schuimkoppen op zee
+          wg.strokeStyle = 'rgba(255,255,255,0.5)'; wg.lineWidth = 2.2;
+          wg.beginPath(); wg.arc(px + 6 + h * 16, py + 20 - h * 8, 6, Math.PI * 0.15, Math.PI * 0.85); wg.stroke();
+        }
+      }
     } else if (t === T_TALL) {
       wg.fillStyle = st.tallBase; wg.fillRect(px, py, TILE, TILE);
-      wg.fillStyle = 'rgba(30,70,25,0.35)';
+      wg.fillStyle = st.snowy ? 'rgba(255,255,255,0.55)' : (st.palms ? 'rgba(190,180,90,0.35)' : 'rgba(30,70,25,0.35)');
       wg.fillRect(px + 3 + h * 8, py + 6 + h * 10, 9, 6);
       wg.fillRect(px + 16 - h * 6, py + 18, 8, 5);
     } else if (t === T_FIELD) {
@@ -4857,6 +5034,34 @@ function renderArea(area) {
         }
         wg.fillStyle = 'rgba(47,122,32,0.8)';
         for (let i = -1; i <= 1; i++) { wg.beginPath(); wg.ellipse(fx2 + i * 8, fy2 - 9 + Math.abs(i) * 3, 2.6, 1.6, i * 0.6, 0, TAU); wg.fill(); }
+      } else if (st.shells && h > 0.8) {
+        // schelpjes en zeesterren op het zand
+        const sx2 = px + 8 + h * 14, sy2 = py + 10 + (h * 17 % 1) * 12;
+        if (h > 0.93) {
+          wg.fillStyle = '#f0a070';
+          for (let i = 0; i < 5; i++) {
+            const a = -Math.PI / 2 + i * TAU / 5;
+            wg.beginPath(); wg.ellipse(sx2 + Math.cos(a) * 3.4, sy2 + Math.sin(a) * 3.4, 3.2, 2, a, 0, TAU); wg.fill();
+          }
+          wg.fillStyle = '#f8c8a0'; wg.beginPath(); wg.arc(sx2, sy2, 2, 0, TAU); wg.fill();
+        } else {
+          wg.fillStyle = h > 0.87 ? '#ffd8e4' : '#e8f0fa';
+          wg.beginPath(); wg.moveTo(sx2, sy2 + 4);
+          wg.arc(sx2, sy2 + 4, 5, Math.PI, TAU); wg.closePath(); wg.fill();
+          wg.strokeStyle = 'rgba(190,150,150,0.6)'; wg.lineWidth = 1;
+          for (let r = -1; r <= 1; r++) { wg.beginPath(); wg.moveTo(sx2, sy2 + 4); wg.lineTo(sx2 + r * 3.4, sy2 - 1); wg.stroke(); }
+        }
+      } else if (st.snowy && h > 0.78) {
+        // sneeuwhoopjes en bevroren twijgjes
+        wg.fillStyle = 'rgba(255,255,255,0.9)';
+        const sx3 = px + 6 + h * 16, sy3 = py + 14 + (h * 13 % 1) * 10;
+        wg.beginPath(); wg.ellipse(sx3, sy3, 7, 3.4, 0, 0, TAU); wg.fill();
+        wg.beginPath(); wg.ellipse(sx3 + 6, sy3 + 2, 4.5, 2.4, 0, 0, TAU); wg.fill();
+        if (h > 0.93) {
+          wg.strokeStyle = '#8fa8bc'; wg.lineWidth = 1.4;
+          wg.beginPath(); wg.moveTo(sx3, sy3); wg.lineTo(sx3 - 3, sy3 - 8); wg.stroke();
+          wg.beginPath(); wg.moveTo(sx3 - 3, sy3 - 8); wg.lineTo(sx3 - 7, sy3 - 11); wg.stroke();
+        }
       } else if (h > 0.88) {
         wg.fillStyle = 'rgba(50,110,40,0.5)';
         wg.fillRect(px + 6 + h * 14, py + 10, 2, 6); wg.fillRect(px + 10 + h * 10, py + 14, 2, 5);
@@ -4892,12 +5097,56 @@ function renderArea(area) {
       wg.strokeStyle = '#2c701f'; wg.lineWidth = 2;
       wg.beginPath(); wg.moveTo(px - 8, py + 6); wg.quadraticCurveTo(px - 2, py - 2, px + 6, py + 2); wg.stroke();
     }
+    if (area.style.snowy) {                                // sneeuwkap op de rots
+      wg.fillStyle = '#ffffff';
+      wg.beginPath(); wg.moveTo(px - 10, py - 5); wg.lineTo(px - 1, py - 11); wg.lineTo(px + 9, py - 5);
+      wg.quadraticCurveTo(px, py - 1, px - 10, py - 5); wg.closePath(); wg.fill();
+    }
   }
   // bomen
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (m[y][x] === T_TREE) {
     const px = x * TILE + 16, py = y * TILE + 26;
     const h = hash2(x, y);
     wg.fillStyle = 'rgba(40,60,30,0.2)'; wg.beginPath(); wg.ellipse(px, py + 4, 12, 4, 0, 0, TAU); wg.fill();
+    if (st.palms) {                                        // slanke palm met kokosnoten
+      wg.strokeStyle = st.trunk; wg.lineWidth = 6; wg.lineCap = 'round';
+      const lean = h > 0.5 ? 1 : -1;
+      wg.beginPath(); wg.moveTo(px, py + 4);
+      wg.quadraticCurveTo(px + lean * 5, py - 12, px + lean * 3, py - 26); wg.stroke();
+      wg.strokeStyle = st.trunkDk; wg.lineWidth = 1.6;
+      for (let i = 0; i < 4; i++) {
+        const ty = py - 2 - i * 7;
+        wg.beginPath(); wg.moveTo(px + lean * i * 0.9 - 3, ty); wg.lineTo(px + lean * i * 0.9 + 3, ty); wg.stroke();
+      }
+      const cx = px + lean * 3, cy2 = py - 26;
+      for (let i = 0; i < 6; i++) {
+        const a = i / 6 * TAU + h;
+        wg.fillStyle = i % 2 ? st.canopy[0] : st.canopy[1];
+        wg.save(); wg.translate(cx, cy2); wg.rotate(a);
+        wg.beginPath(); wg.moveTo(0, 0);
+        wg.quadraticCurveTo(9, -7, 20, -2);
+        wg.quadraticCurveTo(9, 2, 0, 3); wg.closePath(); wg.fill();
+        wg.restore();
+      }
+      wg.fillStyle = '#8a6438';
+      wg.beginPath(); wg.arc(cx - 3, cy2 + 3, 3, 0, TAU); wg.fill();
+      wg.beginPath(); wg.arc(cx + 4, cy2 + 4, 2.6, 0, TAU); wg.fill();
+      continue;
+    }
+    if (st.pines) {                                        // besneeuwde spar
+      wg.fillStyle = st.trunk; wg.fillRect(px - 3, py - 6, 6, 10);
+      for (let i = 0; i < 3; i++) {
+        const ty = py - 4 - i * 10, wdt = 15 - i * 4;
+        wg.fillStyle = i % 2 ? st.canopy[0] : st.canopy[1];
+        wg.beginPath(); wg.moveTo(px - wdt, ty); wg.lineTo(px, ty - 15); wg.lineTo(px + wdt, ty); wg.closePath(); wg.fill();
+        wg.fillStyle = 'rgba(255,255,255,0.92)';            // sneeuw op de takken
+        wg.beginPath(); wg.moveTo(px - wdt * 0.72, ty - 1);
+        wg.lineTo(px, ty - 13); wg.lineTo(px + wdt * 0.72, ty - 1);
+        wg.quadraticCurveTo(px, ty - 6, px - wdt * 0.72, ty - 1); wg.closePath(); wg.fill();
+      }
+      wg.fillStyle = '#ffffff'; wg.beginPath(); wg.arc(px, py - 38, 3.2, 0, TAU); wg.fill();
+      continue;
+    }
     wg.fillStyle = st.trunk; wg.fillRect(px - 3.5, py - 12, 7, 16);
     wg.fillStyle = st.trunkDk; wg.fillRect(px + 1, py - 12, 2.5, 16);
     wg.fillStyle = h > 0.5 ? st.canopy[0] : st.canopy[1];
@@ -5002,6 +5251,97 @@ function renderArea(area) {
         wg.fillStyle = fcols[i];
         wg.beginPath(); wg.arc(lx + dir * 2, ly, 3.2, 0, TAU); wg.fill();
       }
+    } else if (po.icon === 'icegate') {
+      // twee ijspilaren met ijspegels, zelfde opzet als de rotspoort
+      const sx = po.side === 'left' ? 0 : VW, dir = po.side === 'left' ? 1 : -1;
+      const cy = 11.5 * TILE, pilX = sx + dir * 0.8 * TILE;
+      wg.fillStyle = 'rgba(210,240,255,0.5)';
+      wg.fillRect(po.side === 'left' ? 0 : VW - 2 * TILE, cy - 0.5 * TILE, 2 * TILE, TILE);
+      for (const vs of [-1, 1]) {
+        const py = cy + vs * 1.9 * TILE;
+        wg.fillStyle = 'rgba(90,130,170,0.28)';
+        wg.beginPath(); wg.ellipse(pilX, py + 0.55 * TILE, 0.62 * TILE, 0.18 * TILE, 0, 0, TAU); wg.fill();
+        wg.fillStyle = '#9fd0e8';
+        wg.beginPath(); wg.moveTo(pilX - 0.6 * TILE, py + 0.6 * TILE);
+        wg.lineTo(pilX - 0.34 * TILE, py - 1.0 * TILE); wg.lineTo(pilX + 0.34 * TILE, py - 1.0 * TILE);
+        wg.lineTo(pilX + 0.6 * TILE, py + 0.6 * TILE); wg.closePath(); wg.fill();
+        wg.fillStyle = '#c8ecfa';
+        wg.beginPath(); wg.moveTo(pilX - 0.5 * TILE, py + 0.6 * TILE);
+        wg.lineTo(pilX - 0.28 * TILE, py - 0.95 * TILE); wg.lineTo(pilX + 0.02 * TILE, py - 0.95 * TILE);
+        wg.lineTo(pilX - 0.06 * TILE, py + 0.6 * TILE); wg.closePath(); wg.fill();
+        wg.fillStyle = '#ffffff';                                   // sneeuwkap
+        wg.beginPath(); wg.ellipse(pilX, py - 0.98 * TILE, 0.38 * TILE, 0.14 * TILE, 0, 0, TAU); wg.fill();
+        for (let i = -1; i <= 1; i++) {                             // ijspegels
+          const ix = pilX + i * 0.26 * TILE, iy = py + vs * 0.62 * TILE;
+          wg.fillStyle = 'rgba(232,250,255,0.95)';
+          wg.beginPath(); wg.moveTo(ix - 0.1 * TILE, iy); wg.lineTo(ix + 0.1 * TILE, iy);
+          wg.lineTo(ix, iy + vs * 0.44 * TILE); wg.closePath(); wg.fill();
+        }
+      }
+      // ijsboog over de opening
+      const topY = cy - 1.55 * TILE, botY = cy + 1.55 * TILE, bow = sx + dir * 1.8 * TILE;
+      wg.strokeStyle = '#8fc4e0'; wg.lineWidth = 9; wg.lineCap = 'round';
+      wg.beginPath(); wg.moveTo(pilX, topY); wg.quadraticCurveTo(bow, cy, pilX, botY); wg.stroke();
+      wg.strokeStyle = '#dff2ff'; wg.lineWidth = 4;
+      wg.beginPath(); wg.moveTo(pilX, topY); wg.quadraticCurveTo(bow, cy, pilX, botY); wg.stroke();
+      for (let i = 0; i < 5; i++) {
+        const k = (i + 1) / 6;
+        const lx = (1 - k) * (1 - k) * pilX + 2 * (1 - k) * k * bow + k * k * pilX;
+        const ly = (1 - k) * (1 - k) * topY + 2 * (1 - k) * k * cy + k * k * botY;
+        wg.fillStyle = 'rgba(232,250,255,0.95)';
+        wg.beginPath(); wg.moveTo(lx - 5, ly); wg.lineTo(lx + 5, ly); wg.lineTo(lx + dir * 3, ly + 16); wg.closePath(); wg.fill();
+        wg.fillStyle = '#ffffff';
+        wg.beginPath(); wg.arc(lx + dir * 2, ly - 3, 3, 0, TAU); wg.fill();
+      }
+    } else if (po.icon === 'palmgate') {
+      // twee palmstammen met een slingerlijn van schelpen en vlaggetjes
+      const gx = 16 * TILE;
+      // stam staat bij de rand, de kruin wijst naar binnen
+      const baseY = po.side === 'top' ? 2.9 * TILE : VH - 0.4 * TILE;
+      const crownY = baseY - 2.1 * TILE;
+      wg.fillStyle = 'rgba(200,168,104,0.3)';
+      wg.fillRect(gx - 1.4 * TILE, po.side === 'top' ? 0 : VH - 2.8 * TILE, 2.8 * TILE, 2.8 * TILE);
+      for (const s of [-1, 1]) {
+        const px = gx + s * 1.9 * TILE;
+        wg.strokeStyle = '#b08450'; wg.lineWidth = 0.38 * TILE; wg.lineCap = 'round';
+        wg.beginPath(); wg.moveTo(px, baseY); wg.quadraticCurveTo(px + s * 0.22 * TILE, baseY - 1.1 * TILE, px, crownY); wg.stroke();
+        wg.strokeStyle = '#8a6438'; wg.lineWidth = 0.09 * TILE;
+        for (let i = 0; i < 4; i++) {
+          const ty = baseY - (0.35 + i * 0.45) * TILE;
+          wg.beginPath(); wg.moveTo(px - 0.17 * TILE, ty); wg.lineTo(px + 0.17 * TILE, ty); wg.stroke();
+        }
+        for (let i = 0; i < 7; i++) {                               // palmbladeren
+          const a = i / 7 * TAU + s * 0.2;
+          wg.fillStyle = i % 2 ? '#4fae4a' : '#3f8c3a';
+          wg.save(); wg.translate(px, crownY); wg.rotate(a);
+          wg.beginPath(); wg.moveTo(0, 0);
+          wg.quadraticCurveTo(0.5 * TILE, -0.3 * TILE, 1.05 * TILE, -0.06 * TILE);
+          wg.quadraticCurveTo(0.5 * TILE, 0.08 * TILE, 0, 0.12 * TILE); wg.closePath(); wg.fill();
+          wg.restore();
+        }
+        wg.fillStyle = '#a8763f';
+        wg.beginPath(); wg.arc(px + s * 0.14 * TILE, crownY + 0.16 * TILE, 0.13 * TILE, 0, TAU); wg.fill();
+        wg.beginPath(); wg.arc(px - s * 0.1 * TILE, crownY + 0.26 * TILE, 0.11 * TILE, 0, TAU); wg.fill();
+      }
+      // schelpenslinger tussen de palmen
+      const dir = 1;
+      const sagY = crownY + 0.3 * TILE, midY = sagY + 0.55 * TILE;
+      wg.strokeStyle = '#e8d8b0'; wg.lineWidth = 4;
+      wg.beginPath(); wg.moveTo(gx - 1.9 * TILE, sagY); wg.quadraticCurveTo(gx, midY, gx + 1.9 * TILE, sagY); wg.stroke();
+      const scol = ['#ff9ec6', '#ffd23d', '#7fe0e8', '#ffb27a', '#ff9ec6'];
+      for (let i = 0; i < 5; i++) {
+        const k = (i + 1) / 6;
+        const lx = (1 - k) * (1 - k) * (gx - 1.9 * TILE) + 2 * (1 - k) * k * gx + k * k * (gx + 1.9 * TILE);
+        const ly = (1 - k) * (1 - k) * sagY + 2 * (1 - k) * k * midY + k * k * sagY;
+        wg.fillStyle = scol[i];
+        wg.beginPath(); wg.moveTo(lx, ly + dir * 4);
+        wg.arc(lx, ly + dir * 14, 9, dir > 0 ? Math.PI : 0, dir > 0 ? TAU : Math.PI);
+        wg.closePath(); wg.fill();
+        wg.strokeStyle = 'rgba(255,255,255,0.65)'; wg.lineWidth = 1.6;
+        for (let r = -1; r <= 1; r++) {
+          wg.beginPath(); wg.moveTo(lx, ly + dir * 5); wg.lineTo(lx + r * 6, ly + dir * 15); wg.stroke();
+        }
+      }
     } else { // houten poort met vlaggetjes
       const gy = po.side === 'top' ? 0 : VH, dir = po.side === 'top' ? 1 : -1;
       const gx = 16 * TILE;
@@ -5094,8 +5434,9 @@ function renderArea(area) {
   area.grass = grass;
 }
 
-const AREAS = { hub: buildHub(), jungle: buildJungle(), village: buildVillage() };
+const AREAS = { hub: buildHub(), jungle: buildJungle(), village: buildVillage(), beach: buildBeach(), snow: buildSnow() };
 renderArea(AREAS.hub); renderArea(AREAS.jungle); renderArea(AREAS.village);
+renderArea(AREAS.beach); renderArea(AREAS.snow);
 let cur = AREAS.hub;
 
 function tileAt(px, py) {
@@ -5277,13 +5618,23 @@ function setArea(name) {
 }
 
 // ============================================================ ontmoetingen
+function speciesWeight(i) {
+  const s = SPECIES[i];
+  // kleine wezens zijn gewoon, imposante zeldzaam, legendes bijna onvindbaar
+  let w = s.hp <= 1 ? 8 : s.hp === 2 ? 6 : s.hp === 3 ? 3 : s.hp === 4 ? 1.2 : 0.45;
+  if (LEGENDARY[s.draw]) w = 0.12;
+  if (!G.caught[i]) w *= 2;                  // nog niet in het boek? net iets vaker
+  return w;
+}
 function pickSpecies(pool) {
   const ids = [];
   for (let i = 0; i < NSPECIES; i++) if (i !== STARTER && SPECIES[i].pools.indexOf(pool) >= 0) ids.push(i);
   if (!ids.length) for (let i = 0; i < NSPECIES; i++) if (i !== STARTER) ids.push(i);
-  const weighted = [];
-  for (const id of ids) { weighted.push(id); if (!G.caught[id]) { weighted.push(id, id); } }
-  return weighted[Math.floor(Math.random() * weighted.length)];
+  let total = 0;
+  const ws = ids.map(i => { const w = speciesWeight(i); total += w; return w; });
+  let r = Math.random() * total;
+  for (let k = 0; k < ids.length; k++) { r -= ws[k]; if (r <= 0) return ids[k]; }
+  return ids[ids.length - 1];
 }
 function startEncounter(pool) {
   B.id = pickSpecies(pool);
@@ -5570,6 +5921,10 @@ function drawBattle(g) {
     grad.addColorStop(0, '#9ed8c8'); grad.addColorStop(0.55, '#b8e0a8'); grad.addColorStop(1, '#5fa050');
   } else if (G.area === 'village') {
     grad.addColorStop(0, '#b8e8ff'); grad.addColorStop(0.55, '#e0f0c0'); grad.addColorStop(1, '#aad470');
+  } else if (G.area === 'beach') {
+    grad.addColorStop(0, '#8fdcf0'); grad.addColorStop(0.5, '#cfeef4'); grad.addColorStop(1, '#f0dca8');
+  } else if (G.area === 'snow') {
+    grad.addColorStop(0, '#bfe0f4'); grad.addColorStop(0.55, '#e2eef8'); grad.addColorStop(1, '#f4f9ff');
   } else {
     grad.addColorStop(0, '#aee4ff'); grad.addColorStop(0.55, '#d8f4d0'); grad.addColorStop(1, '#9fd470');
   }
@@ -5588,6 +5943,48 @@ function drawBattle(g) {
     g.beginPath(); g.moveTo(580, 480); g.lineTo(660, 330); g.lineTo(760, 470); g.closePath(); g.fill();
     g.fillStyle = '#a8b0ba';
     g.beginPath(); g.moveTo(660, 330); g.lineTo(760, 470); g.lineTo(700, 470); g.closePath(); g.fill();
+  } else if (G.area === 'beach') {
+    g.fillStyle = '#3fc4d8';                                  // zee aan de horizon
+    g.fillRect(0, 300, VW, 120);
+    g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 3;
+    for (let i = 0; i < 6; i++) {
+      const wx = ((G.t * 26 + i * 190) % (VW + 200)) - 100;
+      g.beginPath(); g.arc(wx, 330 + (i % 3) * 26, 15, Math.PI * 0.15, Math.PI * 0.85); g.stroke();
+    }
+    g.fillStyle = '#f0dca8';
+    g.beginPath(); g.ellipse(180, 470, 340, 130, 0, 0, TAU); g.fill();
+    g.beginPath(); g.ellipse(860, 500, 400, 150, 0, 0, TAU); g.fill();
+    for (let i = 0; i < 3; i++) {                             // palmen op de achtergrond
+      const px = [120, 940, 1010][i], py = [300, 285, 330][i];
+      g.strokeStyle = '#b08450'; g.lineWidth = 11; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(px, py + 120); g.quadraticCurveTo(px + 14, py + 50, px + 8, py); g.stroke();
+      for (let k = 0; k < 6; k++) {
+        g.save(); g.translate(px + 8, py); g.rotate(k / 6 * TAU);
+        g.fillStyle = k % 2 ? '#4fae4a' : '#3f8c3a';
+        g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(22, -16, 48, -5);
+        g.quadraticCurveTo(22, 5, 0, 8); g.closePath(); g.fill();
+        g.restore();
+      }
+    }
+  } else if (G.area === 'snow') {
+    g.fillStyle = '#cfe2f2';                                  // besneeuwde bergtoppen
+    for (const [mx, mw, mh] of [[180, 260, 190], [520, 300, 230], [880, 280, 200]]) {
+      g.beginPath(); g.moveTo(mx - mw / 2, 430); g.lineTo(mx, 430 - mh); g.lineTo(mx + mw / 2, 430); g.closePath(); g.fill();
+    }
+    g.fillStyle = '#ffffff';
+    for (const [mx, mw, mh] of [[180, 260, 190], [520, 300, 230], [880, 280, 200]]) {
+      g.beginPath(); g.moveTo(mx - mw * 0.18, 430 - mh * 0.62); g.lineTo(mx, 430 - mh);
+      g.lineTo(mx + mw * 0.18, 430 - mh * 0.62); g.quadraticCurveTo(mx, 430 - mh * 0.5, mx - mw * 0.18, 430 - mh * 0.62);
+      g.closePath(); g.fill();
+    }
+    g.fillStyle = '#f4f9ff';
+    g.beginPath(); g.ellipse(180, 470, 340, 130, 0, 0, TAU); g.fill();
+    g.beginPath(); g.ellipse(860, 500, 400, 150, 0, 0, TAU); g.fill();
+    for (let i = 0; i < 14; i++) {                            // dwarrelende sneeuwvlokjes
+      const sx = (i * 137 + (G.t * 22) % VW) % VW, sy = ((i * 91 + G.t * 34) % VH);
+      g.fillStyle = 'rgba(255,255,255,0.8)';
+      g.beginPath(); g.arc(sx, sy, 2.6 + (i % 3), 0, TAU); g.fill();
+    }
   } else {
     g.fillStyle = G.area === 'village' ? '#c2dd8e' : '#b8e29a';
     g.beginPath(); g.ellipse(180, 430, 320, 120, 0, 0, TAU); g.fill();
@@ -5601,7 +5998,8 @@ function drawBattle(g) {
   }
   g.fillStyle = '#fff3a8'; g.beginPath(); g.arc(110, 95, 48, 0, TAU); g.fill();
   g.fillStyle = 'rgba(255,243,168,0.4)'; g.beginPath(); g.arc(110, 95, 60, 0, TAU); g.fill();
-  const platC = B.onWater ? '#7ac4ea' : (G.area === 'jungle' ? '#5fa050' : '#8fce62');
+  const platC = B.onWater ? '#7ac4ea' : (G.area === 'jungle' ? '#5fa050'
+    : G.area === 'beach' ? '#e8cf94' : G.area === 'snow' ? '#e4eef8' : '#8fce62');
   const platH = B.onWater ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.25)';
   g.fillStyle = platC;
   g.beginPath(); g.ellipse(WILD.x, WILD.y + 95, 170, 42, 0, 0, TAU); g.fill();
