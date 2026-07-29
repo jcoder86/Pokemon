@@ -907,12 +907,14 @@ const D = {
   },
   vulpetta(g, S, t, m) { // vosje met krulstaarten
     const ru = '#d97a45', rd = '#b85a2e';
-    for (let i = 0; i < 3; i++) {
-      g.save(); g.translate(S * 0.45, S * 0.35); g.rotate(-0.25 - i * 0.42 + Math.sin(t * 2.2 + i) * 0.05);
-      g.strokeStyle = i % 2 ? ru : '#e08a55'; g.lineWidth = S * 0.22; g.lineCap = 'round';
-      g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(S * 0.55, -S * 0.15, S * 0.72, -S * 0.5); g.stroke();
-      E(g, '#f4d8b8', S * 0.74, -S * 0.55, S * 0.16, S * 0.16);
-      E(g, '#fdeedc', S * 0.78, -S * 0.6, S * 0.08, S * 0.08);
+    for (let i = 0; i < 4; i++) {                          // bos gekrulde staarten, duidelijk zichtbaar
+      g.save(); g.translate(S * 0.22, S * 0.5); g.rotate(0.3 - i * 0.46 + Math.sin(t * 2.2 + i) * 0.05);
+      g.strokeStyle = '#b85a2e'; g.lineWidth = S * 0.26; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(S * 0.78, -S * 0.2, S * 1.16, -S * 0.62); g.stroke();
+      g.strokeStyle = i % 2 ? ru : '#e08a55'; g.lineWidth = S * 0.19;
+      g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(S * 0.78, -S * 0.22, S * 1.14, -S * 0.64); g.stroke();
+      E(g, '#f4d8b8', S * 1.2, -S * 0.68, S * 0.17, S * 0.17);
+      E(g, '#fdeedc', S * 1.16, -S * 0.74, S * 0.07, S * 0.07);
       g.restore();
     }
     E(g, ru, 0, S * 0.32, S * 0.62, S * 0.52);
@@ -1770,14 +1772,17 @@ const D = {
     E(g, '#5e3c20', 0, S * 0.06, S * 0.9, S * 0.5);
     E(g, '#e8d8ae', 0, S * 0.3, S * 0.82, S * 0.54);
     for (let i = -1; i <= 1; i++) LN(g, '#c8b48c', S * 0.05, [[i * S * 0.3, S * 0.08], [i * S * 0.34, S * 0.6]]);
-    for (const s of [-1, 1]) {                               // waterkanonnen op de schouders
-      g.save(); g.translate(s * S * 0.82, -S * 0.44); g.rotate(s * -0.42);
-      E(g, '#8a929c', 0, S * 0.04, S * 0.24, S * 0.26);
-      g.fillStyle = '#c2cad2'; g.fillRect(-S * 0.17, -S * 0.62, S * 0.34, S * 0.52);
-      g.fillStyle = '#9aa3ad'; g.fillRect(S * 0.04, -S * 0.62, S * 0.13, S * 0.52);
-      E(g, '#7a838d', 0, -S * 0.62, S * 0.17, S * 0.1);
-      E(g, '#20262e', 0, -S * 0.63, S * 0.11, S * 0.065);
-      E(g, 'rgba(255,255,255,0.35)', -S * 0.07, -S * 0.42, S * 0.05, S * 0.14);
+    for (const s of [-1, 1]) {                               // forse waterkanonnen op de schouders
+      g.save(); g.translate(s * S * 0.86, -S * 0.34); g.rotate(s * -0.5);
+      E(g, '#6f7780', 0, S * 0.1, S * 0.3, S * 0.3);          // koker-voet
+      E(g, '#8a929c', 0, S * 0.04, S * 0.28, S * 0.28);
+      g.fillStyle = '#9aa3ad'; g.fillRect(-S * 0.22, -S * 0.78, S * 0.44, S * 0.7);
+      g.fillStyle = '#c2cad2'; g.fillRect(-S * 0.22, -S * 0.78, S * 0.26, S * 0.7);
+      g.fillStyle = '#6f7780'; g.fillRect(-S * 0.26, -S * 0.66, S * 0.52, S * 0.1);
+      g.fillRect(-S * 0.26, -S * 0.34, S * 0.52, S * 0.1);
+      E(g, '#7a838d', 0, -S * 0.78, S * 0.23, S * 0.12);      // opening
+      E(g, '#161b22', 0, -S * 0.79, S * 0.15, S * 0.08);
+      E(g, 'rgba(255,255,255,0.4)', -S * 0.1, -S * 0.56, S * 0.06, S * 0.16);
       g.restore();
     }
     E(g, sk, -S * 0.86, S * 0.4, S * 0.24, S * 0.32, 0.5); E(g, sk, S * 0.86, S * 0.4, S * 0.24, S * 0.32, -0.5);
@@ -2957,7 +2962,8 @@ const D = {
     for (const s of [-1, 1]) { E(g, br, s * S * 0.28, S * 0.8, S * 0.19, S * 0.2); }
     E(g, br, 0, S * 0.36, S * 0.4, S * 0.42);
     E(g, y1, 0, S * 0.02, S * 0.44, S * 0.46);
-    E(g, br, 0, S * 0.16, S * 0.34, S * 0.18);
+    E(g, '#a8845a', 0, S * 0.2, S * 0.4, S * 0.14);      // borstplaat, geen donker gat
+    E(g, '#c0a078', 0, S * 0.17, S * 0.34, S * 0.08);
     for (const s of [-1, 1]) {                                          // armen met lepel
       g.save(); g.translate(s * S * 0.44, S * 0.0); g.rotate(s * (0.5 + Math.sin(t * 2.4) * 0.1));
       E(g, y1, 0, S * 0.12, S * 0.14, S * 0.22);
@@ -2976,7 +2982,8 @@ const D = {
     for (const s of [-1, 1]) E(g, br, s * S * 0.3, S * 0.8, S * 0.2, S * 0.2);
     E(g, br, 0, S * 0.34, S * 0.42, S * 0.44);
     E(g, y1, 0, S * 0.0, S * 0.46, S * 0.48);
-    E(g, br, 0, S * 0.16, S * 0.36, S * 0.2);
+    E(g, '#a8845a', 0, S * 0.2, S * 0.42, S * 0.15);      // borstplaat, geen donker gat
+    E(g, '#c0a078', 0, S * 0.17, S * 0.36, S * 0.09);
     for (const s of [-1, 1]) {
       g.save(); g.translate(s * S * 0.46, -S * 0.04); g.rotate(s * (0.4 + Math.sin(t * 2.2 + s) * 0.12));
       E(g, y1, 0, S * 0.12, S * 0.15, S * 0.22);
@@ -3296,7 +3303,7 @@ const D = {
     smileM(g, 0, S * 0.28, S * 0.21, m);
   },
   rockking(g, S, t, m) { // grote rotsreus met schild
-    const gr = '#8a929c', gd = '#68707a', lt = '#b8c0c8', sh = '#6a5a4a';
+    const gr = '#9aa3ad', gd = '#68707a', lt = '#c8d0d8', sh = '#7c848e';
     for (const s of [-1, 1]) {
       g.save(); g.translate(s * S * 0.8, S * 0.34); g.rotate(s * 0.35);
       E(g, gr, 0, 0, S * 0.24, S * 0.3);
@@ -3308,7 +3315,8 @@ const D = {
     for (let r = 0; r < 3; r++) for (let i = -2; i <= 2; i++) {
       const px = i * S * 0.34, py = S * (-0.24 + r * 0.32);
       if (Math.abs(px) > S * 0.9 - r * S * 0.1) continue;
-      PG(g, r % 2 ? '#7a6a58' : '#8a7a64', [[px - S * 0.16, py], [px, py - S * 0.14], [px + S * 0.16, py], [px, py + S * 0.14]]);
+      PG(g, r % 2 ? '#8f98a2' : '#a4adb6', [[px - S * 0.16, py], [px, py - S * 0.14], [px + S * 0.16, py], [px, py + S * 0.14]]);
+      LN(g, 'rgba(70,80,90,0.5)', S * 0.02, [[px - S * 0.16, py], [px, py - S * 0.14], [px + S * 0.16, py]]);
     }
     E(g, gr, 0, S * 0.26, S * 0.62, S * 0.46);                          // buik
     E(g, lt, -S * 0.2, S * 0.12, S * 0.24, S * 0.16);
@@ -4334,6 +4342,25 @@ const sg = scr.getContext('2d');
 const scr2 = document.createElement('canvas'); scr2.width = 960; scr2.height = 960;
 const sg2 = scr2.getContext('2d');
 
+// Formaat per wezen: babyvormen zijn echt klein, eindvormen echt groot.
+// Zo lees je een evolutielijn meteen af aan het silhouet.
+const BIG = ['bloomback','flamewing','shelltank','spikequeen','spikeking','rockking','sludgeking','muscbig',
+  'boobig','snoozle','dragonwing','psycat','rhinobig','lakebeast','ragedragon','palmhead','bellpitch',
+  'jellycrown','pupbig','stonewing','icebird','voltbird','firebird','kittylegend'];
+const MID = ['ivyleaf','flamejaw','shellteen','spikeblue2','spikepurp2','rockarm','muscmid','boohand',
+  'birdking','sparrowbig','rattybig','catgem','ninetail','pufftall','moonfae','voltbig','dreambig','psybig',
+  'tadbig','duckblue','ammobig','trilobig','kingcrab','twinklebig','goldbig','seahorsebig','sealbig','bonebig',
+  'triobird','monkorage','flamduck','zapbuzz','icelady','gastwin','mothdust','shroomcrab','bloomcap',
+  'ponyfire','dozeybig','magtrio','moletrio','cobrahood','snekmid','pouchmom','eggnurse','pinsbug','mantis'];
+const SMALL = ['wormie','cocoongreen','wormsting','cocoonyellow','moley','taddy','psykit','spikeblue','spikepurp',
+  'blobpink','gasball','shellclam','triloshell','ammoshell','jellyfloat','sporebug','bonekid','eggies','twinkle',
+  'seahorse','goldfish','pinchy','sealy','flutterby','sparrowy','birdie','ratty','sandy','weedie','moonpink',
+  'puffball','flapper','fuzzy','monko','muscpup','bellbud','rocko','maggy','duobird','boo','dozey','splashking'];
+const SCALE = {};
+BIG.forEach(n => SCALE[n] = 1.17);
+MID.forEach(n => SCALE[n] = 1.07);
+SMALL.forEach(n => SCALE[n] = 0.88);
+
 function drawCreature(g, id, x, y, S, t, mood, flash) {
   const sp = SPECIES[id];
   mood = mood || 'idle';
@@ -4350,7 +4377,9 @@ function drawCreature(g, id, x, y, S, t, mood, flash) {
   sg.translate(240, 240); sg.scale(br, 2 - br);
   if (mood === 'attack') sg.rotate(0.1);
   if (mood === 'faint') { sg.translate(-S * 0.25, S * 0.65); sg.rotate(-1.42); }   // languit op de grond
-  D[sp.draw](sg, S, t, mood === 'faint' ? 'sleep' : mood);
+  const sc = SCALE[sp.draw] || 1;
+  sg.translate(0, S * (1 - sc));                 // voetjes blijven op de grond staan
+  D[sp.draw](sg, S * sc, t, mood === 'faint' ? 'sleep' : mood);
   sg.setTransform(2, 0, 0, 2, 0, 0);
   sg.globalCompositeOperation = 'source-atop';
   const shGrad = sg.createLinearGradient(0, 240 - S * 0.2, 0, 240 + S * 1.05);
