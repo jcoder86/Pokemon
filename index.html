@@ -94,6 +94,18 @@
       background:radial-gradient(circle at 35% 30%, #9fd9ff, #4a9fdb 65%, #2d6fa8);
       box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 -6px 0 rgba(0,0,0,.18); }
   #btnFlee:active { transform:scale(.88); }
+  /* tweede, krachtige aanval: linksonder, alleen bij wezens die hem hebben */
+  #btnSpecial { position:absolute; left:3%; bottom:3.5%; width:17vmin; height:17vmin; min-width:100px;
+      min-height:100px; border-radius:50%; border:none; font-size:8.5vmin; display:none; z-index:5;
+      align-items:center; justify-content:center; cursor:pointer; transition:transform .1s;
+      background:radial-gradient(circle at 35% 30%, #d8a8ff, #9a4fd8 62%, #6a2ea8);
+      box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 -6px 0 rgba(0,0,0,.2), 0 0 0 0 rgba(255,214,61,.7);
+      animation:specGlow 1.5s infinite; }
+  #btnSpecial:active { transform:scale(.88); }
+  #btnSpecial.armed { animation:specArmed .5s infinite; }
+  @keyframes specGlow { 0%,100%{box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 -6px 0 rgba(0,0,0,.2), 0 0 0 0 rgba(255,214,61,.6)}
+      50%{box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 -6px 0 rgba(0,0,0,.2), 0 0 0 1.6vmin rgba(255,214,61,0)} }
+  @keyframes specArmed { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
 
   #rotateOverlay { display:none; background:#1b2d1b; z-index:20; font-size:18vmin; }
   @media (orientation: portrait) { #rotateOverlay { display:flex; } }
@@ -115,6 +127,7 @@
     </button>
   </div>
   <button id="btnFlee">&#127939;</button>
+  <button id="btnSpecial">&#127775;</button>
 
   <div class="overlay" id="bookOverlay">
     <div id="bookPanel">
@@ -274,6 +287,9 @@ const SFX = {
   hit()        { tone(620, 0.1, 'square', 0.09); tone(330, 0.12, 'triangle', 0.09, 0.04, 180); },
   hitSoft()    { tone(500, 0.09, 'triangle', 0.07); tone(300, 0.1, 'triangle', 0.06, 0.04, 200); },
   heartPop()   { tone(880, 0.1, 'sine', 0.1, 0, 1300); },
+  charge()     { tone(300, 0.35, 'triangle', 0.09, 0, 900); tone(450, 0.3, 'sine', 0.06, 0.1, 1200); },
+  bigHit()     { tone(90, 0.3, 'sawtooth', 0.12, 0, 55); tone(700, 0.18, 'square', 0.09, 0.02, 200);
+                 [523, 659, 880].forEach((f, i) => tone(f, 0.16, 'triangle', 0.08, 0.06 + i * 0.05)); },
   dizzy()      { [600, 500, 420, 360].forEach((f, i) => tone(f, 0.13, 'triangle', 0.07, i * 0.1)); },
   revive()     { [392, 523, 659, 880].forEach((f, i) => tone(f, 0.14, 'triangle', 0.1, i * 0.09)); },
   flee()       { tone(700, 0.18, 'sine', 0.09, 0, 250); [240, 220].forEach((f, i) => tone(f, 0.05, 'sine', 0.06, 0.12 + i * 0.08)); },
@@ -4327,6 +4343,10 @@ const POOLS = {
 SPECIES.forEach(s => { if (POOLS[s.draw]) s.pools = POOLS[s.draw]; });
 // zeldzaamheid: kleine wezens kom je vaak tegen, imposante zelden, legendes bijna nooit
 const LEGENDARY = { icebird: 1, voltbird: 1, firebird: 1, psycat: 1, kittylegend: 1, dragonwing: 1, stonewing: 1 };
+// De bekendste wezens hebben een tweede, veel krachtiger aanval: twee hartjes
+// schade, maar de mikring gaat een stuk sneller. Geen dubbele-klap-bonus.
+const SPECIAL = { sparky: 1, voltbig: 1, flamewing: 1, shelltank: 1, bloomback: 1, boobig: 1, psybig: 1,
+                  muscbig: 1, ragedragon: 1, dragonwing: 1, psycat: 1, snoozle: 1 };
 const NSPECIES = SPECIES.length;
 const STARTER = SPECIES.findIndex(s => s.draw === 'sparky');
 const IDX_BY_NAME = {};
@@ -5603,7 +5623,7 @@ const PC = { x: 300, y: 480, S: 60 };
 const B = { // gevecht
   id: 0, hearts: 3, max: 3, pHearts: 3, pMax: 3, phase: 'intro', pt: 0,
   missCount: 0, willCatch: false, isNew: false, onWater: false,
-  dmg: 1, perfect: false, fainted: -1,
+  dmg: 1, perfect: false, special: false, shake: 0, fainted: -1,
   wFlash: 0, pFlash: 0, pLunge: 0, wLunge: 0, didImpact: false, ringR: 999, ball: null, wobbles: 0, pcIn: 0,
 };
 
@@ -5685,6 +5705,7 @@ function startEncounter(pool) {
   B.pHearts = B.pMax;
   B.fainted = -1;
   B.phase = 'intro'; B.pt = 0; B.missCount = 0; B.ball = null;
+  B.special = false; B.shake = 0;
   B.wFlash = 0; B.pFlash = 0; B.pLunge = 0; B.wLunge = 0; B.pcIn = 0;
   B.onWater = G.onBoat;
   G.state = 'toBattle'; G.transT = 0;
@@ -5698,10 +5719,14 @@ const battleBtns = document.getElementById('battleBtns');
 const btnAttack = document.getElementById('btnAttack');
 const btnBall = document.getElementById('btnBall');
 const btnFlee = document.getElementById('btnFlee');
+const btnSpecial = document.getElementById('btnSpecial');
+function hasSpecial() { return !!SPECIAL[SPECIES[G.active].draw]; }
 function setBtns(showAttack, showBall) {
   battleBtns.style.display = (showAttack || showBall) ? 'flex' : 'none';
   btnAttack.style.display = showAttack ? 'flex' : 'none';
   btnBall.style.display = showBall ? 'flex' : 'none';
+  btnSpecial.style.display = (showAttack && hasSpecial()) ? 'flex' : 'none';
+  btnSpecial.classList.remove('armed');
 }
 
 cv.addEventListener('pointerdown', e => {
@@ -5721,8 +5746,15 @@ cv.addEventListener('pointerdown', e => {
   } else if (G.state === 'battle') {
     // vergevingsgezind: elke tik doet de actie van dat moment
     if (B.phase === 'idle') doAttack();
+    else if (B.phase === 'sAim') doSpecialStrike();
     else if (B.phase === 'aim') doThrow();
   }
+});
+btnSpecial.addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  if (G.state !== 'battle') return;
+  if (B.phase === 'idle') armSpecial();
+  else if (B.phase === 'sAim') doSpecialStrike();
 });
 btnAttack.addEventListener('pointerdown', e => { e.stopPropagation(); if (G.state === 'battle' && B.phase === 'idle') doAttack(); });
 btnBall.addEventListener('pointerdown', e => { e.stopPropagation(); if (G.state === 'battle' && B.phase === 'aim') doThrow(); });
@@ -5736,10 +5768,26 @@ function doAttack() {
   const perfect = B.ringR <= WILD.S * 0.95;
   const hit = B.ringR <= WILD.S * 1.45;
   B.dmg = perfect ? 2 : (hit ? 1 : 0);
-  B.perfect = perfect;
+  B.perfect = perfect; B.special = false;
   B.phase = 'pAtk'; B.pt = 0; B.didImpact = false;
   setBtns(false, false);
   if (B.dmg > 0) SFX.attackSnd(SPECIES[G.active].type);
+  else SFX.wobble();
+}
+function armSpecial() {
+  // de krachtige aanval: ring gaat veel sneller, dus mikken is lastiger
+  B.phase = 'sAim'; B.pt = 0;
+  btnAttack.style.display = 'none';            // even alleen de krachtaanval
+  btnSpecial.classList.add('armed');
+  SFX.charge();
+}
+function doSpecialStrike() {
+  const hit = B.ringR <= WILD.S * 1.3;       // strakke zone: pittig maar haalbaar
+  B.dmg = hit ? 2 : 0;                        // altijd twee hartjes, geen bonus
+  B.perfect = false; B.special = true;
+  B.phase = 'pAtk'; B.pt = 0; B.didImpact = false;
+  setBtns(false, false);
+  if (hit) { SFX.attackSnd(SPECIES[G.active].type); SFX.bigHit(); }
   else SFX.wobble();
 }
 function doThrow() {
@@ -5762,6 +5810,7 @@ function updateBattle(dt) {
   B.pt += dt;
   B.wFlash = Math.max(0, B.wFlash - dt * 2.5);
   B.pFlash = Math.max(0, B.pFlash - dt * 2.5);
+  B.shake = Math.max(0, B.shake - dt * 2.2);
   btnFlee.style.display = (B.phase !== 'caught' && B.phase !== 'throw' &&
     B.phase !== 'faint' && B.phase !== 'swap') ? 'flex' : 'none';
   const wildType = SPECIES[B.id].type;
@@ -5771,6 +5820,8 @@ function updateBattle(dt) {
     if (B.pt > 0.9) { B.phase = 'idle'; setBtns(true, false); }
   } else if (B.phase === 'idle') {
     B.ringR = WILD.S * (0.75 + (0.5 + 0.5 * Math.sin(B.pt * 3.4)) * 1.5);   // mikring voor de aanval
+  } else if (B.phase === 'sAim') {
+    B.ringR = WILD.S * (0.75 + (0.5 + 0.5 * Math.sin(B.pt * 7.6)) * 1.5);   // krachtaanval: veel sneller
   } else if (B.phase === 'pAtk') {
     B.pLunge = B.pt < 0.5 ? Math.sin(Math.min(B.pt / 0.5, 1) * Math.PI) : 0;
     if (!B.didImpact && B.pt >= 0.6) {
@@ -5780,8 +5831,11 @@ function updateBattle(dt) {
         B.wFlash = 1;
         SFX.hit(); SFX.heartPop();
         if (B.perfect) { SFX.sparkle(); SFX.heartPop(); }
-        spawnParticles(WILD.x, WILD.y, B.perfect ? 26 : 16, 'star',
+        if (B.special) { SFX.heartPop(); B.shake = 1; }
+        spawnParticles(WILD.x, WILD.y, B.special ? 40 : (B.perfect ? 26 : 16), 'star',
           [TYPECOL[SPECIES[G.active].type], '#ffffff', '#ffd23d']);
+        if (B.special) spawnParticles(WILD.x, WILD.y, 24, 'confetti',
+          [TYPECOL[SPECIES[G.active].type], '#ffffff']);
         if (B.hearts === 0) SFX.dizzy();
       } else {
         SFX.giggle();                                    // net ernaast: gewoon nog een keer
@@ -5943,6 +5997,102 @@ function drawFx(g, type, sx, sy, txx, tyy, prog, t) {
   }
 }
 
+// het grote broertje van drawFx: dezelfde types, maar veel imposanter
+function drawFxBig(g, type, sx, sy, txx, tyy, prog, t) {
+  const px = lerp(sx, txx, prog), py = lerp(sy, tyy, prog) - Math.sin(prog * Math.PI) * 70;
+  const col = TYPECOL[type] || '#ffd23d';
+  switch (type) {
+    case 'electric': {
+      for (let b = 0; b < 3; b++) {                     // bliksemschichten uit de lucht
+        const bx = txx + (b - 1) * 70, k = clamp(prog * 1.4 - b * 0.12, 0, 1);
+        if (k <= 0) continue;
+        g.strokeStyle = '#ffd23d'; g.lineWidth = 13; g.lineCap = 'round'; g.lineJoin = 'round';
+        g.beginPath(); g.moveTo(bx, 0);
+        for (let i = 1; i <= 7; i++) {
+          const yy = (tyy) * (i / 7) * k;
+          g.lineTo(bx + Math.sin(i * 3 + b * 2 + t * 30) * 26, yy);
+        }
+        g.stroke();
+        g.strokeStyle = 'rgba(255,255,255,0.9)'; g.lineWidth = 5; g.stroke();
+      }
+      E(g, 'rgba(255,248,200,0.5)', txx, tyy, 90 * prog, 90 * prog);
+      break;
+    }
+    case 'fire': {
+      for (let i = 0; i < 5; i++) {                     // rollende vuurbal met staart
+        const k = clamp(prog - i * 0.07, 0, 1);
+        const fx = lerp(sx, txx, k), fy = lerp(sy, tyy, k) - Math.sin(k * Math.PI) * 70;
+        E(g, 'rgba(255,122,31,' + (0.5 - i * 0.08) + ')', fx, fy, 46 - i * 6, 46 - i * 6);
+      }
+      E(g, '#ff7a1f', px, py, 34, 34); E(g, '#ffb627', px, py, 24, 24); E(g, '#ffe45c', px, py, 13, 13);
+      for (let i = 0; i < 8; i++) {
+        const a = t * 5 + i * TAU / 8;
+        E(g, '#ffd23d', px + Math.cos(a) * 46, py + Math.sin(a) * 46, 7, 12, a);
+      }
+      break;
+    }
+    case 'water': {
+      g.strokeStyle = '#58b6ff'; g.lineWidth = 34; g.lineCap = 'round';   // dikke waterstraal
+      g.beginPath(); g.moveTo(sx, sy);
+      g.quadraticCurveTo((sx + txx) / 2, sy - 110, px, py); g.stroke();
+      g.strokeStyle = '#9fd4ff'; g.lineWidth = 18;
+      g.beginPath(); g.moveTo(sx, sy);
+      g.quadraticCurveTo((sx + txx) / 2, sy - 110, px, py); g.stroke();
+      for (let i = 0; i < 10; i++) {
+        const a = t * 4 + i * TAU / 10;
+        E(g, 'rgba(200,235,255,0.9)', px + Math.cos(a) * (30 + i * 3), py + Math.sin(a) * (26 + i * 2), 9, 9);
+      }
+      break;
+    }
+    case 'grass': {
+      for (let i = 0; i < 14; i++) {                    // bladerstorm
+        const a = t * 6 + i * TAU / 14, r = 24 + (i % 4) * 22;
+        g.save(); g.translate(px + Math.cos(a) * r, py + Math.sin(a) * r * 0.8); g.rotate(a * 2);
+        E(g, i % 2 ? '#6fc750' : '#8fdb6a', 0, 0, 18, 8); g.restore();
+      }
+      E(g, 'rgba(160,235,120,0.45)', px, py, 60, 60);
+      break;
+    }
+    case 'ghost': {
+      for (let i = 0; i < 4; i++)
+        ARC(g, 'rgba(160,106,224,' + (0.7 - i * 0.14) + ')', px, py, 30 + i * 22 + prog * 30, 0, TAU, 7);
+      E(g, 'rgba(60,30,90,0.55)', px, py, 52, 52);
+      E(g, '#a06ae0', px, py, 34, 34);
+      E(g, '#d8c0f8', px - 10, py - 10, 12, 12);
+      break;
+    }
+    case 'psychic': {
+      for (let i = 0; i < 5; i++)
+        ARC(g, 'rgba(224,112,192,' + (0.75 - i * 0.13) + ')', txx, tyy, 26 + ((prog * 150 + i * 34) % 190), 0, TAU, 6);
+      g.fillStyle = 'rgba(255,190,240,0.5)';
+      for (let i = 0; i < 8; i++) {
+        const a = t * 3 + i * TAU / 8;
+        starPath(g, txx + Math.cos(a) * 90 * prog, tyy + Math.sin(a) * 90 * prog, 16, 7); g.fill();
+      }
+      break;
+    }
+    case 'wind': {
+      for (let i = 0; i < 5; i++) {                     // wervelstorm
+        const rr = 26 + i * 18;
+        ARC(g, 'rgba(255,255,255,' + (0.8 - i * 0.13) + ')', px, py, rr, t * 8 + i, t * 8 + i + 4.2, 8);
+      }
+      E(g, 'rgba(230,245,255,0.5)', px, py, 40, 40);
+      break;
+    }
+    default: {                                          // stevige stoot met sterren
+      for (let i = 0; i < 3; i++) {
+        const k = clamp(prog - i * 0.1, 0, 1);
+        const fx = lerp(sx, txx, k), fy = lerp(sy, tyy, k) - Math.sin(k * Math.PI) * 70;
+        g.fillStyle = i === 0 ? '#ffd23d' : 'rgba(255,210,61,0.5)';
+        starPath(g, fx, fy, 40 - i * 9, 18 - i * 4); g.fill();
+      }
+      for (let i = 0; i < 6; i++) {
+        const a = t * 6 + i * TAU / 6;
+        E(g, '#ffffff', px + Math.cos(a) * 44, py + Math.sin(a) * 44, 8, 8);
+      }
+    }
+  }
+}
 function drawHeartsRow(g, cx, cy, n, max, size, t) {
   for (let i = 0; i < max; i++) {
     const hx = cx - (max - 1) * size * 1.4 + i * size * 2.8, full = i < n;
@@ -5955,6 +6105,14 @@ function drawHeartsRow(g, cx, cy, n, max, size, t) {
 
 // ============================================================ gevecht tekenen
 function drawBattle(g) {
+  if (B.shake > 0.02) {                          // het scherm schudt na een voltreffer
+    g.save();
+    g.translate(Math.sin(G.t * 60) * 12 * B.shake, Math.cos(G.t * 53) * 9 * B.shake);
+  }
+  drawBattleScene(g);
+  if (B.shake > 0.02) g.restore();
+}
+function drawBattleScene(g) {
   const grad = g.createLinearGradient(0, 0, 0, VH);
   if (B.onWater) {
     grad.addColorStop(0, '#aee4ff'); grad.addColorStop(0.55, '#bfe6f5'); grad.addColorStop(1, '#5ab0dd');
@@ -6087,13 +6245,47 @@ function drawBattle(g) {
   // aanval-effect onderweg
   if (B.phase === 'pAtk' && B.pt >= 0.22 && B.pt <= 0.62) {
     const prog = clamp((B.pt - 0.22) / 0.38, 0, 1);
-    drawFx(g, SPECIES[G.active].type, PC.x + 70, PC.y - 30, WILD.x, WILD.y, prog, G.t);
+    if (B.special) drawFxBig(g, SPECIES[G.active].type, PC.x + 70, PC.y - 30, WILD.x, WILD.y, prog, G.t);
+    else drawFx(g, SPECIES[G.active].type, PC.x + 70, PC.y - 30, WILD.x, WILD.y, prog, G.t);
+  }
+  if (B.special && B.phase === 'pAtk' && B.pt > 0.6 && B.pt < 0.95) {   // inslag-flits
+    const k = 1 - (B.pt - 0.6) / 0.35;
+    g.fillStyle = 'rgba(255,255,255,' + (0.45 * k) + ')';
+    g.fillRect(0, 0, VW, VH);
+    g.strokeStyle = TYPECOL[SPECIES[G.active].type]; g.lineWidth = 10 * k;
+    g.beginPath(); g.arc(WILD.x, WILD.y, 110 + (1 - k) * 190, 0, TAU); g.stroke();
   }
   if (B.phase === 'eAtk' && B.pt >= 0.22 && B.pt <= 0.62) {
     const prog = clamp((B.pt - 0.22) / 0.38, 0, 1);
     drawFx(g, SPECIES[B.id].type, WILD.x - 80, WILD.y, PC.x, PC.y - 20, prog, G.t);
   }
 
+  // mik-ring voor de krachtaanval: raast rond, altijd twee hartjes bij een treffer
+  if (B.phase === 'sAim') {
+    const hit = B.ringR <= WILD.S * 1.3;
+    const col = TYPECOL[SPECIES[G.active].type] || '#ffd23d';
+    g.save();
+    g.strokeStyle = hit ? col : 'rgba(216,168,255,0.9)';
+    g.lineWidth = hit ? 13 : 8;
+    g.setLineDash([22, 10]); g.lineDashOffset = -G.t * 130;
+    g.beginPath(); g.arc(WILD.x, WILD.y, B.ringR, 0, TAU); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,0.75)'; g.lineWidth = hit ? 5 : 3;
+    g.beginPath(); g.arc(WILD.x, WILD.y, B.ringR, 0, TAU); g.stroke();
+    g.restore();
+    g.save();
+    g.strokeStyle = 'rgba(255,255,255,0.6)'; g.lineWidth = 4; g.setLineDash([8, 10]);
+    g.beginPath(); g.arc(WILD.x, WILD.y, WILD.S * 1.3, 0, TAU); g.stroke();
+    g.restore();
+    // het maatje laadt zichtbaar op
+    const pul = 0.6 + 0.4 * Math.sin(G.t * 12);
+    g.fillStyle = col;
+    for (let i = 0; i < 6; i++) {
+      const a = G.t * 5 + i * TAU / 6, r = 70 + Math.sin(G.t * 9 + i) * 16;
+      g.globalAlpha = 0.85 * pul;
+      starPath(g, PC.x + Math.cos(a) * r, PC.y - 10 + Math.sin(a) * r * 0.8, 13, 6); g.fill();
+    }
+    g.globalAlpha = 1;
+  }
   // mik-ring voor de aanval: klein = raak, allerkleinst = dubbele klap
   if (B.phase === 'idle') {
     const perfect = B.ringR <= WILD.S * 0.95, hit = B.ringR <= WILD.S * 1.45;
