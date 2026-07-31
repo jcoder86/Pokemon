@@ -558,6 +558,108 @@ function heartPath(g, x, y, s) {
   g.closePath();
 }
 // twee standaard ogen op (±dx, y); met knipperen / blij / duizelig
+// ============================================================ kop- en oogsysteem
+// Ogen zijn geen zelfstandig onderdeel. Een wezen registreert zijn kop met
+// HEAD(), en de ogen worden daarna uitsluitend uit die kop afgeleid. Schaal,
+// rotatie en spiegeling van de kop lopen dus automatisch mee, en een oog kan
+// niet meer naast het hoofd of op het lichaam belanden.
+let HD = null;                 // kop die op dit moment getekend wordt
+let EYE_LOG = null;            // tijdens validatie: verzamelde oogplaatsingen
+let EYE_WHO = '';              // welk wezen wordt nu gecontroleerd
+
+// cx,cy = midden van de kop, rx,ry = halve breedte/hoogte, alles in wezen-ruimte.
+// opt.profile: 0 frontaal, -1 kop naar links, 1 kop naar rechts.
+// opt.muzzle: hoogte van de aanzet van snuit/snavel/bek in kop-lokale eenheden
+//             (-1 = kruin, +1 = kin). Ogen worden daar altijd boven gehouden.
+// opt.asym:   wezen mag bewust asymmetrische ogen hebben.
+function HEAD(cx, cy, rx, ry, opt) {
+  opt = opt || {};
+  HD = {
+    cx: cx, cy: cy, rx: Math.abs(rx), ry: Math.abs(ry),
+    profile: opt.profile || 0,
+    muzzle: opt.muzzle === undefined ? 1 : opt.muzzle,
+    asym: !!opt.asym,
+  };
+  return HD;
+}
+function headClear() { HD = null; }
+
+// Ogen op de geregistreerde kop. sep/y/r zijn genormaliseerd op de kop:
+// sep = afstand tot de middenas in eenheden van rx, y = hoogte in eenheden van
+// ry (negatief is richting de kruin), r = straal in eenheden van de kleinste as.
+function EYES(g, t, mood, seed, o) {
+  o = o || {};
+  const h = HD;
+  if (!h) { eyeWarn('geen kop geregistreerd voor de ogen'); return; }
+  const sep = o.sep === undefined ? 0.40 : o.sep;
+  const rad = (o.r === undefined ? 0.22 : o.r) * Math.min(h.rx, h.ry);
+  // Ogen horen boven en achter de aanzet van een snuit, nooit erop.
+  const maxY = h.muzzle - 0.30;
+  let yN = o.y === undefined ? -0.08 : o.y;
+  if (yN > maxY) yN = maxY;
+  const ey = h.cy + yN * h.ry;
+  if (h.profile) {
+    // Kop op profiel: het verre oog valt weg. Twee frontale ogen zouden fout zijn.
+    const s = h.profile;
+    const nx = h.cx + s * sep * h.rx * 0.72;
+    drawEye(g, nx, ey, rad, o.iris, t, mood, seed, s);
+    logEye(nx, ey, rad, h, true);
+    if (o.farEye) {                               // verre oog: kleiner en verschoven
+      const fx = h.cx - s * sep * h.rx * 0.16;
+      drawEye(g, fx, ey + rad * 0.12, rad * 0.62, o.iris, t, mood, seed + 1, s);
+      logEye(fx, ey + rad * 0.12, rad * 0.62, h, true);
+    }
+    return;
+  }
+  for (const s of [-1, 1]) {
+    const ex = h.cx + s * sep * h.rx;
+    drawEye(g, ex, ey, rad, o.iris, t, mood, seed, s);
+    logEye(ex, ey, rad, h, false);
+  }
+}
+function logEye(x, y, r, h, single) {
+  if (EYE_LOG) EYE_LOG.push({ x: x, y: y, r: r, h: h, single: single });
+}
+function eyeWarn(msg) {
+  console.warn('[oogcontrole] ' + (EYE_WHO || '?') + ': ' + msg);
+  if (EYE_LOG) EYE_LOG.fout = (EYE_LOG.fout || 0) + 1;
+}
+
+// Een enkel oog, met contour, hoogsel aan de lichtzijde (linksboven) en een
+// contactschaduw waar het oog in de kop ligt.
+function drawEye(g, x, y, r, iris, t, mood, seed, side) {
+  iris = iris || '#3f7fd6';
+  if (mood === 'dizzy') {
+    g.strokeStyle = '#3b3b3b'; g.lineWidth = r * 0.45; g.lineCap = 'round';
+    g.beginPath(); g.arc(x, y, r * 0.75, t * 6, t * 6 + 4.4); g.stroke();
+    g.beginPath(); g.arc(x, y, r * 0.35, -t * 6, -t * 6 + 4.4); g.stroke();
+    return;
+  }
+  if (mood === 'happy') {
+    g.strokeStyle = '#3b3b3b'; g.lineWidth = Math.max(1.2, r * 0.45); g.lineCap = 'round';
+    g.beginPath(); g.arc(x, y + r * 0.35, r * 0.8, Math.PI + 0.5, TAU - 0.5); g.stroke();
+    return;
+  }
+  if (mood === 'sleep') {
+    g.strokeStyle = '#3b3b3b'; g.lineWidth = Math.max(1.2, r * 0.4); g.lineCap = 'round';
+    g.beginPath(); g.arc(x, y - r * 0.2, r * 0.8, 0.3, Math.PI - 0.3); g.stroke();
+    return;
+  }
+  const blink = ((t * 0.9 + seed * 0.77) % 3.3) < 0.1;
+  if (blink) {
+    LN(g, '#3b3b3b', Math.max(1.2, r * 0.32), [[x - r * 0.7, y], [x + r * 0.7, y]]);
+    return;
+  }
+  E(g, 'rgba(60,48,40,0.28)', x, y + r * 0.16, r * 1.14, r * 1.24);   // oog ligt in de kop
+  E(g, '#ffffff', x, y, r, r * 1.12);
+  E(g, 'rgba(120,100,86,0.22)', x, y - r * 0.42, r * 0.92, r * 0.42); // schaduw van het lid
+  E(g, iris, x, y + r * 0.1, r * 0.66, r * 0.74);
+  E(g, '#1e1c1a', x, y + r * 0.14, r * 0.34, r * 0.4);
+  E(g, '#ffffff', x - r * 0.24, y - r * 0.26, r * 0.22, r * 0.22);    // licht van linksboven
+  E(g, 'rgba(255,255,255,0.65)', x + r * 0.2, y + r * 0.4, r * 0.1, r * 0.1);
+  ARC(g, 'rgba(70,56,44,0.5)', x, y, r * 1.02, 0, TAU, Math.max(0.7, r * 0.12));
+}
+
 function stdEyes(g, dx, y, r, iris, t, mood, seed) {
   if (mood === 'dizzy') {
     g.strokeStyle = '#3b3b3b'; g.lineWidth = r * 0.45; g.lineCap = 'round';
@@ -646,7 +748,8 @@ const D = {
     PG(g, c, [[S * 0.72, -S * 0.18], [S * 0.95, -S * 0.52], [S * 0.5, -S * 0.38]]);
     PG(g, d, [[-S * 0.76, -S * 0.26], [-S * 0.88, -S * 0.45], [-S * 0.6, -S * 0.36]]);
     PG(g, d, [[S * 0.76, -S * 0.26], [S * 0.88, -S * 0.45], [S * 0.6, -S * 0.36]]);
-    stdEyes(g, S * 0.42, -S * 0.02, S * 0.15, '#c0392b', t, m, 0);
+    HEAD(0, S * 0.05, S * 0.75, S * 0.5, { muzzle: 0.54 });
+    EYES(g, t, m, 0, { sep: 0.56, y: -0.14, r: 0.30, iris: '#c0392b' });
     smileM(g, 0, S * 0.32, S * 0.22, m);
     cheeks(g, S * 0.68, S * 0.18, S * 0.1);
   },
@@ -676,7 +779,8 @@ const D = {
     RIM(g, 'rgba(255,224,175,0.5)', 0, -S * 0.5, S * 0.56, S * 0.51, S * 0.05, Math.PI * 1.1, Math.PI * 1.75);
     for (const s of [-1, 1]) for (let i = -1; i <= 1; i++)
       E(g, '#fff3e0', s * S * 0.38 + i * S * 0.11, S * 1.0, S * 0.04, S * 0.05);
-    stdEyes(g, S * 0.28, -S * 0.58, S * 0.15, '#2c5d8f', t, m, 1);
+    HEAD(0, -S * 0.5, S * 0.6, S * 0.55, { muzzle: 0.44 });
+    EYES(g, t, m, 1, { sep: 0.467, y: -0.145, r: 0.273, iris: '#2c5d8f' });
     E(g, '#c45a20', -S * 0.08, -S * 0.34, S * 0.025, S * 0.035);
     E(g, '#c45a20', S * 0.08, -S * 0.34, S * 0.025, S * 0.035);
     smileM(g, 0, -S * 0.26, S * 0.2, m === 'idle' ? 'happy' : m);
@@ -706,7 +810,8 @@ const D = {
     VE(g, sk, 0, -S * 0.52, S * 0.58, S * 0.52);
     RIM(g, 'rgba(200,240,255,0.55)', 0, -S * 0.52, S * 0.54, S * 0.48, S * 0.045, Math.PI * 1.08, Math.PI * 1.78);
     E(g, 'rgba(200,240,255,0.55)', -S * 0.18, -S * 0.68, S * 0.22, S * 0.16, -0.25);
-    stdEyes(g, S * 0.27, -S * 0.58, S * 0.15, '#7a4a2e', t, m, 2);
+    HEAD(0, -S * 0.52, S * 0.58, S * 0.52, { muzzle: 0.46 });
+    EYES(g, t, m, 2, { sep: 0.466, y: -0.115, r: 0.288, iris: '#7a4a2e' });
     smileM(g, 0, -S * 0.28, S * 0.18, m);
     cheeks(g, S * 0.5, -S * 0.4, S * 0.1);
   },
@@ -827,7 +932,8 @@ const D = {
     LN(g, '#e05a4d', S * 0.09, [[-S * 0.42, -S * 0.5], [-S * 0.3, -S * 0.9]]);
     E(g, '#e05a4d', -S * 0.64, -S * 0.95, S * 0.09, S * 0.09); E(g, '#e05a4d', -S * 0.28, -S * 0.93, S * 0.09, S * 0.09);
     E(g, '#f7e26b', -S * 0.68, -S * 0.05, S * 0.18, S * 0.2); E(g, '#f7e26b', -S * 0.22, -S * 0.05, S * 0.18, S * 0.2);
-    stdEyes(g, S * 0.23, -S * 0.05, S * 0.12, '#2c2c2c', t, m, 7);
+    HEAD(-S * 0.45, S * 0.05, S * 0.62, S * 0.62, { muzzle: 0.42 });
+    EYES(g, t, m, 7, { sep: 0.37, y: -0.16, r: 0.19, iris: '#2c2c2c' });
     g.save(); g.translate(-S * 0.45, 0);
     smileM(g, 0, S * 0.25, S * 0.13, m);
     g.restore();
@@ -1855,7 +1961,8 @@ const D = {
     PG(g, c, [[S * 0.72, -S * 0.14], [S * 0.98, -S * 0.5], [S * 0.5, -S * 0.34]]);
     PG(g, d, [[-S * 0.76, -S * 0.22], [-S * 0.9, -S * 0.44], [-S * 0.6, -S * 0.32]]);
     PG(g, d, [[S * 0.76, -S * 0.22], [S * 0.9, -S * 0.44], [S * 0.6, -S * 0.32]]);
-    stdEyes(g, S * 0.42, S * 0.02, S * 0.15, '#c0392b', t, m, 48);
+    HEAD(0, S * 0.08, S * 0.74, S * 0.5, { muzzle: 0.56 });
+    EYES(g, t, m, 48, { sep: 0.568, y: -0.12, r: 0.30, iris: '#c0392b' });
     smileM(g, 0, S * 0.36, S * 0.22, m);
     cheeks(g, S * 0.68, S * 0.22, S * 0.1);
   },
@@ -1896,7 +2003,8 @@ const D = {
     g.restore();
     PG(g, c, [[-S * 0.8, -S * 0.06], [-S * 1.02, -S * 0.42], [-S * 0.56, -S * 0.28]]);
     PG(g, c, [[S * 0.8, -S * 0.06], [S * 1.02, -S * 0.42], [S * 0.56, -S * 0.28]]);
-    stdEyes(g, S * 0.44, S * 0.14, S * 0.15, '#c0392b', t, m, 49);
+    HEAD(0, S * 0.18, S * 0.78, S * 0.48, { muzzle: 0.58 });
+    EYES(g, t, m, 49, { sep: 0.564, y: -0.08, r: 0.31, iris: '#c0392b' });
     smileM(g, 0, S * 0.46, S * 0.24, m);
     for (const s of [-1, 1]) LN(g, '#2c6a5c', S * 0.035, [[s * S * 0.2, S * 0.42], [s * S * 0.3, S * 0.42]]);
   },
@@ -1932,7 +2040,8 @@ const D = {
     RIM(g, 'rgba(255,214,180,0.5)', 0, -S * 0.44, S * 0.52, S * 0.46, S * 0.045, Math.PI * 1.1, Math.PI * 1.75);
     E(g, 'rgba(248,174,134,0.7)', -S * 0.16, -S * 0.6, S * 0.22, S * 0.16);
     PG(g, '#f2ecdc', [[-S * 0.1, -S * 0.82], [S * 0.34, -S * 1.16], [S * 0.16, -S * 0.72]]); // hoorn
-    stdEyes(g, S * 0.26, -S * 0.52, S * 0.14, '#2c5d8f', t, m, 50);
+    HEAD(0, -S * 0.44, S * 0.56, S * 0.5, { muzzle: 0.48 });
+    EYES(g, t, m, 50, { sep: 0.464, y: -0.16, r: 0.28, iris: '#2c5d8f' });
     E(g, d, -S * 0.08, -S * 0.28, S * 0.025, S * 0.035); E(g, d, S * 0.08, -S * 0.28, S * 0.025, S * 0.035);
     smileM(g, 0, -S * 0.2, S * 0.19, m === 'idle' ? 'happy' : m);
     PG(g, '#fff', [[-S * 0.14, -S * 0.18], [-S * 0.08, -S * 0.06], [-S * 0.03, -S * 0.18]]);
@@ -1983,7 +2092,8 @@ const D = {
     VE(g, c, -S * 0.42, -S * 0.5, S * 0.22, S * 0.18);
     RIM(g, 'rgba(255,214,180,0.5)', -S * 0.06, -S * 0.56, S * 0.41, S * 0.33, S * 0.04, Math.PI * 1.1, Math.PI * 1.8);
     for (const s of [-1, 1]) PG(g, '#f2ecdc', [[S * 0.08, -S * 0.78], [S * 0.24 + s * S * 0.14, -S * 1.12], [S * 0.24, -S * 0.7]]);
-    stdEyes(g, S * 0.16, -S * 0.6, S * 0.12, '#2c5d8f', t, m, 51);
+    HEAD(-S * 0.06, -S * 0.56, S * 0.44, S * 0.36, { muzzle: 0.44 });
+    EYES(g, t, m, 51, { sep: 0.42, y: -0.12, r: 0.33, iris: '#2c5d8f' });
     E(g, d, -S * 0.44, -S * 0.56, S * 0.03, S * 0.03);
     ARC(g, '#8a3a1a', -S * 0.2, -S * 0.4, S * 0.16, 0.2, Math.PI - 0.5, S * 0.04);
   },
@@ -2017,7 +2127,8 @@ const D = {
       E(g, '#e8f4fc', 0, 0, S * 0.2, S * 0.13); E(g, '#cfe6f4', s * S * 0.1, S * 0.04, S * 0.12, S * 0.08);
       g.restore();
     }
-    stdEyes(g, S * 0.25, -S * 0.55, S * 0.14, '#7a4a2e', t, m, 52);
+    HEAD(0, -S * 0.5, S * 0.56, S * 0.5, { muzzle: 0.48 });
+    EYES(g, t, m, 52, { sep: 0.446, y: -0.10, r: 0.28, iris: '#7a4a2e' });
     smileM(g, 0, -S * 0.26, S * 0.18, m);
     cheeks(g, S * 0.46, -S * 0.38, S * 0.1);
   },
@@ -2057,7 +2168,8 @@ const D = {
     VE(g, sk, 0, -S * 0.5, S * 0.58, S * 0.48);
     RIM(g, 'rgba(190,236,255,0.55)', 0, -S * 0.5, S * 0.54, S * 0.44, S * 0.045, Math.PI * 1.08, Math.PI * 1.78);
     E(g, 'rgba(190,232,255,0.55)', -S * 0.2, -S * 0.62, S * 0.2, S * 0.14, -0.25);
-    stdEyes(g, S * 0.26, -S * 0.54, S * 0.13, '#7a4a2e', t, m, 53);
+    HEAD(0, -S * 0.5, S * 0.58, S * 0.48, { muzzle: 0.33 });
+    EYES(g, t, m, 53, { sep: 0.448, y: -0.083, r: 0.271, iris: '#7a4a2e' });
     ARC(g, '#3a5a70', 0, -S * 0.34, S * 0.2, 0.3, Math.PI - 0.3, S * 0.045);
   },
   voltbig(g, S, t, m) { // stevig elektrisch dier met bliksemstaart
@@ -4727,6 +4839,166 @@ function drawCreature(g, id, x, y, S, t, mood, flash) {
     }
   }
 }
+
+// ============================================================ oogvalidatie
+// Draait over alle wezens en meldt per wezen wat er mis is met de oogplaatsing.
+// Zes controles: binnen de kop, symmetrisch in x, gelijke hoogte, redelijke
+// maat, niet op het lichaam, en niet afgedekt.
+function validateEyes(verbose) {
+  const meld = [];
+  const wasLog = EYE_LOG, wasWho = EYE_WHO;
+  for (let i = 0; i < NSPECIES; i++) {
+    const sp = SPECIES[i];
+    EYE_LOG = []; EYE_WHO = sp.draw; HD = null;
+    const probleem = [];
+    try {
+      sg.save(); sg.setTransform(1, 0, 0, 1, 0, 0); sg.clearRect(0, 0, 960, 960);
+      sg.translate(480, 480);
+      D[sp.draw](sg, 100, 1.4, 'idle');
+      sg.restore();
+    } catch (e) { probleem.push('tekenfout: ' + e.message); }
+    const oog = EYE_LOG;
+    if (!oog.length) probleem.push('geen kop/ogen geregistreerd (nog niet omgezet)');
+    else {
+      const h = oog[0].h;
+      for (const o of oog) {
+        // 1. middelpunt binnen het silhouet van de kop, met marge
+        const nx = (o.x - h.cx) / h.rx, ny = (o.y - h.cy) / h.ry;
+        const d = Math.hypot(nx, ny);
+        if (d > 0.82) probleem.push('oog ligt te dicht bij de rand van de kop (' + d.toFixed(2) + ')');
+        // 4. maat van het oog ten opzichte van de kop
+        const rel = o.r / Math.min(h.rx, h.ry);
+        if (rel < 0.08) probleem.push('oog te klein (' + rel.toFixed(2) + ')');
+        if (rel > 0.42) probleem.push('oog te groot (' + rel.toFixed(2) + ')');
+        // 6. ogen horen boven de aanzet van een snuit
+        if (ny > h.muzzle - 0.12) probleem.push('oog zit op de snuit in plaats van erboven');
+      }
+      if (!oog[0].single && oog.length === 2 && !h.asym) {
+        // 2. gelijke afstand tot de middenas
+        const a = Math.abs(oog[0].x - h.cx), b = Math.abs(oog[1].x - h.cx);
+        if (Math.abs(a - b) > h.rx * 0.02) probleem.push('ogen niet symmetrisch om de middenas');
+        // 3. gelijke hoogte
+        if (Math.abs(oog[0].y - oog[1].y) > h.ry * 0.02) probleem.push('ogen niet op gelijke hoogte');
+        // 5. ogen mogen elkaar niet overlappen (dan zit er een verkeerd)
+        if (Math.abs(oog[0].x - oog[1].x) < (oog[0].r + oog[1].r) * 0.9)
+          probleem.push('ogen overlappen elkaar');
+      }
+      if (h.profile && oog.length === 2 && !oog[0].single)
+        probleem.push('twee frontale ogen op een kop in profiel');
+    }
+    if (probleem.length) meld.push({ wezen: sp.draw, nr: i + 1, fouten: probleem });
+  }
+  EYE_LOG = wasLog; EYE_WHO = wasWho; HD = null;
+  if (verbose !== false) {
+    if (!meld.length) console.log('[oogcontrole] alle ' + NSPECIES + ' wezens in orde');
+    else {
+      console.warn('[oogcontrole] ' + meld.length + ' van de ' + NSPECIES + ' wezens hebben nog werk:');
+      meld.forEach(m => console.warn('  ' + m.nr + '. ' + m.wezen + ' — ' + m.fouten.join('; ')));
+    }
+  }
+  return meld;
+}
+
+// ============================================================ debug-weergaven
+// Geen zichtbare knoppen: alleen via het toetsenbord, dus onbereikbaar op de
+// iPad van een kind. Shift+K = koppenraster, Shift+S = squint-test.
+let DEBUG_VIEW = null, DEBUG_PAGE = 0;
+function debugOverlayEl() {
+  let el = document.getElementById('debugView');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'debugView';
+    el.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#1b1f18;overflow:auto;' +
+      'display:none;padding:10px;color:#dfe7d8;font:12px -apple-system,sans-serif;';
+    document.body.appendChild(el);
+    el.addEventListener('click', () => { el.style.display = 'none'; DEBUG_VIEW = null; });
+  }
+  return el;
+}
+// Alle koppen sterk uitvergroot naast elkaar, zodat oogplaatsing in een
+// oogopslag te beoordelen is.
+function showHeadGrid(page) {
+  const el = debugOverlayEl();
+  DEBUG_VIEW = 'heads'; DEBUG_PAGE = page || 0;
+  el.innerHTML = '';
+  const perPage = 50, start = DEBUG_PAGE * perPage;
+  const kop = document.createElement('div');
+  kop.textContent = 'koppen ' + (start + 1) + '–' + Math.min(NSPECIES, start + perPage) +
+    ' van ' + NSPECIES + '  ·  Shift+K bladert  ·  klik sluit';
+  kop.style.cssText = 'margin-bottom:8px;color:#ffd86b;font-weight:700;';
+  el.appendChild(kop);
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(10,1fr);gap:6px;';
+  el.appendChild(grid);
+  const fouten = {};
+  validateEyes(false).forEach(m => { fouten[m.wezen] = m.fouten; });
+  for (let i = start; i < Math.min(NSPECIES, start + perPage); i++) {
+    const sp = SPECIES[i];
+    const cel = document.createElement('div');
+    const slecht = !!fouten[sp.draw];
+    cel.style.cssText = 'background:' + (slecht ? '#4a2a22' : '#27402a') + ';border-radius:8px;padding:3px;text-align:center;';
+    const c = document.createElement('canvas');
+    c.width = 260; c.height = 260;
+    c.style.cssText = 'width:100%;height:auto;display:block;';
+    const cg = c.getContext('2d');
+    // teken het wezen groot en zoom in op de geregistreerde kop
+    EYE_LOG = []; EYE_WHO = sp.draw; HD = null;
+    const tmp = document.createElement('canvas'); tmp.width = 960; tmp.height = 960;
+    const tg = tmp.getContext('2d');
+    tg.translate(480, 480);
+    try { D[sp.draw](tg, 100, 1.4, 'idle'); } catch (e) {}
+    const h = HD;
+    EYE_LOG = null;
+    cg.fillStyle = '#f2f6ea'; cg.fillRect(0, 0, 260, 260);
+    if (h) {
+      const z = 110 / Math.max(h.rx, h.ry);
+      cg.save(); cg.translate(130, 130); cg.scale(z, z); cg.translate(-(480 + h.cx), -(480 + h.cy));
+      cg.drawImage(tmp, 0, 0); cg.restore();
+      cg.strokeStyle = 'rgba(255,90,90,0.5)'; cg.lineWidth = 1;
+      cg.beginPath(); cg.ellipse(130, 130, h.rx * z, h.ry * z, 0, 0, TAU); cg.stroke();
+    } else {
+      cg.save(); cg.translate(130, 150); cg.scale(0.9, 0.9); cg.translate(-480, -480);
+      cg.drawImage(tmp, 0, 0); cg.restore();
+    }
+    cel.appendChild(c);
+    const lbl = document.createElement('div');
+    lbl.textContent = (i + 1) + '. ' + sp.draw;
+    lbl.style.cssText = 'font-size:9px;color:' + (slecht ? '#ffb0a6' : '#a9c0a5') + ';margin-top:2px;';
+    cel.appendChild(lbl);
+    if (slecht) { cel.title = fouten[sp.draw].join('\n'); }
+    grid.appendChild(cel);
+  }
+  el.style.display = 'block';
+  el.scrollTop = 0;
+}
+// Squint-test: de wereld in grijswaarden en sterk vervaagd. Wat je dan nog kunt
+// onderscheiden, kan een kind ook onderscheiden.
+function showSquint() {
+  const el = debugOverlayEl();
+  DEBUG_VIEW = 'squint';
+  el.innerHTML = '';
+  const kop = document.createElement('div');
+  kop.textContent = 'squint-test — is nog te zien waar je kunt lopen en waar de doorgangen zitten?  ·  klik sluit';
+  kop.style.cssText = 'margin-bottom:8px;color:#ffd86b;font-weight:700;';
+  el.appendChild(kop);
+  const c = document.createElement('canvas');
+  c.width = VW; c.height = VH;
+  c.style.cssText = 'width:min(100%,1100px);height:auto;display:block;filter:grayscale(1) blur(5px) contrast(1.15);';
+  c.getContext('2d').drawImage(cv, 0, 0);
+  el.appendChild(c);
+  el.style.display = 'block';
+}
+window.addEventListener('keydown', e => {
+  if (!e.shiftKey) return;
+  if (e.key === 'K' || e.key === 'k') {
+    e.preventDefault();
+    showHeadGrid(DEBUG_VIEW === 'heads' ? (DEBUG_PAGE + 1) % Math.ceil(NSPECIES / 50) : 0);
+  } else if (e.key === 'S' || e.key === 's') {
+    e.preventDefault(); showSquint();
+  } else if (e.key === 'O' || e.key === 'o') {
+    e.preventDefault(); validateEyes(true);
+  }
+});
 
 // vooraf gerenderde boek-plaatjes
 const thumbs = [];
