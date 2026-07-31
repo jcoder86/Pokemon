@@ -20,19 +20,102 @@
   #wrap { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); }
   canvas#game { display:block; width:100%; height:100%; border-radius:6px; }
 
-  .ui-btn { position:absolute; border:none; border-radius:50%; display:flex; align-items:center;
-      justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,.35), inset 0 -4px 0 rgba(0,0,0,.15);
-      cursor:pointer; transition:transform .1s; }
-  .ui-btn:active { transform:scale(.9); }
+  /* ==========================================================================
+     DESIGN-SYSTEEM
+     Alles in de interface komt hieruit voort. Geen losse getallen in losse
+     regels: marges, hoeken, schaduwen, kleuren en tijden staan hier een keer.
+     ========================================================================== */
+  :root {
+    /* spacing-schaal — elke marge en tussenruimte komt hieruit */
+    --s1:4px; --s2:8px; --s3:12px; --s4:18px; --s5:26px; --s6:38px; --s7:56px;
+    /* hoekafronding: klein voor iconen, groot voor panelen */
+    --r-s:14px; --r-m:22px; --r-l:32px; --r-pill:999px;
+    /* schaduw-schaal: rustend, verhoogd, zwevend */
+    --sh-1:0 2px 4px rgba(12,20,10,.28);
+    --sh-2:0 6px 14px rgba(12,20,10,.38);
+    --sh-3:0 14px 34px rgba(12,20,10,.5);
+    /* interface-kleuren, apart van de wereld maar er wel bij passend */
+    --ink:#2b3524; --ink-soft:#5d6b4f;
+    --paper:#fff8ea; --paper-2:#f1e2c4; --paper-line:#e6d3a8;
+    --scrim:rgba(14,22,12,.62);
+    /* knop-tinten: elk paar is licht boven, donker onder */
+    --c-go-1:#9fe46b;  --c-go-2:#3f9a45;
+    --c-book-1:#ffdf8a; --c-book-2:#e8941a;
+    --c-info-1:#a9dfff; --c-info-2:#3a8ec9;
+    --c-warn-1:#ffb9ae; --c-warn-2:#d75f4e;
+    --c-magic-1:#dfb3ff; --c-magic-2:#8b3fd0;
+    --c-hit-1:#ffc98a;  --c-hit-2:#e8621a;
+    --c-mute-1:#d8cdb6; --c-mute-2:#8d8370;
+    /* beweging: verschijnen ease-out, verdwijnen ease-in, 150-250ms */
+    --t-in:200ms cubic-bezier(.22,.9,.3,1);
+    --t-out:150ms cubic-bezier(.6,.02,.9,.4);
+    --t-press:90ms cubic-bezier(.3,.7,.4,1);
+    --t-pop:220ms cubic-bezier(.2,1.5,.45,1);   /* terugveren met overshoot */
+  }
 
-  #btnBook { right:2%; top:3%; width:11vmin; height:11vmin; min-width:64px; min-height:64px;
-      background:linear-gradient(#ffd86b,#f5a623); font-size:6vmin; }
-  /* onder het boek: terug naar het startscherm, en daaronder geluid. Allebei
-     duidelijk kleiner dan het boek zodat er niet per ongeluk op getikt wordt. */
-  #btnHome { right:2.9%; top:17%; width:7.4vmin; height:7.4vmin; min-width:44px; min-height:44px;
-      background:linear-gradient(#ffb0a6,#ef7a6c); font-size:3.7vmin; }
-  #btnMute { right:2.9%; top:28%; width:7.4vmin; height:7.4vmin; min-width:44px; min-height:44px;
-      background:linear-gradient(#9fd9ff,#4a9fdb); font-size:3.7vmin; }
+  /* --------------------------------------------------------------------------
+     KNOP-ANATOMIE
+     Elke knop in het spel is opgebouwd uit dezelfde onderdelen: basisvorm met
+     vaste afronding, verticaal verloop van licht naar donker, een lichte
+     binnenrand die het licht van bovenaf vangt, een donkere onderrand met
+     dikte zodat hij fysiek aanvoelt, een schaduw uit de schaal, en een icoon.
+     -------------------------------------------------------------------------- */
+  .btn {
+    position:relative; border:none; cursor:pointer; display:flex;
+    align-items:center; justify-content:center; line-height:1;
+    /* een knop leest zijn maat uit --sz (hoogte) en optioneel --bw (breedte) */
+    --sz:96px;
+    width:var(--bw, var(--sz)); height:var(--sz); font-size:calc(var(--sz) * .46);
+    font-family:-apple-system, sans-serif; color:#fff;
+    border-radius:var(--r-m);
+    background:linear-gradient(180deg, var(--b1) 0%, var(--b2) 100%);
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.45),          /* licht randje bovenop */
+      inset 0 -6px 0 rgba(0,0,0,.22),               /* donkere onderrand met dikte */
+      var(--sh-2);
+    text-shadow:0 2px 2px rgba(0,0,0,.32);
+    transform:translateY(0);
+    transition:transform var(--t-pop), box-shadow var(--t-pop), filter var(--t-in);
+    -webkit-user-select:none; user-select:none;
+    --b1:var(--c-go-1); --b2:var(--c-go-2);
+  }
+  /* Het aanraakgebied is ruimer dan de knop zelf: een mis-tap net ernaast telt
+     gewoon. Onmisbaar voor een kindervinger. */
+  .btn::after { content:''; position:absolute; inset:-14px; border-radius:inherit; }
+  /* Ingedrukt: de knop zakt zichtbaar in, de onderrand wordt smaller en de
+     schaduw kleiner. Dit is het detail dat de interface laat reageren. */
+  .btn:active {
+    transform:translateY(4px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.3),
+      inset 0 -2px 0 rgba(0,0,0,.2),
+      var(--sh-1);
+    transition:transform var(--t-press), box-shadow var(--t-press);
+  }
+  .btn[disabled] {                                   /* uitgeschakeld: platter en doffer */
+    filter:saturate(.25) brightness(.9);
+    box-shadow:inset 0 0 0 2px rgba(0,0,0,.12);
+    cursor:default;
+  }
+  .btn[disabled]::after { display:none; }
+  /* maten — het zichtbare vlak; het aanraakgebied is altijd ruimer */
+  .btn-round { border-radius:var(--r-pill); }
+  /* kleurvarianten */
+  .btn-go    { --b1:var(--c-go-1);    --b2:var(--c-go-2); }
+  .btn-book  { --b1:var(--c-book-1);  --b2:var(--c-book-2); }
+  .btn-info  { --b1:var(--c-info-1);  --b2:var(--c-info-2); }
+  .btn-warn  { --b1:var(--c-warn-1);  --b2:var(--c-warn-2); }
+  .btn-magic { --b1:var(--c-magic-1); --b2:var(--c-magic-2); }
+  .btn-hit   { --b1:var(--c-hit-1);   --b2:var(--c-hit-2); }
+  .btn-mute  { --b1:var(--c-mute-1);  --b2:var(--c-mute-2); color:var(--ink); text-shadow:none; }
+
+  .ui-btn { position:absolute; }
+
+  /* Het boek is de grootste; daaronder terug-naar-menu en geluid, zichtbaar
+     kleiner maar met een even ruim aanraakgebied (60 + 2x14 = 88px). */
+  #btnBook { right:2.4%; top:3%; --sz:min(11vmin,104px); }
+  #btnHome { right:3.4%; top:17.5%; --sz:min(7.4vmin,62px); }
+  #btnMute { right:3.4%; top:29%; --sz:min(7.4vmin,62px); }
   #bookBadge { position:absolute; right:-6px; top:-6px; min-width:34px; height:34px; padding:0 6px;
       border-radius:17px; background:#ff5a5a; color:#fff; font-size:20px; font-weight:800;
       display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,.3); }
@@ -43,27 +126,29 @@
       justify-content:flex-end; align-items:flex-end; }
   #startBtns { display:flex; flex-direction:column; gap:2.2vmin; align-items:center;
       margin:0 4.5vmin 5vmin 0; }
-  #btnStart, #btnGuest { width:46vmin; min-width:280px; text-align:center; }
-  #btnStart { padding:2.4vmin 8vmin; font-size:6.4vmin; font-weight:900; font-family:-apple-system, sans-serif;
-      color:#fff; border:none; border-radius:6vmin; letter-spacing:.08em; cursor:pointer;
-      background:linear-gradient(#9fe46b, #4caf50 55%, #2e7d32);
-      box-shadow:0 8px 22px rgba(0,0,0,.55), inset 0 -6px 0 rgba(0,0,0,.22);
-      text-shadow:0 2px 3px rgba(0,0,0,.4); animation:pulse 1.4s infinite; }
-  /* de spelersknop is even groot als START en staat erboven */
-  #btnGuest { padding:2.4vmin 8vmin; font-size:6.4vmin; font-weight:900; font-family:-apple-system, sans-serif;
-      color:#fff; border:none; border-radius:6vmin; letter-spacing:.08em; cursor:pointer;
-      background:linear-gradient(#8fd0ff, #3f8fd8 55%, #245f96);
-      box-shadow:0 8px 22px rgba(0,0,0,.55), inset 0 -6px 0 rgba(0,0,0,.22);
-      text-shadow:0 2px 3px rgba(0,0,0,.4); }
-  #btnStart:active, #btnGuest:active { transform:scale(.93); }
-  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  /* de twee profielknoppen: zelfde anatomie, eigen kleur en eigen icoon */
+  #btnStart, #btnGuest { --bw:min(46vmin,420px); --sz:min(15vmin,104px);
+      border-radius:var(--r-l); gap:var(--s3); font-weight:900;
+      font-size:min(6vmin,44px); letter-spacing:.06em; }
+  #btnStart .pic, #btnGuest .pic { width:1.9em; height:1.9em; flex:0 0 auto;
+      margin:0 var(--s2) 0 calc(-1 * var(--s3)); }
+  #btnStart { animation:pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-2px) scale(1.035)} }
 
   /* spelerskiezer: links de lopende spellen, rechts een nieuw spel aanmaken */
-  #saveOverlay { display:none; background:rgba(14,26,12,.82); z-index:12; }
-  .panel { background:linear-gradient(#fff8ea,#f1e2c4); border-radius:3vmin; padding:2.6vmin 3vmin;
-      box-shadow:0 12px 40px rgba(0,0,0,.55); max-width:94%; max-height:94%;
-      display:flex; flex-direction:column; align-items:center; gap:1.8vmin; }
-  .panelHead { font-size:4.4vmin; font-weight:900; color:#7a5b25; letter-spacing:.02em; }
+  #saveOverlay { display:none; z-index:12; }
+  /* Achter elk paneel een verdonkerde, licht vervaagde laag over de wereld.
+     Daardoor is een paneel altijd leesbaar, hoe druk de achtergrond ook is. */
+  #saveOverlay, #bookOverlay { background:var(--scrim);
+      -webkit-backdrop-filter:blur(7px) saturate(.8); backdrop-filter:blur(7px) saturate(.8); }
+  .panel { background:linear-gradient(180deg,var(--paper),var(--paper-2));
+      border-radius:var(--r-l); padding:var(--s5) var(--s6);
+      box-shadow:var(--sh-3), inset 0 2px 0 rgba(255,255,255,.8);
+      max-width:94%; max-height:94%;
+      display:flex; flex-direction:column; align-items:center; gap:var(--s4);
+      animation:panelIn var(--t-in) both; }
+  @keyframes panelIn { from{opacity:0; transform:scale(.92) translateY(10px)} to{opacity:1; transform:none} }
+  .panelHead { font-size:min(4.4vmin,34px); font-weight:900; color:#7a5b25; letter-spacing:.02em; }
   #saveCols { display:flex; gap:3vmin; align-items:stretch; }
   #saveListWrap { display:flex; }
   #saveListWrap.leeg { display:none; }
@@ -97,13 +182,8 @@
   #newSaveCol { display:flex; flex-direction:column; align-items:center; gap:1.6vmin;
       justify-content:center; }
   .panelRow { display:flex; gap:2.4vmin; align-items:center; }
-  .panelBtn { width:15vmin; height:11vmin; min-width:92px; min-height:68px; border:none; border-radius:2.4vmin;
-      font-size:6vmin; font-weight:900; color:#fff; cursor:pointer; transition:transform .1s;
-      background:linear-gradient(#9fe46b,#4caf50 55%,#2e7d32);
-      box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 -5px 0 rgba(0,0,0,.2);
-      display:flex; align-items:center; justify-content:center; }
-  .panelBtn.ghost { background:linear-gradient(#d8c9a8,#a8977a); }
-  .panelBtn:active { transform:scale(.9); }
+  .panelBtn { --bw:min(15vmin,126px); --sz:min(11vmin,92px); font-size:min(6vmin,46px); font-weight:900; }
+  .panelBtn.ghost { --b1:#e2d5b8; --b2:#9b8a6c; }
   .panelBtn[disabled] { filter:grayscale(.7) brightness(.85); }
   #avatarPick { display:flex; gap:3vmin; }
   .avaBtn { background:#fffdf6; border:none; border-radius:2.2vmin; padding:1.2vmin; cursor:pointer;
@@ -140,8 +220,8 @@
   .cell .zzz { position:absolute; left:-6px; bottom:-6px; font-size:3.4vmin; filter:drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
   @keyframes selPulse { 0%,100%{box-shadow:0 0 0 4px rgba(82,214,105,.55), 0 0 18px rgba(82,214,105,.6)}
       50%{box-shadow:0 0 0 6px rgba(82,214,105,.75), 0 0 26px rgba(82,214,105,.85)} }
-  #btnCloseBook { position:absolute; right:2%; top:3%; width:10vmin; height:10vmin; min-width:60px;
-      min-height:60px; background:linear-gradient(#ff8a80,#e0524a); font-size:5vmin; color:#fff; font-weight:800; }
+  #btnCloseBook { position:absolute; right:calc(-1 * var(--s4)); top:calc(-1 * var(--s4));
+      --sz:min(10vmin,88px); }
 
   #battleBtns { position:absolute; left:0; right:0; bottom:3.5%; display:none; justify-content:center;
       gap:9vmin; z-index:5; }
@@ -149,32 +229,26 @@
      onder zijn eigen wezentje (dat op 300/1024 van de speelcanvas staat) */
   #atkBtns { position:absolute; left:29.3%; bottom:3.5%; transform:translateX(-50%);
       display:none; gap:2.6vmin; z-index:5; }
-  .battle-btn { width:17vmin; height:17vmin; min-width:100px; min-height:100px; border-radius:50%; border:none;
-      box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 -6px 0 rgba(0,0,0,.18); cursor:pointer;
-      display:flex; align-items:center; justify-content:center; transition:transform .1s; position:relative; }
-  .battle-btn:active { transform:scale(.88); }
-  #btnAttack { background:radial-gradient(circle at 35% 30%, #ffb74d, #f57c00 65%, #e65100); font-size:9vmin; }
-  #btnBall { background:#fff; overflow:hidden; }
-  #btnBall .ballTop { position:absolute; top:0; left:0; right:0; height:46%; background:linear-gradient(#ffe07a,#f9c513); }
-  #btnBall .ballBand { position:absolute; top:44%; left:0; right:0; height:12%; background:#3a4a8c; }
+  .battle-btn { --sz:min(17vmin,132px); }
+  #btnAttack { --b1:var(--c-hit-1); --b2:var(--c-hit-2); }
+  #btnBall { --b1:#fdfdfd; --b2:#cdd3dd; overflow:hidden; }
+  #btnBall .ballTop { position:absolute; top:0; left:0; right:0; height:46%; background:linear-gradient(#ffe895,#f2b40c); }
+  #btnBall .ballBand { position:absolute; top:44%; left:0; right:0; height:12%; background:#33417d; }
   #btnBall .ballDot { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:38%; height:38%;
-      border-radius:50%; background:#fff; border:1.1vmin solid #3a4a8c; display:flex; align-items:center;
-      justify-content:center; font-size:5vmin; }
-  #btnFlee { position:absolute; left:2.5%; top:3%; width:13vmin; height:13vmin; min-width:80px;
-      min-height:80px; border-radius:50%; border:none; font-size:6.5vmin; display:none; z-index:5;
-      align-items:center; justify-content:center; cursor:pointer; transition:transform .1s;
-      background:radial-gradient(circle at 35% 30%, #9fd9ff, #4a9fdb 65%, #2d6fa8);
-      box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 -6px 0 rgba(0,0,0,.18); }
-  #btnFlee:active { transform:scale(.88); }
+      border-radius:50%; background:#fff; border:.55vmin solid #33417d; display:flex; align-items:center;
+      justify-content:center; font-size:min(5vmin,38px);
+      box-shadow:inset 0 2px 3px rgba(0,0,0,.2); }
+  /* De vlucht-knop staat linksboven, ver van de aanvalsknoppen rechtsonder:
+     twee knoppen met een heel andere uitkomst mogen nooit naast elkaar. */
+  #btnFlee { position:absolute; left:2.8%; top:3.5%; display:none; z-index:5; --sz:min(13vmin,104px); }
   /* tweede, krachtige aanval: naast de gewone aanval, alleen bij wezens die hem hebben */
-  #btnSpecial { font-size:8.5vmin; display:none;
-      background:radial-gradient(circle at 35% 30%, #d8a8ff, #9a4fd8 62%, #6a2ea8);
-      box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 -6px 0 rgba(0,0,0,.2), 0 0 0 0 rgba(255,214,61,.7);
-      animation:specGlow 1.5s infinite; }
-  #btnSpecial.armed { animation:specArmed .5s infinite; }
-  @keyframes specGlow { 0%,100%{box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 -6px 0 rgba(0,0,0,.2), 0 0 0 0 rgba(255,214,61,.6)}
-      50%{box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 -6px 0 rgba(0,0,0,.2), 0 0 0 1.6vmin rgba(255,214,61,0)} }
-  @keyframes specArmed { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+  #btnSpecial { display:none; --b1:var(--c-magic-1); --b2:var(--c-magic-2); }
+  #btnSpecial::before { content:''; position:absolute; inset:-6px; border-radius:inherit;
+      box-shadow:0 0 0 0 rgba(255,214,61,.7); animation:specGlow 1.6s ease-out infinite; pointer-events:none; }
+  #btnSpecial.armed { animation:specArmed .5s ease-in-out infinite; }
+  @keyframes specGlow { 0%{box-shadow:0 0 0 0 rgba(255,214,61,.65)}
+      100%{box-shadow:0 0 0 16px rgba(255,214,61,0)} }
+  @keyframes specArmed { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-3px) scale(1.09)} }
 
   #rotateOverlay { display:none; background:#1b2d1b; z-index:20; font-size:18vmin; }
   @media (orientation: portrait) { #rotateOverlay { display:flex; } }
@@ -186,33 +260,33 @@
 <div id="wrap">
   <canvas id="game"></canvas>
 
-  <button class="ui-btn" id="btnBook">&#128214;<span id="bookBadge">0</span></button>
-  <button class="ui-btn" id="btnHome">&#127968;</button>
-  <button class="ui-btn" id="btnMute">&#128266;</button>
+  <button class="btn btn-round btn-book ui-btn" id="btnBook">&#128214;<span id="bookBadge">0</span></button>
+  <button class="btn btn-round btn-warn ui-btn" id="btnHome">&#127968;</button>
+  <button class="btn btn-round btn-info ui-btn" id="btnMute">&#128266;</button>
 
   <div id="battleBtns">
-    <button class="battle-btn" id="btnBall">
+    <button class="btn btn-round battle-btn" id="btnBall">
       <span class="ballTop"></span><span class="ballBand"></span><span class="ballDot">&#11088;</span>
     </button>
   </div>
   <div id="atkBtns">
-    <button class="battle-btn" id="btnSpecial">&#127775;</button>
-    <button class="battle-btn" id="btnAttack">&#128165;</button>
+    <button class="btn btn-round battle-btn" id="btnSpecial">&#127775;</button>
+    <button class="btn btn-round battle-btn" id="btnAttack">&#128165;</button>
   </div>
-  <button id="btnFlee">&#127939;</button>
+  <button class="btn btn-round btn-info" id="btnFlee">&#127939;</button>
 
   <div class="overlay" id="bookOverlay">
     <div id="bookPanel">
       <div id="bookHeader"><span style="font-size:5.5vmin">&#11088;</span><span id="bookCount">0 / 24</span></div>
       <div id="bookGrid"></div>
     </div>
-    <button class="ui-btn" id="btnCloseBook">&#10005;</button>
+    <button class="btn btn-round btn-warn" id="btnCloseBook">&#10005;</button>
   </div>
 
   <div class="overlay" id="startOverlay">
     <div id="startBtns">
-      <button id="btnGuest">GUEST</button>
-      <button id="btnStart">Julian</button>
+      <button class="btn btn-info" id="btnGuest"><canvas class="pic" width="96" height="96"></canvas>GUEST</button>
+      <button class="btn btn-go" id="btnStart"><canvas class="pic" width="96" height="96"></canvas>Julian</button>
     </div>
   </div>
 
@@ -233,10 +307,10 @@
             <button class="diffBtn d2" data-diff="normal">Gewoon</button>
             <button class="diffBtn d3" data-diff="hard">Moeilijk</button>
           </div>
-          <button class="panelBtn" id="btnNewGo">&#9654;</button>
+          <button class="btn btn-go panelBtn" id="btnNewGo">&#9654;</button>
         </div>
       </div>
-      <button class="panelBtn ghost" id="btnSaveBack">&#8592;</button>
+      <button class="btn btn-mute panelBtn ghost" id="btnSaveBack">&#8592;</button>
     </div>
   </div>
 </div>
@@ -8418,6 +8492,22 @@ saveName.addEventListener('focus', () => { btnNewGo.disabled = !saveName.value.t
 btnNewGo.addEventListener('pointerdown', e => { e.stopPropagation(); createSave(); });
 btnNewGo.disabled = true;
 paintAvatarChoices();
+// Elk profiel krijgt een eigen kleur en een eigen portret op de knop, zodat
+// Julian zonder te lezen ziet welke knop van hem is.
+(function tekenProfielIconen() {
+  const paar = [['btnStart', 'julian'], ['btnGuest', 'livea']];
+  for (const [id, ava] of paar) {
+    const c = document.getElementById(id).querySelector('.pic');
+    if (c) drawAvatarPortrait(c.getContext('2d'), ava, c.width, c.height);
+  }
+})();
+// Geen enkele aanraking zonder hoorbare reactie: knoppen die zelf geen geluid
+// maken krijgen hier alsnog een tik mee.
+const STIL = ['btnBook', 'btnMute', 'btnSaveBack', 'btnNewGo', 'btnStart', 'btnGuest'];
+STIL.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('pointerdown', () => { if (AC) SFX.tap(); });
+});
 
 // ============================================================ hoofdlus
 let lastT = performance.now();
