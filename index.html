@@ -80,10 +80,13 @@
   .panelBtn:active { transform:scale(.9); }
   .panelBtn[disabled] { filter:grayscale(.7) brightness(.85); }
   #avatarPick { display:flex; gap:3vmin; }
-  .avaBtn { background:#fffdf6; border:none; border-radius:2.2vmin; padding:1.4vmin; cursor:pointer;
-      box-shadow:0 4px 12px rgba(0,0,0,.25), inset 0 0 0 .5vmin #e8dcc0; transition:transform .1s; }
+  .avaBtn { background:#fffdf6; border:none; border-radius:2.2vmin; padding:1.4vmin 1.4vmin 0.9vmin; cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.25), inset 0 0 0 .5vmin #e8dcc0; transition:transform .1s;
+      display:flex; flex-direction:column; align-items:center; gap:.5vmin; }
   .avaBtn.sel { box-shadow:0 6px 18px rgba(0,0,0,.35), inset 0 0 0 .7vmin #4caf50; transform:scale(1.05); }
   .avaBtn canvas { display:block; width:19vmin; height:26vmin; }
+  .avaBtn span { font-size:3vmin; font-weight:800; color:#6b4f20; }
+  .avaBtn.sel span { color:#2e7d32; }
   #saveName { font-size:4.4vmin; font-weight:800; text-align:center; padding:1.4vmin 2vmin;
       border:none; border-radius:2vmin; width:48vmin; max-width:80vw; color:#5c4318;
       background:#fffdf6; box-shadow:inset 0 0 0 .45vmin #e0cfa4; font-family:-apple-system, sans-serif; }
@@ -184,8 +187,8 @@
 
   <div class="overlay" id="startOverlay">
     <div id="startBtns">
-      <button id="btnGuest">SPELERS</button>
-      <button id="btnStart">START</button>
+      <button id="btnGuest">GUEST</button>
+      <button id="btnStart">Julian</button>
     </div>
   </div>
 
@@ -204,8 +207,8 @@
     <div class="panel">
       <div class="panelHead">Nieuw spel</div>
       <div id="avatarPick">
-        <button class="avaBtn sel" data-ava="julian"><canvas width="190" height="260"></canvas></button>
-        <button class="avaBtn" data-ava="lena"><canvas width="190" height="260"></canvas></button>
+        <button class="avaBtn sel" data-ava="julian"><canvas width="190" height="260"></canvas><span>Julian</span></button>
+        <button class="avaBtn" data-ava="livea"><canvas width="190" height="260"></canvas><span>LivEa</span></button>
       </div>
       <input id="saveName" type="text" maxlength="12" placeholder="naam" autocomplete="off"
              autocorrect="off" autocapitalize="words" spellcheck="false">
@@ -4708,7 +4711,7 @@ const JF = {
 // een staart. Zo blijft alle tekenlogica gedeeld en verschilt alleen het uiterlijk.
 const JG = {
   skin: '#fbd7b4', skinSh: '#e4ab86', skinHi: '#fff0de', blush: 'rgba(240,120,140,0.5)',
-  hair: '#c4602c', hairDk: '#8e3f18', hairLt: '#e58a4e', hairHi: '#ffc590',
+  hair: '#e6b45c', hairDk: '#bb8630', hairLt: '#ffd98a', hairHi: '#fff2c4',
   jack: '#b4517a', jackDk: '#8a3358', jackLt: '#d2769a', hood: '#96406a',
   zip: '#ffd15c', zipDk: '#c9992f', strap: '#5f4a6b', strapDk: '#42324c', buckle: '#e6c25a',
   short: '#5f7bb8', shortDk: '#42598e', shortLt: '#8aa3d4',
@@ -4717,9 +4720,10 @@ const JG = {
   bino: '#2f2b33', binoLt: '#544c5c', eyeW: '#ffffff', iris: '#4aa86a', irisDk: '#1f6b3e',
   brow: '#964a20', mouth: '#8c3244', tongue: '#e0798a', tooth: '#fffdf6',
   packA: '#7c5a86', packB: '#5a3f64', packC: '#9c78a6',
-  girl: 1, ribbon: '#ffd15c', ribbonDk: '#d8a428',
+  girl: 1, ribbon: '#e8709c', ribbonDk: '#c04a78',
 };
-const AVATARS = { julian: JF, lena: JG };
+// 'lena' was de werknaam; oude opslag blijft daardoor gewoon werken
+const AVATARS = { julian: JF, livea: JG, lena: JG };
 let JP = JF;                       // actief palet; drawJulian zet dit per avatar
 
 // ---- tekengereedschap: verlopen, tapse lijnen en stoftextuur ----------------
@@ -4793,7 +4797,7 @@ function drawJulianFront(g, t, mode, swing) {
     g.bezierCurveTo(10.6, -22.4, 7.6, -22.6, 6.6, -24.8);
     g.bezierCurveTo(7.4, -34.0, 7.6, -45.0, 6.0, -54.0);
     g.closePath(); g.fill();
-    STRANDS(g, 'rgba(255,190,140,0.3)', [
+    STRANDS(g, 'rgba(255,240,185,0.38)', [
       [-9.6, -52.0, -12.2, -38.0, -10.0, -25.4], [9.6, -52.0, 12.2, -38.0, 10.0, -25.4],
     ], 0.5);
   }
@@ -5149,7 +5153,7 @@ function drawJulianSide(g, t, mode, swing) {
     g.bezierCurveTo(-3.4, 26.6, -0.4, 26.0, 0.4, 23.4);
     g.bezierCurveTo(0.6, 12.6, 3.2, 4.0, 5.2, -1.6);
     g.closePath(); g.fill();
-    STRANDS(g, 'rgba(255,190,140,0.32)', [[1.0, -1.4, -3.4, 11.0, -2.4, 23.0]], 0.55);
+    STRANDS(g, 'rgba(255,240,185,0.4)', [[1.0, -1.4, -3.4, 11.0, -2.4, 23.0]], 0.55);
     g.restore();
   }
 
@@ -5488,20 +5492,6 @@ function drawJulianBack(g, t, mode, swing) {
   const J = JP, walk = mode === 'walk', cheer = mode === 'cheer';
   const hb = walk ? Math.sin(t * 11) * 0.4 : Math.sin(t * 2) * 0.2;
 
-  if (J.girl) {                                                      // lange haren over de rug
-    g.fillStyle = LGR(g, 0, -58, 0, -20, J.hair, J.hairDk);
-    g.beginPath();
-    g.moveTo(-10.6, -56.0);
-    g.bezierCurveTo(-14.4, -46.0, -13.6, -32.0, -11.4, -22.0);
-    g.bezierCurveTo(-6.0, -19.4, 6.0, -19.4, 11.4, -22.0);
-    g.bezierCurveTo(13.6, -32.0, 14.4, -46.0, 10.6, -56.0);
-    g.closePath(); g.fill();
-    STRANDS(g, 'rgba(255,190,140,0.28)', [
-      [-8.6, -54.0, -11.4, -38.0, -9.0, -22.4], [-3.4, -56.0, -4.2, -38.0, -3.0, -20.6],
-      [3.4, -56.0, 4.2, -38.0, 3.0, -20.6], [8.6, -54.0, 11.4, -38.0, 9.0, -22.4],
-    ], 0.45);
-  }
-
   for (const i of [0, 1]) {                                          // benen
     const s = i ? 1 : -1;
     const ph = i ? -swing : swing;
@@ -5594,7 +5584,9 @@ function drawJulianBack(g, t, mode, swing) {
   g.closePath(); g.fill();
   E(g, 'rgba(30,40,14,0.28)', 0, -36.4, 4.8, 1.5);
 
-  for (const s of [-1, 1]) {                                          // schouderbanden
+  // Bij lang haar valt alles op de rug onder het haar; dan slaan we de rugzak
+  // hier over en tekenen we het haar er straks overheen.
+  for (const s of J.girl ? [] : [-1, 1]) {                            // schouderbanden
     g.fillStyle = J.strap;
     g.beginPath();
     g.moveTo(s * 2.6, -43.4);
@@ -5604,6 +5596,7 @@ function drawJulianBack(g, t, mode, swing) {
     g.closePath(); g.fill();
     LN(g, J.strapDk, 0.3, [[s * 4.4, -40.0], [s * 4.3, -35.2]]);
   }
+  if (!J.girl) {
   const packBody = () => {                                            // ronde dagrugzak
     g.beginPath();
     g.moveTo(-5.4, -37.4);
@@ -5636,6 +5629,7 @@ function drawJulianBack(g, t, mode, swing) {
     E(g, 'rgba(255,244,200,0.6)', s * 2.5 - 0.25, -31.8, 0.35, 0.28);
   }
   E(g, 'rgba(255,232,200,0.3)', -2.2, -38.4, 2.0, 0.8, -0.15);        // glans op de klep
+  }
 
   const armSw = walk ? -swing : 0;                                    // armen
   const pa = Math.sin(t * 5) * 0.5;
@@ -5661,7 +5655,35 @@ function drawJulianBack(g, t, mode, swing) {
     E(g, LGR(g, -10.6, -43, 11.0, -26.6, '#9aad6c', J.jack, J.jackDk), s * 8.6, -40.6, 3.1, 2.5, s * 0.25);
   }
 
-  for (const s of [-1, 1]) E(g, J.skin, s * 10.2, -51.2, 1.7, 2.2);   // oortjes
+  if (J.girl) {
+    // Van achteren valt het lange haar over nek en bovenrug: die zie je dus
+    // niet. Daarom ligt deze massa over het jack heen, niet erachter.
+    const sw = Math.sin(t * (walk ? 11 : 2)) * (walk ? 0.6 : 0.25);
+    g.fillStyle = LGR(g, -6, -60, 6, -20, J.hairLt, J.hair, J.hairDk);
+    g.beginPath();
+    g.moveTo(-9.8, -58.4);                                            // smal bij de kruin
+    g.bezierCurveTo(-11.6, -49.0, -11.8, -39.0, -10.4 + sw, -33.0);   // valt uit over de schouder
+    g.bezierCurveTo(-10.0 + sw, -31.0, -9.0 + sw, -29.6, -7.4 + sw, -29.0);
+    g.lineTo(-6.0 + sw, -31.8); g.lineTo(-4.4 + sw, -28.6);           // gerafelde punten
+    g.lineTo(-2.6 + sw, -32.2); g.lineTo(-0.8 + sw, -28.2);
+    g.lineTo(1.0 + sw, -32.0); g.lineTo(2.8 + sw, -28.8);
+    g.lineTo(4.4 + sw, -31.6); g.lineTo(6.0 + sw, -29.2);
+    g.bezierCurveTo(8.2 + sw, -29.8, 9.8 + sw, -31.2, 10.4 + sw, -33.0);
+    g.bezierCurveTo(11.8, -39.0, 11.6, -49.0, 9.8, -58.4);
+    g.closePath(); g.fill();
+    STRANDS(g, 'rgba(255,242,190,0.45)', [
+      [-8.6, -56.0, -10.8, -44.0, -8.4 + sw, -30.6], [-3.4, -57.8, -4.2, -44.0, -3.0 + sw, -29.4],
+      [3.4, -57.8, 4.2, -44.0, 3.0 + sw, -29.4], [8.6, -56.0, 10.8, -44.0, 8.4 + sw, -30.6],
+    ], 0.6);
+    STRANDS(g, 'rgba(160,115,35,0.3)', [
+      [-6.2, -56.8, -7.6, -44.0, -5.8 + sw, -30.0], [0, -58.4, -0.6, -44.0, 0.4 + sw, -28.8],
+      [6.2, -56.8, 7.6, -44.0, 5.8 + sw, -30.0],
+    ], 0.45);
+    E(g, 'rgba(255,248,214,0.3)', -4.0, -50.0, 3.4, 4.4, -0.1);       // glans op de val
+    RIM(g, 'rgba(255,246,200,0.35)', 0, -44.0, 11.2, 14.0, 0.5, Math.PI * 1.06, Math.PI * 1.44);
+  } else {
+    for (const s of [-1, 1]) E(g, J.skin, s * 10.2, -51.2, 1.7, 2.2); // oortjes
+  }
   E(g, LGR(g, 0, -62, 0, -44, J.skinHi, J.skinSh), 0, -52.4, 9.4, 9.6);  // achterhoofd
 
   g.save(); g.translate(0, hb * 0.3);                                 // achterkant van het haar
@@ -5670,12 +5692,18 @@ function drawJulianBack(g, t, mode, swing) {
   g.moveTo(-10.9, -52.4);
   g.bezierCurveTo(-11.2, -60.6, -6.6, -64.4, 0, -64.4);
   g.bezierCurveTo(6.6, -64.4, 11.2, -60.6, 10.9, -52.4);
-  g.bezierCurveTo(10.8, -50.0, 10.4, -48.4, 9.7, -47.2);
-  const tips = [[8.2, -49.6], [7.0, -46.2], [5.4, -49.8], [3.8, -45.6], [2.0, -49.4],
-                [0.2, -45.2], [-1.6, -49.6], [-3.4, -45.8], [-5.0, -49.8], [-6.6, -46.6],
-                [-8.2, -49.4], [-9.7, -47.2]];
-  tips.forEach(p => g.lineTo(p[0], p[1]));
-  g.bezierCurveTo(-10.4, -48.4, -10.8, -50.0, -10.9, -52.4);
+  if (J.girl) {                                                       // loopt door in het lange haar
+    g.bezierCurveTo(10.8, -49.0, 10.6, -46.4, 10.4, -44.0);
+    g.lineTo(-10.4, -44.0);
+    g.bezierCurveTo(-10.6, -46.4, -10.8, -49.0, -10.9, -52.4);
+  } else {
+    g.bezierCurveTo(10.8, -50.0, 10.4, -48.4, 9.7, -47.2);
+    const tips = [[8.2, -49.6], [7.0, -46.2], [5.4, -49.8], [3.8, -45.6], [2.0, -49.4],
+                  [0.2, -45.2], [-1.6, -49.6], [-3.4, -45.8], [-5.0, -49.8], [-6.6, -46.6],
+                  [-8.2, -49.4], [-9.7, -47.2]];
+    tips.forEach(p => g.lineTo(p[0], p[1]));
+    g.bezierCurveTo(-10.4, -48.4, -10.8, -50.0, -10.9, -52.4);
+  }
   g.closePath(); g.fill();
   STRANDS(g, 'rgba(150,110,26,0.32)', [
     [-8.4, -61.4, -9.6, -54.0, -8.2, -48.4], [-4.0, -63.6, -4.6, -55.0, -3.4, -47.0],
