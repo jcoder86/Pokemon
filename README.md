@@ -44,6 +44,7 @@ Productie draait via **Dokploy** op de VPS: koppel deze GitHub-repo als service,
 ## Bestanden
 
 - `index.html` — het volledige spel (alle code inline)
+- `herstel.html` — controle- en herstelpagina: toont per opgeslagen spel hoeveel wezentjes erin zitten, kan voortgang van het ene blok naar het andere kopiëren en alles veiligstellen als tekst. Open haar op hetzelfde adres als het spel, anders leest ze een andere opslag.
 - `start.png` — startscherm-artwork
 - `icon.png`, `icon-512.png`, `apple-touch-icon.png`, `manifest.json` — app-icoon en web-app-manifest
 - `Dockerfile`, `docker-compose.yml`, `.dockerignore` — deploy-artifacts

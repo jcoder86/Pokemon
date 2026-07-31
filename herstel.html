@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Herstel — Julian's Pokemon</title>
+<style>
+  * { box-sizing:border-box; -webkit-text-size-adjust:100%; }
+  body { margin:0; padding:16px; background:#1b2d1b; color:#f4efe2;
+      font-family:-apple-system, BlinkMacSystemFont, sans-serif; line-height:1.5; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  h2 { font-size:17px; margin:26px 0 8px; color:#ffd86b; }
+  p.uitleg { margin:0 0 18px; color:#c3d1bc; font-size:14px; }
+  .kaart { background:#27402a; border-radius:12px; padding:12px 14px; margin-bottom:10px; }
+  .kaart.leeg { opacity:.6; }
+  .rij { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .naam { font-weight:800; font-size:17px; }
+  .sleutel { font-family:ui-monospace, Menlo, monospace; font-size:12px; color:#9db69a; word-break:break-all; }
+  .telling { margin-left:auto; font-weight:800; font-size:20px; color:#ffd86b; white-space:nowrap; }
+  .merk { font-size:11px; font-weight:700; padding:2px 7px; border-radius:99px; }
+  .m-spel { background:#3f7d43; } .m-bak { background:#8a6a1e; } .m-kapot { background:#8a3a2e; }
+  .m-julian { background:#2f6ea8; }
+  .lijst { margin-top:8px; font-size:12px; color:#a9c0a5; word-break:break-word; }
+  button { font:inherit; font-weight:700; border:none; border-radius:9px; padding:10px 14px;
+      background:#4caf50; color:#fff; cursor:pointer; margin:4px 6px 4px 0; }
+  button.grijs { background:#5b6b58; }
+  button.rood { background:#c0563e; }
+  button:active { transform:scale(.96); }
+  select, textarea { font:inherit; font-size:14px; width:100%; padding:9px; border-radius:9px;
+      border:none; background:#f4efe2; color:#22331f; margin-top:6px; }
+  textarea { height:150px; font-family:ui-monospace, Menlo, monospace; font-size:11px; }
+  .waarschuwing { background:#4a2a22; border-left:4px solid #c0563e; padding:10px 12px;
+      border-radius:8px; font-size:14px; margin-top:10px; }
+  .ok { background:#274a2b; border-left:4px solid #6fc750; padding:10px 12px;
+      border-radius:8px; font-size:14px; margin-top:10px; }
+  label { font-size:14px; color:#c3d1bc; display:block; margin-top:12px; }
+  a { color:#ffd86b; }
+</style>
+</head>
+<body>
+<h1>Herstel &amp; controle</h1>
+<p class="uitleg">Deze pagina leest de opslag van dit apparaat voor Julian's Pokemon.
+Ze verandert niets tenzij je zelf op een knop drukt. Open haar op hetzelfde adres als het
+spel, anders kijkt ze in een andere la.</p>
+
+<h2>Gevonden opslag</h2>
+<div id="overzicht"></div>
+
+<h2>Voortgang terugzetten</h2>
+<p class="uitleg">Staat het juiste aantal onder een ander blok? Kopieer dat dan naar het spel
+waar het hoort. Van het doel wordt eerst automatisch een reservekopie gemaakt.</p>
+<label>Van (bron)<select id="van"></select></label>
+<label>Naar (doel)<select id="naar"></select></label>
+<button id="kopieer">Kopieer voortgang</button>
+<div id="kopieerUit"></div>
+
+<h2>Alles veiligstellen</h2>
+<p class="uitleg">Kopieer deze tekst en bewaar hem ergens. Hiermee kan alles altijd terug.</p>
+<textarea id="uitvoer" readonly></textarea>
+<button id="selecteer">Selecteer alles</button>
+
+<h2>Veiliggestelde tekst terugzetten</h2>
+<p class="uitleg">Plak hier een eerder bewaarde tekst. Bestaande blokken worden overschreven.</p>
+<textarea id="invoer" placeholder="plak hier"></textarea>
+<button class="rood" id="importeer">Terugzetten</button>
+<div id="importUit"></div>
+
+<p style="margin-top:28px"><a href="index.html">&#8592; terug naar het spel</a></p>
+
+<script>
+'use strict';
+var VOOR = 'juliansPokemon.';
+
+function alleSleutels() {
+  var uit = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (k && k.indexOf(VOOR) === 0) uit.push(k);
+  }
+  return uit.sort();
+}
+function leesSaves() {
+  try {
+    var a = JSON.parse(localStorage.getItem(VOOR + 'saves'));
+    return Array.isArray(a) ? a : [];
+  } catch (e) { return []; }
+}
+// aantal wezens in een blok, voor alle opslagformaten die het spel ooit had
+function tel(raw) {
+  try {
+    var d = JSON.parse(raw);
+    if (!d || !d.caught) return null;
+    if (Array.isArray(d.caught)) {
+      var n = 0;
+      for (var i = 0; i < d.caught.length; i++) if (d.caught[i] > 0) n++;
+      return n;
+    }
+    return Object.keys(d.caught).length;
+  } catch (e) { return null; }
+}
+function namen(raw) {
+  try {
+    var d = JSON.parse(raw);
+    if (!d || !d.caught || Array.isArray(d.caught)) return '';
+    return Object.keys(d.caught).join(', ');
+  } catch (e) { return ''; }
+}
+function actief(raw) {
+  try { var d = JSON.parse(raw); return typeof d.active === 'string' ? d.active : ''; }
+  catch (e) { return ''; }
+}
+
+function beschrijf(k) {
+  var kort = k.slice(VOOR.length);
+  var soort = 'spel', merk = 'm-spel';
+  if (/\.bak$/.test(kort)) { soort = 'reservekopie'; merk = 'm-bak'; }
+  else if (/\.kapot$/.test(kort)) { soort = 'onleesbaar bewaard'; merk = 'm-kapot'; }
+  var basis = kort.replace(/\.(bak|kapot)$/, '');
+  var naam = basis === 'julian' ? 'Julian (hoofdspel)'
+           : basis === 'guest' ? 'oud gastspel' : null;
+  var saves = leesSaves();
+  for (var i = 0; i < saves.length; i++) if (saves[i].p === basis) naam = saves[i].name;
+  return { kort: kort, basis: basis, soort: soort, merk: merk, naam: naam || basis };
+}
+
+function toonOverzicht() {
+  var doel = document.getElementById('overzicht');
+  doel.innerHTML = '';
+  var sleutels = alleSleutels().filter(function (k) { return k !== VOOR + 'saves'; });
+  if (!sleutels.length) {
+    doel.innerHTML = '<div class="kaart leeg">Geen opslag gevonden op dit adres. ' +
+      'Speel je het spel op een ander adres of in een andere browser, open deze pagina dan daar.</div>';
+    return;
+  }
+  sleutels.forEach(function (k) {
+    var b = beschrijf(k), raw = localStorage.getItem(k), n = tel(raw);
+    var d = document.createElement('div');
+    d.className = 'kaart' + (n === null ? ' leeg' : '');
+    var merkjes = '<span class="merk ' + b.merk + '">' + b.soort + '</span>';
+    if (b.basis === 'julian') merkjes = '<span class="merk m-julian">hoofdspel</span> ' + merkjes;
+    d.innerHTML =
+      '<div class="rij"><span class="naam">' + b.naam + '</span>' + merkjes +
+      '<span class="telling">' + (n === null ? 'onleesbaar' : n + ' wezens') + '</span></div>' +
+      '<div class="sleutel">' + k + '</div>' +
+      (actief(raw) ? '<div class="lijst">maatje: ' + actief(raw) + '</div>' : '') +
+      (namen(raw) ? '<div class="lijst">' + namen(raw) + '</div>' : '');
+    doel.appendChild(d);
+  });
+}
+
+function vulKeuzes() {
+  var sleutels = alleSleutels().filter(function (k) { return k !== VOOR + 'saves'; });
+  ['van', 'naar'].forEach(function (id) {
+    var s = document.getElementById(id);
+    s.innerHTML = '';
+    sleutels.forEach(function (k) {
+      var b = beschrijf(k), n = tel(localStorage.getItem(k));
+      var o = document.createElement('option');
+      o.value = k;
+      o.textContent = b.naam + ' — ' + b.soort + ' — ' + (n === null ? 'onleesbaar' : n + ' wezens');
+      s.appendChild(o);
+    });
+  });
+}
+
+document.getElementById('kopieer').addEventListener('click', function () {
+  var van = document.getElementById('van').value;
+  var naar = document.getElementById('naar').value;
+  var uit = document.getElementById('kopieerUit');
+  uit.innerHTML = '';
+  if (!van || !naar) return;
+  if (van === naar) { uit.innerHTML = '<div class="waarschuwing">Bron en doel zijn hetzelfde.</div>'; return; }
+  var bron = localStorage.getItem(van), nB = tel(bron);
+  if (nB === null) { uit.innerHTML = '<div class="waarschuwing">De bron is onleesbaar; kopiëren zou niets goeds doen.</div>'; return; }
+  var nD = tel(localStorage.getItem(naar));
+  var vraag = 'Voortgang kopiëren?\n\nVan: ' + beschrijf(van).naam + ' (' + nB + ' wezens)\n' +
+              'Naar: ' + beschrijf(naar).naam + ' (nu ' + (nD === null ? 'onleesbaar' : nD + ' wezens') + ')\n\n' +
+              'Van het doel wordt eerst een reservekopie gemaakt.';
+  if (!confirm(vraag)) return;
+  var oud = localStorage.getItem(naar);
+  if (oud) localStorage.setItem(naar + '.bak', oud);
+  localStorage.setItem(naar, bron);
+  uit.innerHTML = '<div class="ok">Gelukt. ' + beschrijf(naar).naam + ' heeft nu ' + nB +
+    ' wezens. Sluit het spel helemaal af en open het opnieuw.</div>';
+  toonOverzicht(); vulKeuzes(); vulUitvoer();
+});
+
+function vulUitvoer() {
+  var alles = {};
+  alleSleutels().forEach(function (k) { alles[k] = localStorage.getItem(k); });
+  document.getElementById('uitvoer').value = JSON.stringify(alles, null, 1);
+}
+document.getElementById('selecteer').addEventListener('click', function () {
+  var t = document.getElementById('uitvoer');
+  t.focus(); t.setSelectionRange(0, t.value.length);
+});
+
+document.getElementById('importeer').addEventListener('click', function () {
+  var uit = document.getElementById('importUit');
+  uit.innerHTML = '';
+  var tekst = document.getElementById('invoer').value.trim();
+  if (!tekst) return;
+  var obj;
+  try { obj = JSON.parse(tekst); } catch (e) {
+    uit.innerHTML = '<div class="waarschuwing">Die tekst is geen geldige back-up.</div>'; return;
+  }
+  var sleutels = Object.keys(obj).filter(function (k) { return k.indexOf(VOOR) === 0; });
+  if (!sleutels.length) { uit.innerHTML = '<div class="waarschuwing">Geen bekende blokken in die tekst.</div>'; return; }
+  if (!confirm('Terugzetten van ' + sleutels.length + ' blokken? Bestaande blokken met dezelfde naam worden overschreven.')) return;
+  sleutels.forEach(function (k) {
+    var oud = localStorage.getItem(k);
+    if (oud && oud !== obj[k]) localStorage.setItem(k + '.bak', oud);
+    localStorage.setItem(k, obj[k]);
+  });
+  uit.innerHTML = '<div class="ok">Teruggezet. Sluit het spel helemaal af en open het opnieuw.</div>';
+  toonOverzicht(); vulKeuzes(); vulUitvoer();
+});
+
+toonOverzicht();
+vulKeuzes();
+vulUitvoer();
+</script>
+</body>
+</html>

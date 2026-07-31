@@ -309,14 +309,31 @@ const RENAMED = { bulbud:'ivyleaf', bulbloom:'bloomback', flamteen:'flamejaw', s
   palmtree:'palmhead', sporebud:'bellhang', rockmid:'rockarm', rockbig:'rockking', pterowing:'stonewing',
   jellyblue:'jellyfloat', jellybig:'jellycrown', polybird:'polyblock', nidoblue:'spikeblue',
   nidoqueen:'spikequeen', nidopurp:'spikepurp', nidoking:'spikeking', moonbig:'moonfae', snekbig:'dragonwing' };
+// hoeveel wezens zitten er in een opgeslagen blok? (alle formaten)
+function countStored(raw) {
+  try {
+    const d = JSON.parse(raw);
+    if (!d || !d.caught) return -1;
+    if (Array.isArray(d.caught)) return d.caught.filter(n => n > 0).length;
+    return Object.keys(d.caught).length;
+  } catch (e) { return -1; }
+}
 function saveProgress() {
   if (!profile) return;
   const caught = {};
   for (let i = 0; i < NSPECIES; i++) if (G.caught[i] > 0) caught[SPECIES[i].draw] = G.caught[i];
   const asleep = {};   // slapers ook op naam, zodat ze een herstart overleven
   for (const k in G.asleep) if (G.asleep[k] > 0 && SPECIES[k]) asleep[SPECIES[k].draw] = G.asleep[k];
+  const nieuw = JSON.stringify({ v: 2, caught, asleep, active: SPECIES[G.active].draw });
   try {
-    localStorage.setItem(storageKey(), JSON.stringify({ v: 2, caught, asleep, active: SPECIES[G.active].draw }));
+    // Vangnet: zou dit opslaan het aantal wezens laten kelderen, dan is er iets
+    // mis en bewaren we eerst het oude blok. Nooit stilzwijgend voortgang wissen.
+    const oud = localStorage.getItem(storageKey());
+    if (oud) {
+      const was = countStored(oud), wordt = Object.keys(caught).length;
+      if (was > 1 && wordt < was) localStorage.setItem(storageKey() + '.bak', oud);
+    }
+    localStorage.setItem(storageKey(), nieuw);
   } catch (e) {}
 }
 function loadProgress() {
