@@ -1131,7 +1131,10 @@ const D = {
     E(g, '#e8d4ae', 0, -S * 0.16, S * 0.3, S * 0.1);
     LN(g, '#d8c4a0', S * 0.04, [[-S * 0.3, -S * 0.22], [S * 0.3, -S * 0.22]]);
     E(g, '#b8a888', -S * 0.08, -S * 0.27, S * 0.025, S * 0.02); E(g, '#b8a888', S * 0.08, -S * 0.27, S * 0.025, S * 0.02);
-    if (m === 'dizzy' || m === 'happy' || m === 'sleep') stdEyes(g, S * 0.24, -S * 0.55, S * 0.11, '#2c2c2c', t, m, 11);
+    if (m === 'dizzy' || m === 'sleep') {
+    HEAD(S * 0, S * -0.42, S * 0.62, S * 0.58, { muzzle: 0.1959 });
+    EYES(g, t, m, 11, { sep: 0.3871, y: -0.2241, r: 0.1897, iris: '#2c2c2c' });
+    }
     else for (const s of [-1, 1]) {
       E(g, '#ffffff', s * S * 0.24, -S * 0.55, S * 0.1, S * 0.11);
       E(g, '#1e1c1a', s * S * 0.24, -S * 0.55, S * 0.04, S * 0.05);
@@ -1368,7 +1371,8 @@ const D = {
     E(g, yd, -S * 0.38, S * 0.9, S * 0.24, S * 0.14); E(g, yd, S * 0.38, S * 0.9, S * 0.24, S * 0.14);
     PG(g, y1, [[-S * 0.55, -S * 0.6], [-S * 0.72, -S * 0.92], [-S * 0.38, -S * 0.75]]);
     PG(g, y1, [[S * 0.55, -S * 0.6], [S * 0.72, -S * 0.92], [S * 0.38, -S * 0.75]]);
-    stdEyes(g, S * 0.3, -S * 0.32, S * 0.14, '#2c2c2c', t, m, 20);
+    HEAD(S * 0, S * 0.08, S * 0.9, S * 0.85, { muzzle: -0.0506 });
+    EYES(g, t, m, 20, { sep: 0.3333, y: -0.4706, r: 0.1647, iris: '#2c2c2c' });
     smileM(g, 0, S * 0.02, S * 0.14, m);
   },
   pinchy(g, S, t, m) { // krabbetje met grote scharen
@@ -1447,7 +1451,8 @@ const D = {
       g.restore();
     }
     E(g, '#f4f8ff', -S * 0.12, -S * 0.98, S * 0.07, S * 0.07);
-    stdEyes(g, S * 0.17, -S * 0.7, S * 0.11, '#5a3f8a', t, m, 23);
+    HEAD(S * -0.12, S * -0.68, S * 0.42, S * 0.36, { muzzle: 0.3644 });
+    EYES(g, t, m, 23, { sep: 0.44, y: -0.08, r: 0.24, iris: '#5a3f8a' });
     smileM(g, -S * 0.12, -S * 0.48, S * 0.1, m);
   },
   // ---------- jungle/rots-wezens ----------
@@ -1551,7 +1556,8 @@ const D = {
       PG(g, or, [[0, -S * 0.08], [s * S * 0.22, -S * 0.22], [s * S * 0.18, S * 0.02]]);
       g.restore();
     }
-    stdEyes(g, S * 0.3, S * 0.08, S * 0.12, '#2c2c2c', t, m, 28);
+    HEAD(S * 0, S * 0.2, S * 0.88, S * 0.55, { muzzle: 0.2018 });
+    EYES(g, t, m, 28, { sep: 0.3409, y: -0.2182, r: 0.2182, iris: '#2c2c2c' });
     smileM(g, 0, S * 0.38, S * 0.12, m);
   },
   vineball(g, S, t, m) { // kluwen blauwe ranken
@@ -1595,7 +1601,8 @@ const D = {
     E(g, br, -S * 0.32, S * 0.82, S * 0.2, S * 0.14); E(g, br, S * 0.32, S * 0.82, S * 0.2, S * 0.14);
     E(g, '#e8c8a0', 0, S * 0.02, S * 0.24, S * 0.18);
     E(g, '#b89068', -S * 0.07, S * 0.02, S * 0.035, S * 0.05); E(g, '#b89068', S * 0.07, S * 0.02, S * 0.035, S * 0.05);
-    stdEyes(g, S * 0.26, -S * 0.28, S * 0.13, '#7a4a2e', t, m, 30);
+    HEAD(S * 0, S * 0, S * 0.8, S * 0.76, { muzzle: 0.0516 });
+    EYES(g, t, m, 30, { sep: 0.325, y: -0.3684, r: 0.1711, iris: '#7a4a2e' });
     smileM(g, 0, S * 0.28, S * 0.14, m);
   },
   serpurple(g, S, t, m) { // paarse ratelslang
@@ -1736,7 +1743,8 @@ const D = {
       E(g, '#d87035', 0, S * 0.04, S * 0.08, S * 0.18);
       g.restore();
     }
-    stdEyes(g, S * 0.25, -S * 0.45, S * 0.14, '#6a4426', t, m, 36);
+    HEAD(S * 0, S * -0.42, S * 0.58, S * 0.5, { muzzle: 0.36 });
+    EYES(g, t, m, 36, { sep: 0.431, y: -0.06, r: 0.28, iris: '#6a4426' });
     E(g, bk, 0, -S * 0.2, S * 0.09, S * 0.07);
     if (m !== 'dizzy') { E(g, '#ff8c9e', S * 0.06, -S * 0.04, S * 0.09, S * 0.13); }
     smileM(g, 0, -S * 0.1, S * 0.13, m);
@@ -1842,7 +1850,8 @@ const D = {
     g.fillStyle = '#fff'; g.fillRect(-S * 0.52, -S * 0.05, S * 0.08, S * 0.12); g.fillRect(-S * 0.42, -S * 0.05, S * 0.08, S * 0.12);
     LN(g, '#c8b8d8', S * 0.025, [[-S * 0.6, -S * 0.2], [-S * 0.9, -S * 0.28]]);
     LN(g, '#c8b8d8', S * 0.025, [[-S * 0.6, -S * 0.12], [-S * 0.9, -S * 0.1]]);
-    stdEyes(g, S * 0.14, -S * 0.4, S * 0.11, '#c0392b', t, m, 40);
+    HEAD(S * -0.25, S * -0.3, S * 0.55, S * 0.45, { muzzle: 0.1978 });
+    EYES(g, t, m, 40, { sep: 0.4, y: -0.2222, r: 0.2444, iris: '#c0392b' });
   },
   flamepony(g, S, t, m) { // veulentje met vlammenmanen
     const cr = '#f4e8d8', cd = '#d8c8b0';
@@ -2439,7 +2448,8 @@ const D = {
       E(g, '#fff0f2', S * px, -S * 0.05 + S * py, S * 0.1, S * 0.06);
     g.restore();
     E(g, '#c8455a', 0, -S * 0.08, S * 0.2, S * 0.08);
-    stdEyes(g, S * 0.28, S * 0.12, S * 0.14, '#2c2c2c', t, m, 59);
+    HEAD(S * 0, S * -0.05, S * 0.92, S * 0.42, { muzzle: 0.57 });
+    EYES(g, t, m, 59, { sep: 0.3043, y: 0.15, r: 0.3333, iris: '#2c2c2c' });
     smileM(g, 0, S * 0.44, S * 0.18, m);
   },
   // ---------- handgetekend: insecten en planten ----------
@@ -2458,7 +2468,10 @@ const D = {
       ARC(g, 'rgba(220,250,180,0.35)', 0, S * 0.06 + i * S * 0.3, S * 0.46, Math.PI * 0.2, Math.PI * 0.8, S * 0.025);
     PG(g, '#3f8c2c', [[-S * 0.3, -S * 0.62], [0, -S * 0.98], [S * 0.3, -S * 0.62]]);
     VE(g, '#dff2c0', 0, S * 0.82, S * 0.34, S * 0.14);
-    if (m === 'dizzy' || m === 'sleep') stdEyes(g, S * 0.22, -S * 0.3, S * 0.12, '#fff', t, m, 60);
+    if (m === 'dizzy' || m === 'sleep') {
+    HEAD(S * 0, S * 0.06, S * 0.48, S * 0.8, { muzzle: -0.03 });
+    EYES(g, t, m, 60, { sep: 0.4583, y: -0.45, r: 0.25, iris: '#fff' });
+    }
     else for (const s of [-1, 1]) {
       E(g, '#2c2c2c', s * S * 0.22, -S * 0.3, S * 0.11, S * 0.1);
       E(g, '#ffffff', s * S * 0.19, -S * 0.33, S * 0.035, S * 0.03);
@@ -2500,7 +2513,10 @@ const D = {
     for (let i = -1; i <= 1; i++)
       ARC(g, 'rgba(255,246,200,0.35)', 0, S * 0.08 + i * S * 0.3, S * 0.44, Math.PI * 0.18, Math.PI * 0.82, S * 0.025);
     PG(g, '#b8981e', [[-S * 0.26, -S * 0.6], [0, -S * 1.0], [S * 0.26, -S * 0.6]]);
-    if (m === 'dizzy' || m === 'sleep') stdEyes(g, S * 0.2, -S * 0.28, S * 0.11, '#fff', t, m, 62);
+    if (m === 'dizzy' || m === 'sleep') {
+    HEAD(S * 0, S * 0.08, S * 0.46, S * 0.78, { muzzle: -0.0415 });
+    EYES(g, t, m, 62, { sep: 0.4348, y: -0.4615, r: 0.2391, iris: '#fff' });
+    }
     else for (const s of [-1, 1]) {
       PG(g, '#3b3b3b', [[s * S * 0.06, -S * 0.36], [s * S * 0.32, -S * 0.3], [s * S * 0.08, -S * 0.2]]);
       E(g, '#ffffff', s * S * 0.16, -S * 0.29, S * 0.03, S * 0.025);
@@ -2545,7 +2561,8 @@ const D = {
       PG(g, od, [[0, S * 0.04], [s * S * 0.26, S * 0.16], [s * S * 0.2, -S * 0.02]]);
       g.restore();
     }
-    stdEyes(g, S * 0.26, S * 0.16, S * 0.12, '#f0d060', t, m, 64);
+    HEAD(S * 0, S * 0.3, S * 0.8, S * 0.48, { muzzle: 0.1283 });
+    EYES(g, t, m, 64, { sep: 0.325, y: -0.2917, r: 0.25, iris: '#f0d060' });
     smileM(g, 0, S * 0.44, S * 0.12, m);
   },
   mothdust(g, S, t, m) { // paarse nachtvlinder met brede vleugels
@@ -2767,7 +2784,8 @@ const D = {
       E(g, i === 0 ? '#e8c060' : '#d8546a', 0, -S * 0.22, S * 0.11, S * 0.3);
       g.restore();
     }
-    stdEyes(g, S * 0.22, -S * 0.52, S * 0.12, '#c0392b', t, m, 75);
+    HEAD(S * 0, S * -0.48, S * 0.46, S * 0.42, { muzzle: 0.3248 });
+    EYES(g, t, m, 75, { sep: 0.4783, y: -0.0952, r: 0.2857, iris: '#c0392b' });
     PG(g, '#f5a623', [[-S * 0.13, -S * 0.32], [S * 0.13, -S * 0.32], [0, -S * 0.06]]);
     PG(g, '#e08a3d', [[-S * 0.13, -S * 0.32], [S * 0.13, -S * 0.32], [0, -S * 0.22]]);
     LN(g, '#e0a040', S * 0.07, [[-S * 0.2, S * 0.74], [-S * 0.22, S * 1.0]]);
@@ -3052,7 +3070,8 @@ const D = {
     }
     for (let i = -1; i <= 1; i++)                                // wilde kuif
       PG(g, bd, [[i * S * 0.16 - S * 0.08, -S * 0.6], [i * S * 0.2, -S * 0.9], [i * S * 0.16 + S * 0.08, -S * 0.6]]);
-    stdEyes(g, S * 0.26, -S * 0.38, S * 0.13, '#c0392b', t, m, 90);
+    HEAD(S * 0, S * -0.34, S * 0.6, S * 0.48, { muzzle: 0.3367 });
+    EYES(g, t, m, 90, { sep: 0.4333, y: -0.0833, r: 0.2708, iris: '#c0392b' });
     E(g, cr, 0, -S * 0.1, S * 0.24, S * 0.16);
     E(g, '#8a5a4a', 0, -S * 0.16, S * 0.06, S * 0.05);
     g.fillStyle = '#fff'; g.fillRect(-S * 0.09, -S * 0.06, S * 0.08, S * 0.16); g.fillRect(S * 0.01, -S * 0.06, S * 0.08, S * 0.16);
@@ -3479,7 +3498,10 @@ const D = {
     }
     E(g, br, -S * 0.3, S * 0.84, S * 0.2, S * 0.13); E(g, br, S * 0.3, S * 0.84, S * 0.2, S * 0.13);
     E(g, '#f0e2cc', 0, S * 0.14, S * 0.34, S * 0.28);
-    if (m === 'dizzy' || m === 'sleep') stdEyes(g, S * 0.24, -S * 0.16, S * 0.12, '#fff', t, m, 107);
+    if (m === 'dizzy' || m === 'sleep') {
+    HEAD(S * 0, S * 0.1, S * 0.76, S * 0.72, { muzzle: 0.0589 });
+    EYES(g, t, m, 107, { sep: 0.3158, y: -0.3611, r: 0.1667, iris: '#fff' });
+    }
     else for (const s of [-1, 1]) {
       E(g, '#ffffff', s * S * 0.24, -S * 0.16, S * 0.13, S * 0.13);
       E(g, '#c0392b', s * S * 0.24, -S * 0.15, S * 0.07, S * 0.08);
@@ -4227,7 +4249,8 @@ const D = {
       g.restore();
     }
     E(g, bl, -S * 0.36, S * 0.9, S * 0.2, S * 0.13); E(g, bl, S * 0.36, S * 0.9, S * 0.2, S * 0.13);
-    stdEyes(g, S * 0.3, -S * 0.34, S * 0.15, '#2c2c2c', t, m, 136);
+    HEAD(S * 0, S * 0.04, S * 0.86, S * 0.82, { muzzle: -0.0434 });
+    EYES(g, t, m, 136, { sep: 0.3488, y: -0.4634, r: 0.1829, iris: '#2c2c2c' });
     smileM(g, 0, S * 0.0, S * 0.11, m);
     cheeks(g, S * 0.6, -S * 0.14, S * 0.1);
   },
@@ -4434,7 +4457,10 @@ const D = {
     g.quadraticCurveTo(-S * 0.14, -S * 0.3, -S * 0.56, -S * 0.44); g.closePath(); g.fill();
     for (let i = 0; i < 4; i++)
       PG(g, '#fff', [[-S * 0.44 + i * S * 0.22, -S * 0.42], [-S * 0.38 + i * S * 0.22, -S * 0.22], [-S * 0.3 + i * S * 0.22, -S * 0.42]]);
-    if (m === 'dizzy' || m === 'sleep') stdEyes(g, S * 0.16, -S * 0.7, S * 0.11, '#fff', t, m, 145);
+    if (m === 'dizzy' || m === 'sleep') {
+    HEAD(S * -0.14, S * -0.62, S * 0.5, S * 0.36, { muzzle: 0.1978 });
+    EYES(g, t, m, 145, { sep: 0.4, y: -0.2222, r: 0.3056, iris: '#fff' });
+    }
     else for (const s of [-1, 1]) {
       E(g, '#ffffff', -S * 0.14 + s * S * 0.2, -S * 0.72, S * 0.13, S * 0.12);
       E(g, '#c0392b', -S * 0.14 + s * S * 0.2, -S * 0.71, S * 0.07, S * 0.07);
@@ -4602,7 +4628,8 @@ const D = {
     }
     E(g, '#f5c518', -S * 0.12, -S * 1.0, S * 0.1, S * 0.11);                  // hoofdjuweel
     E(g, '#fff8c8', -S * 0.15, -S * 1.04, S * 0.035, S * 0.035);
-    stdEyes(g, S * 0.15, -S * 0.72, S * 0.11, '#5a3f8a', t, m, 151);
+    HEAD(S * -0.12, S * -0.7, S * 0.4, S * 0.34, { muzzle: 0.3612 });
+    EYES(g, t, m, 151, { sep: 0.44, y: -0.08, r: 0.24, iris: '#5a3f8a' });
     smileM(g, -S * 0.12, -S * 0.52, S * 0.1, m);
     g.restore();
   },
