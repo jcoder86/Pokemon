@@ -5,6 +5,20 @@ Een vrolijk, tekstloos Pokémon-achtig verzamelspel voor Julian (5 jaar): vijf g
 - **Starten:** `Julian` (groen) = Julians vaste profiel. `GUEST` (erboven, even groot) opent één tussenscherm met links de lopende spellen als langwerpige tegeltjes (avatar, naam en aantal gevangen wezentjes) en rechts het aanmaken van een nieuw spel: kies daar een hoofdpersoon en vul een naam in. Een nieuw spel begint altijd vers. Elk spel bewaart onder zijn eigen sleutel, dus meerdere kinderen kunnen op hetzelfde apparaat spelen zonder elkaars voortgang te raken. Een bestaand gast-spel van vroeger komt automatisch in de lijst als "Gast".
 - **Lopen/varen:** tik ergens — Julian loopt erheen en stapt aan de waterlijn vanzelf in/uit het bootje.
 - **Reizen:** vanuit de weide-hub gaan vier poorten naar de andere gebieden — rotspoort links (jungle), houten poort boven (dorp), ijspoort rechts (besneeuwde bergen) en palmpoort onder (strand). Elk gebied heeft dezelfde poort terug.
+- **Moeilijkheid:** elk gastspel heeft een niveau — **Makkelijk** (het spel zoals het altijd was, en de standaard voor Julians profiel), **Gewoon** of **Moeilijk**. Je kiest het bij het aanmaken van een spel en past het later aan met het gekleurde chipje op het tegeltje in het spelersscherm. Wat er verandert:
+
+  | | Makkelijk | Gewoon | Moeilijk |
+  |---|---|---|---|
+  | mikring per ronde | 1,85 s | 1,37 s | 1,06 s |
+  | venster dubbele klap | 0,26 s | 0,19 s | 0,15 s |
+  | ballen per gevecht | onbeperkt | 5 | 3 |
+  | maatjes per gevecht | onbeperkt | 4 | 3 |
+  | slaap na flauwvallen | tot het eind van het gevecht | 1 gevecht | 3 gevechten |
+  | extra hartjes tegenstander | – | 0–1 | 1–2 |
+  | kans op dubbele klap tegenstander | – | 13 % | 26 % |
+  | zeldzame wezens | normaal | schaarser | het schaarst |
+
+  Raken de ballen op, dan huppelt het wezentje weg en ga je zonder vangst naar buiten. Zijn alle maatjes op, dan trekt Julian zich terug. Geen van beide is een game over: je loopt gewoon weer verder. Het spel zorgt er altijd voor dat er minstens één maatje wakker is.
 - **Wie woont waar:** de 150 wezentjes zijn over de vijf gebieden verdeeld op thema, en verschijnen op zeldzaamheid — kleine wezentjes vaak, imposante zelden en de legendes bijna nooit.
 - **Vechten:** het actieve wezentje (kies in het boek, groene gloed = actief) valt aan met de 💥-knop. Mik met de ring: klein = raak, allerkleinst (goud) = dubbele klap.
 - **Krachtaanval:** de meeste wezentjes (alles met vier of meer hartjes, plus een reeks bekende kleintjes — 117 van de 150) hebben een tweede aanval op de paarse 🌟-knop. Dat is dezelfde aanval als de gewone, maar dan in bulk en van boven naar beneden: een regen van elf projectielen die op de tegenstander inslaat. Altijd twee hartjes, maar de mikring raast twee keer zo snel — moeilijker te raken, en zonder dubbele-klap-bonus. De twee aanvalsknoppen staan naast elkaar onder Julians eigen wezentje. Vangen gaat met hetzelfde mik-spelletje zodra de hartjes leeg zijn; vluchten kan altijd met 🏃.

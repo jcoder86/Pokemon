@@ -68,7 +68,7 @@
   #saveListWrap { display:flex; }
   #saveListWrap.leeg { display:none; }
   #saveList { display:flex; flex-direction:column; gap:1.4vmin;
-      width:46vmin; max-height:50vmin; overflow-y:auto; padding:2px; }
+      width:58vmin; max-height:50vmin; overflow-y:auto; padding:2px; }
   /* langwerpig tegeltje: avatar, naam en aantal gevangen wezentjes */
   .saveCard { background:#fffdf6; border:none; border-radius:2.2vmin; padding:1vmin 2vmin 1vmin 1vmin;
       display:flex; flex-direction:row; align-items:center; gap:1.6vmin; cursor:pointer; width:100%;
@@ -79,6 +79,21 @@
       overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .saveCard .cnt { font-size:3.2vmin; font-weight:900; color:#c9852a; display:flex; align-items:center;
       gap:.5vmin; flex:0 0 auto; }
+  /* moeilijkheidsgraad: kiezen bij een nieuw spel, later aanpassen op het tegeltje */
+  .saveCard { -webkit-user-select:none; user-select:none; }
+  #diffPick { display:flex; gap:1vmin; }
+  .diffBtn { border:none; border-radius:1.6vmin; padding:1vmin 1.4vmin; font-size:2.4vmin; font-weight:800;
+      color:#fff; cursor:pointer; opacity:.45; transition:transform .1s, opacity .1s;
+      font-family:-apple-system, sans-serif; box-shadow:0 3px 8px rgba(0,0,0,.28); }
+  .diffBtn.sel { opacity:1; transform:scale(1.06); box-shadow:0 5px 14px rgba(0,0,0,.4); }
+  .diffBtn:active { transform:scale(.92); }
+  .d1 { background:linear-gradient(#8fd96b,#4caf50); }
+  .d2 { background:linear-gradient(#ffc861,#f0951f); }
+  .d3 { background:linear-gradient(#ff9a8f,#e0524a); }
+  .saveCard .diff { flex:0 0 auto; border:none; border-radius:1.4vmin; padding:.8vmin 1.2vmin;
+      font-size:2.3vmin; font-weight:800; color:#fff; cursor:pointer;
+      font-family:-apple-system, sans-serif; box-shadow:0 3px 8px rgba(0,0,0,.25); }
+  .saveCard .diff:active { transform:scale(.9); }
   #newSaveCol { display:flex; flex-direction:column; align-items:center; gap:1.6vmin;
       justify-content:center; }
   .panelRow { display:flex; gap:2.4vmin; align-items:center; }
@@ -213,6 +228,11 @@
           </div>
           <input id="saveName" type="text" maxlength="12" placeholder="naam" autocomplete="off"
                  autocorrect="off" autocapitalize="words" spellcheck="false">
+          <div id="diffPick">
+            <button class="diffBtn d1 sel" data-diff="easy">Makkelijk</button>
+            <button class="diffBtn d2" data-diff="normal">Gewoon</button>
+            <button class="diffBtn d3" data-diff="hard">Moeilijk</button>
+          </div>
           <button class="panelBtn" id="btnNewGo">&#9654;</button>
         </div>
       </div>
@@ -293,8 +313,10 @@ function saveProgress() {
   if (!profile) return;
   const caught = {};
   for (let i = 0; i < NSPECIES; i++) if (G.caught[i] > 0) caught[SPECIES[i].draw] = G.caught[i];
+  const asleep = {};   // slapers ook op naam, zodat ze een herstart overleven
+  for (const k in G.asleep) if (G.asleep[k] > 0 && SPECIES[k]) asleep[SPECIES[k].draw] = G.asleep[k];
   try {
-    localStorage.setItem(storageKey(), JSON.stringify({ v: 2, caught, active: SPECIES[G.active].draw }));
+    localStorage.setItem(storageKey(), JSON.stringify({ v: 2, caught, asleep, active: SPECIES[G.active].draw }));
   } catch (e) {}
 }
 function loadProgress() {
@@ -310,6 +332,10 @@ function loadProgress() {
       };
       if (d && d.v === 2 && d.caught && !Array.isArray(d.caught)) {
         for (const nm in d.caught) add(nm, d.caught[nm]);
+        if (d.asleep) for (const nm in d.asleep) {
+          const idx = IDX_BY_NAME[RENAMED[nm] || nm];
+          if (idx !== undefined && d.asleep[nm] > 0) G.asleep[idx] = d.asleep[nm];
+        }
         if (typeof d.active === 'string') activeName = RENAMED[d.active] || d.active;
       } else if (d && Array.isArray(d.caught)) {          // oude opslag op positie
         const order = OLD_ORDER_48.concat(OLD_ORDER_EXTRA);
@@ -326,6 +352,10 @@ function loadProgress() {
   G.active = (activeName !== null && IDX_BY_NAME[activeName] !== undefined) ? IDX_BY_NAME[activeName] : STARTER;
   // het actieve wezen moet gevangen zijn; anders terug naar de starter
   if (!(G.caught[G.active] > 0)) G.active = STARTER;
+  if (awakeCount() === 0) G.asleep = {};
+  if (isAsleep(G.active)) {
+    for (let i = 0; i < NSPECIES; i++) if (G.caught[i] > 0 && !isAsleep(i)) { G.active = i; break; }
+  }
   saveProgress();                                          // meteen in het nieuwe formaat bewaren
 }
 
@@ -6676,6 +6706,46 @@ function patchPoolAt(px, py) {
     if (tx >= p.x && tx < p.x + p.w && ty >= p.y && ty < p.y + p.h) return p.pool;
   return cur.patches[0].pool;
 }
+// ============================================================ moeilijkheidsgraden
+// Makkelijk is precies het spel zoals het was en blijft de standaard. Moeilijk
+// zet alle knoppen om: snellere mikringen, een beperkt aantal ballen en maatjes
+// per gevecht, stevigere tegenstanders die soms dubbel raken, slapers die pas na
+// een paar gevechten wakker worden en zeldzame wezens die nog zeldzamer zijn.
+// Gewoon zit daar netjes tussenin.
+const DIFFS = {
+  easy:   { ring: 1.00, balls: 0, pity: 2, team: 0, sleep: 0, hp: [0, 0], eBig: 0,    rare: 1.00 },
+  normal: { ring: 1.35, balls: 5, pity: 3, team: 4, sleep: 1, hp: [0, 1], eBig: 0.13, rare: 0.60 },
+  hard:   { ring: 1.75, balls: 3, pity: 0, team: 3, sleep: 3, hp: [1, 2], eBig: 0.26, rare: 0.35 },
+};
+const DIFF_ORDER = ['easy', 'normal', 'hard'];
+const DIFF_LABEL = { easy: 'Makkelijk', normal: 'Gewoon', hard: 'Moeilijk' };
+function DF() { return DIFFS[G.diff] || DIFFS.easy; }
+function isAsleep(i) { return (G.asleep[i] || 0) > 0; }
+function awakeCount() {
+  let n = 0;
+  for (let i = 0; i < NSPECIES; i++) if (G.caught[i] > 0 && !isAsleep(i)) n++;
+  return n;
+}
+// Een maatje gaat alleen slapen als er nog een ander maatje wakker is; anders
+// zou Julian zonder wezentje komen te zitten en dat mag nooit.
+function registerFaint(i) {
+  if (DF().sleep <= 0 || i < 0) return;
+  if (G.caughtCount < 2) return;
+  G.asleep[i] = DF().sleep;
+}
+// na elk gevecht slaapt iedereen een gevecht korter
+function tickSleep() {
+  for (const k in G.asleep) {
+    G.asleep[k] -= 1;
+    if (G.asleep[k] <= 0) delete G.asleep[k];
+  }
+  if (awakeCount() === 0) G.asleep = {};             // nooit helemaal zonder maatje
+  if (isAsleep(G.active)) {
+    for (let i = 0; i < NSPECIES; i++)
+      if (G.caught[i] > 0 && !isAsleep(i)) { G.active = i; break; }
+  }
+}
+
 // ============================================================ game state
 const G = {
   state: 'world',          // world | toBattle | battle | toWorld | travelOut | travelIn
@@ -6684,7 +6754,9 @@ const G = {
   area: 'hub',
   player: { x: 15.5 * TILE, y: 13.2 * TILE, tx: null, ty: null, dir: 0, moving: false, lastTile: '', stepT: 0, stepN: 0, grassSteps: 0 },
   onBoat: false,
-  avatar: 'julian',        // gekozen hoofdpersoon: julian | lena
+  avatar: 'julian',        // gekozen hoofdpersoon: julian | livea
+  diff: 'easy',            // moeilijkheidsgraad: easy | normal | hard
+  asleep: {},              // index -> aantal gevechten dat het nog slaapt
   caught: new Array(NSPECIES).fill(0),
   caughtCount: 0,
   active: STARTER,
@@ -6706,6 +6778,9 @@ const B = { // gevecht
   missCount: 0, willCatch: false, isNew: false, onWater: false,
   dmg: 1, perfect: false, special: false, shake: 0, fainted: -1,
   wFlash: 0, pFlash: 0, pLunge: 0, wLunge: 0, didImpact: false, ringR: 999, ball: null, wobbles: 0, pcIn: 0,
+  balls: 0,        // resterende ballen dit gevecht (0 bij onbeperkt)
+  used: [],        // welke maatjes al meededen dit gevecht
+  eBig: false,     // doet de tegenstander deze beurt dubbele schade?
 };
 
 function spawnParticles(x, y, n, type, cols) {
@@ -6766,6 +6841,9 @@ function speciesWeight(i) {
   let w = s.hp <= 1 ? 8 : s.hp === 2 ? 6 : s.hp === 3 ? 3 : s.hp === 4 ? 1.2 : 0.45;
   if (LEGENDARY[s.draw]) w = 0.12;
   if (!G.caught[i]) w *= 2;                  // nog niet in het boek? net iets vaker
+  // op hogere moeilijkheid worden de zeldzame wezens nog schaarser
+  if (s.hp >= 4) w *= DF().rare;
+  if (LEGENDARY[s.draw]) w *= DF().rare;
   return w;
 }
 function pickSpecies(pool) {
@@ -6779,12 +6857,19 @@ function pickSpecies(pool) {
   return ids[ids.length - 1];
 }
 function startEncounter(pool) {
+  if (isAsleep(G.active)) {                 // nooit met een slaper het veld in
+    for (let i = 0; i < NSPECIES; i++) if (G.caught[i] > 0 && !isAsleep(i)) { G.active = i; break; }
+  }
   B.id = pickSpecies(pool);
-  B.max = SPECIES[B.id].hp || 3; // hartjes passend bij het wezen
+  const hb = DF().hp;                        // tegenstanders zijn taaier op hoger niveau
+  B.max = (SPECIES[B.id].hp || 3) + hb[0] + Math.floor(Math.random() * (hb[1] - hb[0] + 1));
   B.hearts = B.max;
   B.pMax = SPECIES[G.active].hp || 3;   // Julians maatje houdt zijn eigen hartjes
   B.pHearts = B.pMax;
   B.fainted = -1;
+  B.balls = DF().balls;
+  B.used = [G.active];
+  B.eBig = false;
   B.phase = 'intro'; B.pt = 0; B.missCount = 0; B.ball = null;
   B.special = false; B.shake = 0;
   B.wFlash = 0; B.pFlash = 0; B.pLunge = 0; B.wLunge = 0; B.pcIn = 0;
@@ -6882,17 +6967,25 @@ function doSpecialStrike() {
 }
 function doThrow() {
   // mikken: gooi als de ring klein (groen) om het wezentje sluit
-  B.willCatch = B.ringR <= WILD.S * R_CATCH || B.missCount >= 2;
+  const pity = DF().pity;
+  B.willCatch = B.ringR <= WILD.S * R_CATCH || (pity > 0 && B.missCount >= pity);
+  if (B.balls > 0) B.balls--;                 // beperkte voorraad telt af
   B.phase = 'throw'; B.pt = 0; B.wobbles = 0;
   setBtns(false, false);
   B.ball = { x: 250, y: 600 };
   SFX.throwBall();
 }
-function doFlee() {
-  SFX.flee();
+// het gevecht netjes afsluiten: slapers een gevecht verder, terug naar de wereld
+function endBattle() {
+  tickSleep();
+  saveProgress();
   setBtns(false, false);
   btnFlee.style.display = 'none';
   G.state = 'toWorld'; G.transT = 0;
+}
+function doFlee() {
+  SFX.flee();
+  endBattle();
 }
 
 // ============================================================ gevecht update
@@ -6902,16 +6995,18 @@ function updateBattle(dt) {
   B.pFlash = Math.max(0, B.pFlash - dt * 2.5);
   B.shake = Math.max(0, B.shake - dt * 2.2);
   btnFlee.style.display = (B.phase !== 'caught' && B.phase !== 'throw' &&
-    B.phase !== 'faint' && B.phase !== 'swap') ? 'flex' : 'none';
+    B.phase !== 'faint' && B.phase !== 'swap' &&
+    B.phase !== 'retreat' && B.phase !== 'escape') ? 'flex' : 'none';
   const wildType = SPECIES[B.id].type;
   if (B.phase === 'intro') {
     B.pcIn = Math.min(1, B.pt / 0.5);
     if (B.pt > 0.55 && B.pt - dt <= 0.55) { SFX.cry(B.id); SFX.cry(G.active); }
     if (B.pt > 0.9) { B.phase = 'idle'; setBtns(true, false); }
   } else if (B.phase === 'idle') {
-    B.ringR = aimRadius(B.pt, 3.4);                    // mikring voor de aanval
+    B.ringR = aimRadius(B.pt, 3.4 * DF().ring);         // mikring voor de aanval
   } else if (B.phase === 'sAim') {
-    B.ringR = aimRadius(B.pt, 7.6);                    // krachtaanval: veel sneller
+    // de krachtaanval is al de snelste ring; die krijgt maar de halve opslag
+    B.ringR = aimRadius(B.pt, 7.6 * (1 + (DF().ring - 1) * 0.5));
   } else if (B.phase === 'pAtk') {
     B.pLunge = B.pt < 0.5 ? Math.sin(Math.min(B.pt / 0.5, 1) * Math.PI) : 0;
     if (!B.didImpact && B.pt >= 0.6) {
@@ -6934,16 +7029,23 @@ function updateBattle(dt) {
     }
     if (B.pt > 1.15) {
       if (B.hearts === 0) { B.phase = 'aim'; B.pt = 0; setBtns(false, true); }
-      else { B.phase = 'eAtk'; B.pt = 0; B.didImpact = false; SFX.attackSnd(wildType); }
+      else {
+        // op hoger niveau haalt de tegenstander soms een dubbele klap uit
+        B.eBig = Math.random() < DF().eBig;
+        B.phase = 'eAtk'; B.pt = 0; B.didImpact = false;
+        SFX.attackSnd(wildType); if (B.eBig) SFX.charge();
+      }
     }
   } else if (B.phase === 'eAtk') {
     B.wLunge = B.pt < 0.5 ? Math.sin(Math.min(B.pt / 0.5, 1) * Math.PI) : 0;
     if (!B.didImpact && B.pt >= 0.6) {
       B.didImpact = true;
-      if (B.pHearts > 0) B.pHearts--;
+      B.pHearts = Math.max(0, B.pHearts - (B.eBig ? 2 : 1));
       B.pFlash = 1;
       SFX.hitSoft();
-      spawnParticles(PC.x, PC.y, 10, 'star', [TYPECOL[wildType], '#ffffff']);
+      if (B.eBig) { SFX.bigHit(); B.shake = 1; }
+      spawnParticles(PC.x, PC.y, B.eBig ? 26 : 10, 'star', [TYPECOL[wildType], '#ffffff']);
+      if (B.eBig) spawnParticles(PC.x, PC.y, 16, 'confetti', [TYPECOL[wildType], '#ffffff']);
       if (B.pHearts === 0) SFX.dizzy();
     }
     if (B.pt > 1.15) {
@@ -6952,12 +7054,23 @@ function updateBattle(dt) {
     }
   } else if (B.phase === 'faint') {
     if (B.pt > 1.1) {
-      // een ander gevangen maatje beschikbaar? dan mag Julian wisselen
+      registerFaint(B.fainted);
+      // is er nog een wakker maatje dat vandaag nog niet meedeed?
+      const lim = DF().team;
+      const teamFull = lim > 0 && B.used.length >= lim;
       let others = 0;
-      for (let i = 0; i < NSPECIES; i++) if (G.caught[i] > 0 && i !== B.fainted) others++;
-      if (others > 0) { B.phase = 'swap'; B.pt = 0; setBtns(false, false); openBook(); }
+      for (let i = 0; i < NSPECIES; i++)
+        if (G.caught[i] > 0 && i !== B.fainted && !isAsleep(i)) others++;
+      if (!teamFull && others > 0) { B.phase = 'swap'; B.pt = 0; setBtns(false, false); openBook(); }
+      else if (lim > 0 || DF().sleep > 0) { B.phase = 'retreat'; B.pt = 0; setBtns(false, false); SFX.flee(); }
       else { B.phase = 'revive'; B.pt = 0; }
     }
+  } else if (B.phase === 'retreat') {
+    // maatjes op: Julian trekt zich terug. Geen game over, gewoon terug naar buiten.
+    if (B.pt > 1.4) endBattle();
+  } else if (B.phase === 'escape') {
+    // ballen op: het wezentje wandelt rustig weg
+    if (B.pt > 1.4) endBattle();
   } else if (B.phase === 'swap') {
     setBtns(false, false);                               // wachten tot er gekozen is
   } else if (B.phase === 'swapIn') {
@@ -6973,7 +7086,7 @@ function updateBattle(dt) {
     }
     if (B.pt > 1.3) { B.phase = 'idle'; B.pt = 0; setBtns(true, false); }
   } else if (B.phase === 'aim') {
-    B.ringR = aimRadius(B.pt, 3.4);
+    B.ringR = aimRadius(B.pt, 3.4 * DF().ring);
   } else if (B.phase === 'throw') {
     const fly = 0.45, absorb = 0.4, wobbleDur = 0.5, nWob = 2;
     const tIn = B.pt - fly, tWob = tIn - absorb;
@@ -7004,12 +7117,15 @@ function updateBattle(dt) {
     }
   } else if (B.phase === 'popout') {
     B.ball = null;
-    if (B.pt > 0.7) { B.phase = 'aim'; B.pt = 0; setBtns(false, true); }
+    if (B.pt > 0.7) {
+      if (DF().balls > 0 && B.balls <= 0) { B.phase = 'escape'; B.pt = 0; setBtns(false, false); SFX.flee(); }
+      else { B.phase = 'aim'; B.pt = 0; setBtns(false, true); }
+    }
   } else if (B.phase === 'caught') {
     B.ball = null;
     const end = B.isNew ? 2.6 : 1.6;
     if (B.isNew && B.pt > 0.7 && B.pt - dt <= 0.7) SFX.fanfare();
-    if (B.pt > end) { G.state = 'toWorld'; G.transT = 0; setBtns(false, false); btnFlee.style.display = 'none'; }
+    if (B.pt > end) endBattle();
   }
 }
 
@@ -7314,8 +7430,12 @@ function drawBattleScene(g) {
   else if (B.phase === 'revive') pcMood = B.pt < 0.7 ? 'faint' : 'happy';
   else if (B.phase === 'pAtk' && B.pLunge > 0.2) pcMood = 'attack';
   else if (B.phase === 'caught') pcMood = 'happy';
-  const pcId = (B.phase === 'faint' || B.phase === 'swap') && B.fainted >= 0 ? B.fainted : G.active;
-  drawCreature(g, pcId, pcX, PC.y, PC.S, G.t, pcMood, B.pFlash);
+  const pcId = (B.phase === 'faint' || B.phase === 'swap' || B.phase === 'retreat') && B.fainted >= 0
+    ? B.fainted : G.active;
+  if (B.phase === 'retreat') pcMood = 'faint';
+  // terugtrekken: het slapende maatje glijdt met Julian mee naar buiten
+  const pcOut = B.phase === 'retreat' ? clamp((B.pt - 0.4) / 1.0, 0, 1) : 0;
+  drawCreature(g, pcId, pcX - pcOut * 420, PC.y, PC.S * (1 - pcOut * 0.4), G.t, pcMood, B.pFlash);
 
   // wild wezentje
   const wScale = B.phase === 'intro' ? Math.min(1, B.pt / 0.5) : 1;
@@ -7331,12 +7451,43 @@ function drawBattleScene(g) {
   }
   if (B.phase === 'popout') wS *= clamp(B.pt / 0.25, 0, 1);
   if (B.phase === 'caught') wShow = false;
+  if (B.phase === 'escape') {          // ballen op: het wezentje huppelt weg
+    const k = clamp((B.pt - 0.3) / 1.0, 0, 1);
+    wx += k * 460; wy -= Math.abs(Math.sin(B.pt * 9)) * 26 * (1 - k);
+    wS *= (1 - k * 0.45); wMood = 'happy';
+  }
   if (wShow && wS > 1) drawCreature(g, B.id, wx, wy, wS, G.t, wMood, B.wFlash);
 
   // hartjes
-  if (B.phase !== 'caught') {
+  if (B.phase !== 'caught' && B.phase !== 'escape') {
     drawHeartsRow(g, WILD.x, 130, B.hearts, B.max, 24, G.t);
-    drawHeartsRow(g, PC.x, PC.y - 125, B.pHearts, B.pMax, 13, G.t + 1);
+    if (B.phase !== 'retreat') drawHeartsRow(g, PC.x, PC.y - 125, B.pHearts, B.pMax, 13, G.t + 1);
+  }
+  // hoeveel maatjes mogen er nog mee dit gevecht? (alleen bij een limiet)
+  if (DF().team > 0 && B.phase !== 'caught') {
+    const left = Math.max(0, DF().team - B.used.length);
+    for (let i = 0; i < DF().team; i++) {
+      const bx = PC.x - (DF().team - 1) * 13 + i * 26, on = i < B.used.length;
+      E(g, on ? 'rgba(120,120,120,0.35)' : '#8fe05f', bx, PC.y - 148, 8, 8);
+      if (!on) E(g, 'rgba(255,255,255,0.6)', bx - 2.4, PC.y - 150.6, 2.6, 2.2);
+    }
+    if (left === 0) { /* laatste maatje: de stipjes staan allemaal uit */ }
+  }
+  // resterende ballen bij een beperkte voorraad
+  if (DF().balls > 0 && (B.phase === 'aim' || B.phase === 'popout' || B.phase === 'throw')) {
+    for (let i = 0; i < DF().balls; i++) {
+      const bx = 512 - (DF().balls - 1) * 30 + i * 60, by = 545, on = i < B.balls;
+      g.save(); g.globalAlpha = on ? 1 : 0.25;
+      E(g, 'rgba(0,0,0,0.18)', bx, by + 3, 19, 19);
+      E(g, '#ffffff', bx, by, 18, 18);
+      g.save();
+      g.beginPath(); g.arc(bx, by, 18, 0, TAU); g.clip();
+      E(g, '#f9c513', bx, by - 9, 19, 11);
+      g.fillStyle = '#3a4a8c'; g.fillRect(bx - 19, by - 3, 38, 5);
+      g.restore();
+      E(g, '#3a4a8c', bx, by, 7, 7); E(g, '#ffffff', bx, by, 4, 4);
+      g.restore();
+    }
   }
 
   // aanval-effect onderweg
@@ -7354,7 +7505,16 @@ function drawBattleScene(g) {
   }
   if (B.phase === 'eAtk' && B.pt >= 0.22 && B.pt <= 0.62) {
     const prog = clamp((B.pt - 0.22) / 0.38, 0, 1);
-    drawFx(g, SPECIES[B.id].type, WILD.x - 80, WILD.y, PC.x, PC.y - 20, prog, G.t);
+    // een dubbele klap van de tegenstander ziet er net zo imponerend uit
+    if (B.eBig) drawFxBig(g, SPECIES[B.id].type, WILD.x - 80, WILD.y, PC.x, PC.y - 20, prog, G.t);
+    else drawFx(g, SPECIES[B.id].type, WILD.x - 80, WILD.y, PC.x, PC.y - 20, prog, G.t);
+  }
+  if (B.eBig && B.phase === 'eAtk' && B.pt > 0.6 && B.pt < 0.95) {      // inslag-flits
+    const k = 1 - (B.pt - 0.6) / 0.35;
+    g.fillStyle = 'rgba(255,255,255,' + (0.35 * k) + ')';
+    g.fillRect(0, 0, VW, VH);
+    g.strokeStyle = TYPECOL[SPECIES[B.id].type]; g.lineWidth = 9 * k;
+    g.beginPath(); g.arc(PC.x, PC.y - 20, 90 + (1 - k) * 160, 0, TAU); g.stroke();
   }
 
   // mik-ring voor de krachtaanval: raast rond, altijd twee hartjes bij een treffer
@@ -7709,6 +7869,7 @@ for (let i = 0; i < NSPECIES; i++) {
     if (!G.caught[i]) return;   // lege plekjes doen niets
     const swapping = G.state === 'battle' && B.phase === 'swap';
     if (swapping && i === B.fainted) { SFX.tap(); return; }   // die slaapt nog
+    if (isAsleep(i)) { SFX.tap(); return; }                   // uitgeteld van een vorig gevecht
     if (G.active !== i) {
       G.active = i;
       saveProgress();
@@ -7720,6 +7881,7 @@ for (let i = 0; i < NSPECIES; i++) {
     if (swapping) {                                            // meteen verder vechten
       B.pMax = SPECIES[G.active].hp || 3;
       B.pHearts = B.pMax;
+      if (B.used.indexOf(G.active) < 0) B.used.push(G.active);
       B.phase = 'swapIn'; B.pt = 0; B.pcIn = 0; B.fainted = -1;
       bookOverlay.style.display = 'none';
       G.bookOpen = false;
@@ -7741,14 +7903,19 @@ function refreshBook() {
         cells[i].appendChild(s);
       }
     }
-    const sleeping = G.state === 'battle' && B.phase === 'swap' && i === B.fainted;
+    // slapen: net flauwgevallen in dit gevecht, of nog uitgeteld van een vorig
+    const sleeping = (G.state === 'battle' && B.phase === 'swap' && i === B.fainted) || isAsleep(i);
     cells[i].classList.toggle('asleep', sleeping);
     let zzz = cells[i].querySelector('.zzz');
     if (sleeping && !zzz) {
       zzz = document.createElement('span');
-      zzz.className = 'zzz'; zzz.textContent = '💤';
-      cells[i].appendChild(zzz);
+      zzz.className = 'zzz'; cells[i].appendChild(zzz);
     } else if (!sleeping && zzz) zzz.remove();
+    if (sleeping) {
+      // hoeveel gevechten nog? dat laten de bolletjes naast het slaapicoon zien
+      const n = G.asleep[i] || 0;
+      cells[i].querySelector('.zzz').textContent = n > 0 ? '💤' + n : '💤';
+    }
     const isActive = i === G.active && !sleeping;
     cells[i].classList.toggle('activeMon', isActive);
     let sel = cells[i].querySelector('.sel');
@@ -7834,18 +8001,34 @@ function savedCaughtCount(p) {
 function renderSaveList() {
   const list = allSaves();
   saveList.innerHTML = '';
-  for (const s of list) {
-    const card = document.createElement('button');
+  list.forEach((s, k) => {
+    const card = document.createElement('div');
     card.className = 'saveCard';
     const cnv = document.createElement('canvas'); cnv.width = 110; cnv.height = 150;
     drawAvatarPortrait(cnv.getContext('2d'), s.avatar, 110, 150);
     const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = s.name;
     const cnt = document.createElement('span'); cnt.className = 'cnt';
     cnt.textContent = '⭐ ' + savedCaughtCount(s.p);
-    card.appendChild(cnv); card.appendChild(nm); card.appendChild(cnt);
-    card.addEventListener('pointerdown', e => { e.stopPropagation(); beginGame(s.p, s.avatar); });
+    // het chipje toont de moeilijkheidsgraad en wisselt hem door bij een tik
+    const chip = document.createElement('div');
+    const setChip = () => {
+      const d = DIFFS[s.d] ? s.d : 'easy';
+      chip.className = 'diff d' + (DIFF_ORDER.indexOf(d) + 1);
+      chip.textContent = DIFF_LABEL[d];
+    };
+    setChip();
+    chip.addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      const cu = allSaves();
+      const nxt = DIFF_ORDER[(DIFF_ORDER.indexOf(DIFFS[s.d] ? s.d : 'easy') + 1) % 3];
+      s.d = nxt; cu[k].d = nxt; writeSaves(cu);
+      setChip();
+      if (AC) SFX.tap();
+    });
+    card.appendChild(cnv); card.appendChild(nm); card.appendChild(cnt); card.appendChild(chip);
+    card.addEventListener('pointerdown', e => { e.stopPropagation(); beginGame(s.p, s.avatar, s.d); });
     saveList.appendChild(card);
-  }
+  });
   // zonder spellen alleen de aanmaakkolom tonen
   document.getElementById('saveListWrap').classList.toggle('leeg', list.length === 0);
 }
@@ -7866,13 +8049,24 @@ document.querySelectorAll('.avaBtn').forEach(b => {
     if (AC) SFX.tap();
   });
 });
+let pickedDiff = 'easy';
+document.querySelectorAll('.diffBtn').forEach(b => {
+  b.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    pickedDiff = b.dataset.diff;
+    document.querySelectorAll('.diffBtn').forEach(o => o.classList.toggle('sel', o === b));
+    if (AC) SFX.tap();
+  });
+});
 saveName.addEventListener('input', () => { btnNewGo.disabled = !saveName.value.trim(); });
 saveName.addEventListener('keydown', e => { if (e.key === 'Enter' && saveName.value.trim()) createSave(); });
 
-function beginGame(p, avatar) {
+function beginGame(p, avatar, diff) {
   profile = p;
   G.avatar = AVATARS[avatar] ? avatar : 'julian';
+  G.diff = DIFFS[diff] ? diff : 'easy';
   G.caught.fill(0); G.caughtCount = 0; G.active = STARTER;   // vers beginnen, dan pas laden
+  G.asleep = {};
   loadProgress();
   updateBadge();
   audioInit();
@@ -7883,10 +8077,12 @@ function beginGame(p, avatar) {
 function openSavePicker() {
   saveName.value = ''; btnNewGo.disabled = true;
   pickedAvatar = 'julian'; paintAvatarChoices();
+  pickedDiff = 'easy';
+  document.querySelectorAll('.diffBtn').forEach(o => o.classList.toggle('sel', o.dataset.diff === 'easy'));
   renderSaveList();
   saveOverlay.style.display = 'flex';
 }
-document.getElementById('btnStart').addEventListener('pointerdown', e => { e.stopPropagation(); beginGame('julian', 'julian'); });
+document.getElementById('btnStart').addEventListener('pointerdown', e => { e.stopPropagation(); beginGame('julian', 'julian', 'easy'); });
 document.getElementById('btnGuest').addEventListener('pointerdown', e => { e.stopPropagation(); openSavePicker(); });
 document.getElementById('btnSaveBack').addEventListener('pointerdown', e => {
   e.stopPropagation(); saveOverlay.style.display = 'none';
@@ -7916,10 +8112,10 @@ function createSave() {
   if (!name) return;
   const list = allSaves();
   const p = 'g' + Date.now().toString(36);
-  list.push({ p, name, avatar: pickedAvatar });
+  list.push({ p, name, avatar: pickedAvatar, d: pickedDiff });
   writeSaves(list);
   try { localStorage.removeItem('juliansPokemon.' + p); } catch (e) {}   // altijd een vers spel
-  beginGame(p, pickedAvatar);
+  beginGame(p, pickedAvatar, pickedDiff);
 }
 // het invoerveld mag de spelknop niet blokkeren als er nog niets staat
 saveName.addEventListener('focus', () => { btnNewGo.disabled = !saveName.value.trim(); });
