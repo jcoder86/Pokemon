@@ -823,7 +823,7 @@ const D = {
     PG(g, d, [[-S * 0.76, -S * 0.26], [-S * 0.88, -S * 0.45], [-S * 0.6, -S * 0.36]]);
     PG(g, d, [[S * 0.76, -S * 0.26], [S * 0.88, -S * 0.45], [S * 0.6, -S * 0.36]]);
     HEAD(0, S * 0.05, S * 0.75, S * 0.5, { muzzle: 0.54 });
-    EYES(g, t, m, 0, { sep: 0.56, y: -0.14, r: 0.30, iris: '#c0392b' });
+    EYES(g, t, m, 0, { sep: 0.56, y: -0.14, r: 0.28, iris: '#c0392b' });
     smileM(g, 0, S * 0.32, S * 0.22, m);
     cheeks(g, S * 0.68, S * 0.18, S * 0.1);
   },
@@ -885,7 +885,7 @@ const D = {
     RIM(g, 'rgba(200,240,255,0.55)', 0, -S * 0.52, S * 0.54, S * 0.48, S * 0.045, Math.PI * 1.08, Math.PI * 1.78);
     E(g, 'rgba(200,240,255,0.55)', -S * 0.18, -S * 0.68, S * 0.22, S * 0.16, -0.25);
     HEAD(0, -S * 0.52, S * 0.58, S * 0.52, { muzzle: 0.46 });
-    EYES(g, t, m, 2, { sep: 0.466, y: -0.115, r: 0.288, iris: '#7a4a2e' });
+    EYES(g, t, m, 2, { sep: 0.466, y: -0.115, r: 0.28, iris: '#7a4a2e' });
     smileM(g, 0, -S * 0.28, S * 0.18, m);
     cheeks(g, S * 0.5, -S * 0.4, S * 0.1);
   },
@@ -930,7 +930,7 @@ const D = {
     E(g, p, -S * 0.5, S * 0.85, S * 0.22, S * 0.16); E(g, p, S * 0.5, S * 0.85, S * 0.22, S * 0.16);
     E(g, p, -S * 0.85, S * 0.25, S * 0.18, S * 0.24, 0.5); E(g, p, S * 0.85, S * 0.25, S * 0.18, S * 0.24, -0.5);
     HEAD(S * 0, S * 0, S * 0.98, S * 0.94, { muzzle: 0.2923 });
-    EYES(g, t, m, 4, { sep: 0.4082, y: -0.1277, r: 0.2979, iris: '#3fa7d6' });
+    EYES(g, t, m, 4, { sep: 0.4082, y: -0.1277, r: 0.28, iris: '#3fa7d6' });
     smileM(g, 0, S * 0.38, S * 0.14, m);
     cheeks(g, S * 0.72, S * 0.18, S * 0.11);
   },
@@ -1051,7 +1051,7 @@ const D = {
       E(g, '#3b3b4b', s * S * 0.3, -S * 0.98, S * 0.06, S * 0.06);
     }
     HEAD(S * 0, S * -0.45, S * 0.3, S * 0.28, { muzzle: 0.3129 });
-    EYES(g, t, m, 8, { sep: 0.5333, y: -0.1071, r: 0.3929, iris: '#d6455a' });
+    EYES(g, t, m, 8, { sep: 0.5333, y: -0.1071, r: 0.28, iris: '#d6455a' });
     LN(g, '#5a6ab0', S * 0.06, [[-S * 0.15, S * 0.6], [-S * 0.2, S * 0.8]]);
     LN(g, '#5a6ab0', S * 0.06, [[S * 0.15, S * 0.6], [S * 0.2, S * 0.8]]);
   },
@@ -1309,7 +1309,7 @@ const D = {
     PG(g, tl, [[S * 0.42, -S * 0.85], [S * 0.55, -S * 1.1], [S * 0.22, -S * 0.95]]);
     if (m === 'dizzy' || m === 'sleep') {
     HEAD(S * 0, S * -0.42, S * 0.5, S * 0.32, { muzzle: 0.0137 });
-    EYES(g, t, m, 18, { sep: 0.52, y: -0.4063, r: 0.375, iris: '#fff' });
+    EYES(g, t, m, 18, { sep: 0.52, y: -0.4063, r: 0.28, iris: '#fff' });
     }
     else {
       ARC(g, '#2c2c2c', -S * 0.26, -S * 0.55, S * 0.13, 0.3, Math.PI - 0.3, S * 0.05);
@@ -1473,7 +1473,7 @@ const D = {
     PG(g, gr, [[-S * 0.42, -S * 1.0], [-S * 0.3, -S * 1.35], [-S * 0.12, -S * 1.0]]);
     LN(g, dk, S * 0.08, [[-S * 0.68, -S * 0.78], [-S * 0.3, -S * 0.85]]);
     HEAD(0, S * -0.577, S * 0.5238, S * 0.4295, { muzzle: 0.32 });
-    EYES(g, t, m, 24, { sep: 0.42, y: -0.1, r: 0.3027, iris: '#2c2c2c' });
+    EYES(g, t, m, 24, { sep: 0.42, y: -0.1, r: 0.28, iris: '#2c2c2c' });
     g.save(); g.translate(-S * 0.32, 0);
     smileM(g, 0, -S * 0.32, S * 0.16, m);
     g.restore();
@@ -1631,7 +1631,7 @@ const D = {
       LN(g, '#e84a5a', S * 0.05, [[-S * 0.15, -S * 0.18], [-S * 0.06, -S * 0.08]]);
     }
     HEAD(S * -0.15, S * -0.62, S * 0.52, S * 0.3, { muzzle: 0.1533 });
-    EYES(g, t, m, 31, { sep: 0.6731, y: -0.2667, r: 0.4, iris: '#d8b428' });
+    EYES(g, t, m, 31, { sep: 0.6731, y: -0.2667, r: 0.28, iris: '#d8b428' });
     if (!tf) smileM(g, -S * 0.15, -S * 0.46, S * 0.1, m);
   },
   mantis(g, S, t, m) { // groen maaier-insect
@@ -1659,7 +1659,7 @@ const D = {
       E(g, gd, s * S * 0.31, -S * 1.17, S * 0.05, S * 0.05);
     }
     HEAD(S * 0, S * -0.55, S * 0.4, S * 0.34, { muzzle: 0.3318 });
-    EYES(g, t, m, 32, { sep: 0.45, y: -0.0882, r: 0.3529, iris: '#d8a428' });
+    EYES(g, t, m, 32, { sep: 0.45, y: -0.0882, r: 0.28, iris: '#d8a428' });
     smileM(g, 0, -S * 0.32, S * 0.1, m);
   },
   rhino(g, S, t, m) { // pantserneushoorntje
@@ -1700,7 +1700,7 @@ const D = {
     E(g, bd, -S * 0.72, -S * 0.73, S * 0.06, S * 0.1);
     PG(g, bd, [[-S * 0.05, -S * 1.0], [S * 0.08, -S * 1.25], [S * 0.18, -S * 0.95]]);
     HEAD(S * -0.1, S * -0.72, S * 0.36, S * 0.32, { muzzle: 0.3262 });
-    EYES(g, t, m, 34, { sep: 0.6111, y: -0.0938, r: 0.375, iris: '#2c5d8f' });
+    EYES(g, t, m, 34, { sep: 0.6111, y: -0.0938, r: 0.28, iris: '#2c5d8f' });
     cheeks(g, S * 0.3, -S * 0.55, S * 0.08);
     g.restore();
   },
@@ -1776,7 +1776,7 @@ const D = {
     }
     g.save(); g.translate(-S * 0.55, 0);
     HEAD(0, S * -0.3488, S * 0.381, S * 0.3124, { muzzle: 0.32 });
-    EYES(g, t, m, 37, { sep: 0.42, y: -0.1, r: 0.34, iris: '#2c2c2c' });
+    EYES(g, t, m, 37, { sep: 0.42, y: -0.1, r: 0.28, iris: '#2c2c2c' });
     g.restore();
   },
   eggies(g, S, t, m) { // mandje vrolijke eitjes
@@ -1794,7 +1794,7 @@ const D = {
       }
     if (m === 'dizzy' || m === 'sleep') {
     HEAD(0, S * 0.0195, S * 0.2381, S * 0.1952, { muzzle: 0.32 });
-    EYES(g, t, m, 38, { sep: 0.42, y: -0.1, r: 0.34, iris: '#fff' });
+    EYES(g, t, m, 38, { sep: 0.42, y: -0.1, r: 0.28, iris: '#fff' });
     }
       else if (k !== 1) {
         E(g, '#5a4048', -S * 0.1 * es, S * 0.02, S * 0.04, S * 0.055); E(g, '#5a4048', S * 0.1 * es, S * 0.02, S * 0.04, S * 0.055);
@@ -1888,7 +1888,7 @@ const D = {
     }
     g.save(); g.translate(-S * 0.65, 0);
     HEAD(0, S * -0.6205, S * 0.2381, S * 0.1952, { muzzle: 0.32 });
-    EYES(g, t, m, 41, { sep: 0.42, y: -0.1, r: 0.34, iris: '#2c5d8f' });
+    EYES(g, t, m, 41, { sep: 0.42, y: -0.1, r: 0.28, iris: '#2c5d8f' });
     g.restore();
   },
   leekduck(g, S, t, m) { // eendje met groene stengel
@@ -2052,7 +2052,7 @@ const D = {
     }
     E(g, '#3b3b3b', -S * 0.72, -S * 0.05, S * 0.02, S * 0.02); E(g, '#3b3b3b', -S * 0.66, S * 0.0, S * 0.02, S * 0.02);
     HEAD(0, S * -0.3888, S * 0.381, S * 0.3124, { muzzle: 0.32 });
-    EYES(g, t, m, 47, { sep: 0.42, y: -0.1, r: 0.34, iris: '#2c2c2c' });
+    EYES(g, t, m, 47, { sep: 0.42, y: -0.1, r: 0.28, iris: '#2c2c2c' });
     cheeks(g, S * 0.18, -S * 0.18, S * 0.09);
     g.restore();
   },
@@ -2096,7 +2096,7 @@ const D = {
     PG(g, d, [[-S * 0.76, -S * 0.22], [-S * 0.9, -S * 0.44], [-S * 0.6, -S * 0.32]]);
     PG(g, d, [[S * 0.76, -S * 0.22], [S * 0.9, -S * 0.44], [S * 0.6, -S * 0.32]]);
     HEAD(0, S * 0.08, S * 0.74, S * 0.5, { muzzle: 0.56 });
-    EYES(g, t, m, 48, { sep: 0.568, y: -0.12, r: 0.30, iris: '#c0392b' });
+    EYES(g, t, m, 48, { sep: 0.568, y: -0.12, r: 0.28, iris: '#c0392b' });
     smileM(g, 0, S * 0.36, S * 0.22, m);
     cheeks(g, S * 0.68, S * 0.22, S * 0.1);
   },
@@ -2138,7 +2138,7 @@ const D = {
     PG(g, c, [[-S * 0.8, -S * 0.06], [-S * 1.02, -S * 0.42], [-S * 0.56, -S * 0.28]]);
     PG(g, c, [[S * 0.8, -S * 0.06], [S * 1.02, -S * 0.42], [S * 0.56, -S * 0.28]]);
     HEAD(0, S * 0.18, S * 0.78, S * 0.48, { muzzle: 0.58 });
-    EYES(g, t, m, 49, { sep: 0.564, y: -0.08, r: 0.31, iris: '#c0392b' });
+    EYES(g, t, m, 49, { sep: 0.564, y: -0.08, r: 0.28, iris: '#c0392b' });
     smileM(g, 0, S * 0.46, S * 0.24, m);
     for (const s of [-1, 1]) LN(g, '#2c6a5c', S * 0.035, [[s * S * 0.2, S * 0.42], [s * S * 0.3, S * 0.42]]);
   },
@@ -2227,7 +2227,7 @@ const D = {
     RIM(g, 'rgba(255,214,180,0.5)', -S * 0.06, -S * 0.56, S * 0.41, S * 0.33, S * 0.04, Math.PI * 1.1, Math.PI * 1.8);
     for (const s of [-1, 1]) PG(g, '#f2ecdc', [[S * 0.08, -S * 0.78], [S * 0.24 + s * S * 0.14, -S * 1.12], [S * 0.24, -S * 0.7]]);
     HEAD(-S * 0.06, -S * 0.56, S * 0.44, S * 0.36, { muzzle: 0.44 });
-    EYES(g, t, m, 51, { sep: 0.42, y: -0.12, r: 0.33, iris: '#2c5d8f' });
+    EYES(g, t, m, 51, { sep: 0.42, y: -0.12, r: 0.28, iris: '#2c5d8f' });
     E(g, d, -S * 0.44, -S * 0.56, S * 0.03, S * 0.03);
     ARC(g, '#8a3a1a', -S * 0.2, -S * 0.4, S * 0.16, 0.2, Math.PI - 0.5, S * 0.04);
   },
@@ -2402,7 +2402,7 @@ const D = {
     E(g, p, -S * 0.86, S * 0.3, S * 0.18, S * 0.24, 0.5); E(g, p, S * 0.86, S * 0.3, S * 0.18, S * 0.24, -0.5);
     E(g, p, -S * 0.46, S * 0.88, S * 0.24, S * 0.16); E(g, p, S * 0.46, S * 0.88, S * 0.24, S * 0.16);
     HEAD(S * 0, S * 0.06, S * 0.94, S * 0.9, { muzzle: 0.2867 });
-    EYES(g, t, m, 57, { sep: 0.383, y: -0.1333, r: 0.2889, iris: '#3fa7d6' });
+    EYES(g, t, m, 57, { sep: 0.383, y: -0.1333, r: 0.28, iris: '#3fa7d6' });
     smileM(g, 0, S * 0.4, S * 0.14, m);
     cheeks(g, S * 0.66, S * 0.24, S * 0.11);
   },
@@ -2461,7 +2461,7 @@ const D = {
     g.restore();
     E(g, '#c8455a', 0, -S * 0.08, S * 0.2, S * 0.08);
     HEAD(S * 0, S * -0.05, S * 0.92, S * 0.42, { muzzle: 0.57 });
-    EYES(g, t, m, 59, { sep: 0.3043, y: 0.15, r: 0.3333, iris: '#2c2c2c' });
+    EYES(g, t, m, 59, { sep: 0.3043, y: 0.15, r: 0.2587, iris: '#2c2c2c' });
     smileM(g, 0, S * 0.44, S * 0.18, m);
   },
   // ---------- handgetekend: insecten en planten ----------
@@ -2509,7 +2509,7 @@ const D = {
     PG(g, '#d8546a', [[-S * 0.56, -S * 0.36], [-S * 0.4, -S * 1.0], [-S * 0.24, -S * 0.34]]); // gifhoorn
     PG(g, '#b03a50', [[-S * 0.4, -S * 1.0], [-S * 0.3, -S * 0.36], [-S * 0.24, -S * 0.34]]);
     HEAD(0, S * 0.0371, S * 0.4524, S * 0.371, { muzzle: 0.32 });
-    EYES(g, t, m, 61, { sep: 0.42, y: -0.1, r: 0.3235, iris: '#c0392b' });
+    EYES(g, t, m, 61, { sep: 0.42, y: -0.1, r: 0.28, iris: '#c0392b' });
     g.save(); g.translate(-S * 0.44, 0); smileM(g, 0, S * 0.24, S * 0.11, m); g.restore();
   },
   cocoonyellow(g, S, t, m) { // gele pop met harde punt
@@ -2598,7 +2598,7 @@ const D = {
     }
     if (m === 'dizzy' || m === 'sleep') {
     HEAD(S * 0, S * -0.44, S * 0.42, S * 0.36, { muzzle: 0.42 });
-    EYES(g, t, m, 65, { sep: 0.5714, y: 0, r: 0.3889, iris: '#fff' });
+    EYES(g, t, m, 65, { sep: 0.5714, y: 0, r: 0.28, iris: '#fff' });
     }
     else for (const s of [-1, 1]) {
       E(g, '#e8455a', s * S * 0.24, -S * 0.44, S * 0.19, S * 0.2);
@@ -2624,7 +2624,7 @@ const D = {
     E(g, '#5fae3c', 0, -S * 0.34, S * 0.44, S * 0.14);            // groene kraag
     E(g, '#4f9c30', 0, -S * 0.4, S * 0.3, S * 0.09);
     HEAD(0, S * -0.0229, S * 0.4524, S * 0.371, { muzzle: 0.32 });
-    EYES(g, t, m, 66, { sep: 0.42, y: -0.1, r: 0.3235, iris: '#2c2c2c' });
+    EYES(g, t, m, 66, { sep: 0.42, y: -0.1, r: 0.28, iris: '#2c2c2c' });
     ARC(g, '#8a6a1a', -S * 0.1, S * 0.22, S * 0.11, 0.2, Math.PI - 0.2, S * 0.04);
     ARC(g, '#8a6a1a', S * 0.1, S * 0.22, S * 0.11, 0.2, Math.PI - 0.2, S * 0.04);
     g.restore();
@@ -2694,7 +2694,7 @@ const D = {
       LN(g, bd, S * 0.06, [[s * S * 0.3, S * 0.3 + i * S * 0.14], [s * S * (0.66 + i * 0.06), S * (0.56 + i * 0.18)]]);
     E(g, br, 0, -S * 0.24, S * 0.42, S * 0.3);
     HEAD(S * 0, S * -0.24, S * 0.42, S * 0.3, { muzzle: 0.2867 });
-    EYES(g, t, m, 71, { sep: 0.4762, y: -0.1333, r: 0.4, iris: '#2c2c2c' });
+    EYES(g, t, m, 71, { sep: 0.4762, y: -0.1333, r: 0.28, iris: '#2c2c2c' });
     ARC(g, '#4a3016', 0, -S * 0.1, S * 0.14, 0.3, Math.PI - 0.3, S * 0.04);
   },
   jellyfloat(g, S, t, m) { // doorzichtig kwalletje met tentakels
@@ -2770,7 +2770,7 @@ const D = {
       PG(g, '#e0c8a0', [[i * S * 0.16 - S * 0.1, -S * 0.72], [i * S * 0.2, -S * 1.1], [i * S * 0.16 + S * 0.1, -S * 0.72]]);
     E(g, '#8a6a45', -S * 0.28, -S * 0.5, S * 0.14, S * 0.12); E(g, '#8a6a45', S * 0.28, -S * 0.5, S * 0.14, S * 0.12);
     HEAD(S * 0, S * -0.46, S * 0.44, S * 0.4, { muzzle: 0.32 });
-    EYES(g, t, m, 74, { sep: 0.5, y: -0.1, r: 0.3, iris: '#2c2c2c' });
+    EYES(g, t, m, 74, { sep: 0.5, y: -0.1, r: 0.28, iris: '#2c2c2c' });
     PG(g, '#f5a623', [[-S * 0.12, -S * 0.3], [S * 0.12, -S * 0.3], [0, -S * 0.08]]);
     PG(g, '#e08a3d', [[-S * 0.12, -S * 0.3], [S * 0.12, -S * 0.3], [0, -S * 0.22]]);
     LN(g, '#e0a040', S * 0.06, [[-S * 0.2, S * 0.74], [-S * 0.22, S * 0.98]]);
@@ -2800,7 +2800,7 @@ const D = {
       g.restore();
     }
     HEAD(S * 0, S * -0.48, S * 0.46, S * 0.42, { muzzle: 0.3248 });
-    EYES(g, t, m, 75, { sep: 0.4783, y: -0.0952, r: 0.2857, iris: '#c0392b' });
+    EYES(g, t, m, 75, { sep: 0.4783, y: -0.0952, r: 0.28, iris: '#c0392b' });
     PG(g, '#f5a623', [[-S * 0.13, -S * 0.32], [S * 0.13, -S * 0.32], [0, -S * 0.06]]);
     PG(g, '#e08a3d', [[-S * 0.13, -S * 0.32], [S * 0.13, -S * 0.32], [0, -S * 0.22]]);
     LN(g, '#e0a040', S * 0.07, [[-S * 0.2, S * 0.74], [-S * 0.22, S * 1.0]]);
@@ -2821,7 +2821,7 @@ const D = {
     for (let i = -1; i <= 1; i++)                                    // stekelkuif
       PG(g, wd, [[i * S * 0.14 - S * 0.08, -S * 0.62], [i * S * 0.18, -S * 0.96], [i * S * 0.14 + S * 0.08, -S * 0.62]]);
     HEAD(S * 0, S * -0.36, S * 0.42, S * 0.38, { muzzle: 0.3147 });
-    EYES(g, t, m, 76, { sep: 0.4762, y: -0.1053, r: 0.2895, iris: '#2c2c2c' });
+    EYES(g, t, m, 76, { sep: 0.4762, y: -0.1053, r: 0.28, iris: '#2c2c2c' });
     PG(g, '#f5a623', [[-S * 0.1, -S * 0.2], [S * 0.1, -S * 0.2], [0, S * 0.02]]);
     E(g, '#c8a878', 0, -S * 0.6, S * 0.2, S * 0.08);
     LN(g, '#e0a040', S * 0.06, [[-S * 0.18, S * 0.72], [-S * 0.2, S * 0.96]]);
@@ -2844,7 +2844,7 @@ const D = {
     for (let i = -1; i <= 1; i++)
       PG(g, '#d8546a', [[i * S * 0.14 - S * 0.09, -S * 0.66], [i * S * 0.18, -S * 1.04], [i * S * 0.14 + S * 0.09, -S * 0.66]]);
     HEAD(S * 0, S * -0.4, S * 0.42, S * 0.38, { muzzle: 0.3147 });
-    EYES(g, t, m, 77, { sep: 0.4762, y: -0.1053, r: 0.2895, iris: '#c0392b' });
+    EYES(g, t, m, 77, { sep: 0.4762, y: -0.1053, r: 0.28, iris: '#c0392b' });
     PG(g, '#f0c060', [[-S * 0.1, -S * 0.3], [S * 0.08, -S * 0.28], [-S * 0.02, S * 0.24]]);  // lange snavel
     PG(g, '#d8a030', [[0, -S * 0.29], [S * 0.08, -S * 0.28], [-S * 0.02, S * 0.24]]);
     LN(g, '#e0a040', S * 0.06, [[-S * 0.18, S * 0.74], [-S * 0.2, S * 0.98]]);
@@ -2897,7 +2897,7 @@ const D = {
     for (let i = 0; i < 3; i++) PG(g, '#fff', [[S * (0.2 + i * 0.12), -S * 0.4], [S * (0.24 + i * 0.12), -S * 0.28], [S * (0.28 + i * 0.12), -S * 0.42]]);
     PG(g, gd, [[-S * 0.3, -S * 0.5], [-S * 0.66, -S * 0.72], [-S * 0.24, -S * 0.28]]); // achterkam
     HEAD(S * 0, S * -0.34, S * 0.4, S * 0.34, { muzzle: 0.1847 });
-    EYES(g, t, m, 81, { sep: 0.325, y: -0.2353, r: 0.2941, iris: '#c0392b' });
+    EYES(g, t, m, 81, { sep: 0.325, y: -0.2353, r: 0.2762, iris: '#c0392b' });
   },
   icebird(g, S, t, m) { // ijsvogel met lange wapperende staart
     const c = '#8fd8f4', d = '#4aa8d8', w = '#e8faff';
@@ -2924,7 +2924,7 @@ const D = {
     for (let i = -1; i <= 1; i++)                                     // ijskuif
       PG(g, d, [[i * S * 0.16 - S * 0.09, -S * 0.7], [i * S * 0.2, -S * 1.12], [i * S * 0.16 + S * 0.09, -S * 0.7]]);
     HEAD(S * 0, S * -0.44, S * 0.44, S * 0.4, { muzzle: 0.32 });
-    EYES(g, t, m, 82, { sep: 0.4773, y: -0.1, r: 0.3, iris: '#2c5d8f' });
+    EYES(g, t, m, 82, { sep: 0.4773, y: -0.1, r: 0.28, iris: '#2c5d8f' });
     PG(g, '#9aa8c0', [[-S * 0.1, -S * 0.28], [S * 0.1, -S * 0.28], [0, -S * 0.06]]);
     LN(g, '#7a90b0', S * 0.06, [[-S * 0.18, S * 0.7], [-S * 0.2, S * 0.94]]);
     LN(g, '#7a90b0', S * 0.06, [[S * 0.18, S * 0.7], [S * 0.2, S * 0.94]]);
@@ -2956,7 +2956,7 @@ const D = {
     for (let i = -2; i <= 2; i++)                                      // stekelkuif
       PG(g, yd, [[i * S * 0.13 - S * 0.07, -S * 0.7], [i * S * 0.17, -S * (1.0 + Math.abs(i) * -0.08)], [i * S * 0.13 + S * 0.07, -S * 0.7]]);
     HEAD(S * 0, S * -0.44, S * 0.44, S * 0.4, { muzzle: 0.32 });
-    EYES(g, t, m, 83, { sep: 0.4773, y: -0.1, r: 0.3, iris: '#3b2b1e' });
+    EYES(g, t, m, 83, { sep: 0.4773, y: -0.1, r: 0.28, iris: '#3b2b1e' });
     PG(g, '#f0a830', [[-S * 0.1, -S * 0.28], [S * 0.1, -S * 0.28], [0, -S * 0.04]]);
     LN(g, '#e0a040', S * 0.06, [[-S * 0.18, S * 0.7], [-S * 0.2, S * 0.94]]);
     LN(g, '#e0a040', S * 0.06, [[S * 0.18, S * 0.7], [S * 0.2, S * 0.94]]);
@@ -2984,7 +2984,7 @@ const D = {
       E(g, '#ffd23d', i * S * 0.18, -S * 0.8, S * 0.07 * fs, S * 0.16 * fs, i * 0.4);
     }
     HEAD(S * 0, S * -0.44, S * 0.44, S * 0.4, { muzzle: 0.32 });
-    EYES(g, t, m, 84, { sep: 0.4773, y: -0.1, r: 0.3, iris: '#c0392b' });
+    EYES(g, t, m, 84, { sep: 0.4773, y: -0.1, r: 0.28, iris: '#c0392b' });
     PG(g, '#f0a830', [[-S * 0.1, -S * 0.28], [S * 0.1, -S * 0.28], [0, -S * 0.04]]);
     LN(g, '#e0a040', S * 0.06, [[-S * 0.18, S * 0.7], [-S * 0.2, S * 0.94]]);
     LN(g, '#e0a040', S * 0.06, [[S * 0.18, S * 0.7], [S * 0.2, S * 0.94]]);
@@ -3002,7 +3002,7 @@ const D = {
     PG(g, bl, [[-S * 0.3, -S * 0.44], [-S * 0.02, -S * 0.76], [S * 0.2, -S * 0.42]]);
     if (m === 'dizzy' || m === 'sleep') {
     HEAD(0, S * -0.4966, S * 0.2857, S * 0.2343, { muzzle: 0.32 });
-    EYES(g, t, m, 85, { sep: 0.42, y: -0.1, r: 0.34, iris: '#fff' });
+    EYES(g, t, m, 85, { sep: 0.42, y: -0.1, r: 0.28, iris: '#fff' });
     }
     else for (const s of [-1, 1]) {
       PG(g, '#ffffff', [[s * S * 0.16 - S * 0.06, -S * 0.58], [s * S * 0.16 + S * 0.06, -S * 0.58], [s * S * 0.16, -S * 0.44]]);
@@ -3067,7 +3067,7 @@ const D = {
       E(g, or, s * S * 0.5, -S * 0.4, S * 0.16, S * 0.11, s * 0.4);
     }
     HEAD(S * 0, S * -0.44, S * 0.5, S * 0.44, { muzzle: 0.2836 });
-    EYES(g, t, m, 89, { sep: 0.44, y: -0.1364, r: 0.2955, iris: '#2c5d8f' });
+    EYES(g, t, m, 89, { sep: 0.44, y: -0.1364, r: 0.28, iris: '#2c5d8f' });
     E(g, od, -S * 0.07, -S * 0.28, S * 0.03, S * 0.025); E(g, od, S * 0.07, -S * 0.28, S * 0.03, S * 0.025);
     smileM(g, 0, -S * 0.18, S * 0.16, m === 'idle' ? 'happy' : m);
   },
@@ -3146,7 +3146,7 @@ const D = {
       PG(g, od, [[s * S * 0.32, -S * 0.7], [s * S * 0.46, -S * 0.9], [s * S * 0.5, -S * 0.62]]);
     }
     HEAD(S * 0, S * -0.42, S * 0.5, S * 0.44, { muzzle: 0.3745 });
-    EYES(g, t, m, 92, { sep: 0.48, y: -0.0455, r: 0.2955, iris: '#6a4426' });
+    EYES(g, t, m, 92, { sep: 0.48, y: -0.0455, r: 0.28, iris: '#6a4426' });
     E(g, cr, 0, -S * 0.2, S * 0.2, S * 0.14);
     E(g, '#3b3226', 0, -S * 0.26, S * 0.07, S * 0.055);
     smileM(g, 0, -S * 0.12, S * 0.13, m);
@@ -3182,7 +3182,7 @@ const D = {
     PG(g, cr, [[-S * 0.46, -S * 0.72], [-S * 0.38, -S * 0.94], [-S * 0.28, -S * 0.7]]);
     g.save(); g.translate(-S * 0.5, 0);
     HEAD(0, S * -0.5205, S * 0.2381, S * 0.1952, { muzzle: 0.32 });
-    EYES(g, t, m, 93, { sep: 0.42, y: -0.1, r: 0.34, iris: '#2c5d8f' });
+    EYES(g, t, m, 93, { sep: 0.42, y: -0.1, r: 0.28, iris: '#2c5d8f' });
     g.restore();
   },
   pouchmom(g, S, t, m) { // moeder met buidel en jong
@@ -3211,7 +3211,7 @@ const D = {
     E(g, br, 0, -S * 0.44, S * 0.5, S * 0.42);
     for (const s of [-1, 1]) PG(g, br, [[s * S * 0.24, -S * 0.66], [s * S * 0.4, -S * 1.0], [s * S * 0.48, -S * 0.56]]);
     HEAD(S * 0, S * -0.44, S * 0.5, S * 0.42, { muzzle: 0.3724 });
-    EYES(g, t, m, 94, { sep: 0.44, y: -0.0476, r: 0.2857, iris: '#2c2c2c' });
+    EYES(g, t, m, 94, { sep: 0.44, y: -0.0476, r: 0.28, iris: '#2c2c2c' });
     E(g, cr, 0, -S * 0.24, S * 0.2, S * 0.14);
     smileM(g, 0, -S * 0.16, S * 0.13, m);
   },
@@ -3307,7 +3307,7 @@ const D = {
     for (let i = -1; i <= 1; i++)                                        // kopvin
       PG(g, cr, [[i * S * 0.16 - S * 0.1, -S * 0.66], [i * S * 0.16, -S * 1.0], [i * S * 0.16 + S * 0.1, -S * 0.66]]);
     HEAD(S * 0, S * -0.36, S * 0.54, S * 0.46, { muzzle: 0.333 });
-    EYES(g, t, m, 98, { sep: 0.4444, y: -0.087, r: 0.2826, iris: '#2c5d8f' });
+    EYES(g, t, m, 98, { sep: 0.4444, y: -0.087, r: 0.28, iris: '#2c5d8f' });
     E(g, '#5a8ea8', 0, -S * 0.16, S * 0.06, S * 0.05);
     smileM(g, 0, -S * 0.06, S * 0.12, m);
   },
@@ -3395,7 +3395,7 @@ const D = {
     E(g, bl, 0, -S * 0.42, S * 0.42, S * 0.38);
     for (let i = -1; i <= 1; i++) PG(g, bd, [[i * S * 0.18 - S * 0.08, -S * 0.66], [i * S * 0.18, -S * 0.88], [i * S * 0.18 + S * 0.08, -S * 0.66]]);
     HEAD(S * 0, S * -0.42, S * 0.42, S * 0.38, { muzzle: 0.3147 });
-    EYES(g, t, m, 102, { sep: 0.4524, y: -0.1053, r: 0.2895, iris: '#c0392b' });
+    EYES(g, t, m, 102, { sep: 0.4524, y: -0.1053, r: 0.28, iris: '#c0392b' });
     ARC(g, '#3a4a56', 0, -S * 0.24, S * 0.13, 0.25, Math.PI - 0.25, S * 0.04);
   },
   muscmid(g, S, t, m) { // gespierde vechter met gordel
@@ -3468,7 +3468,7 @@ const D = {
     E(g, '#e8d8b8', 0, -S * 0.46, S * 0.22, S * 0.16);
     if (m === 'dizzy' || m === 'sleep') {
     HEAD(S * 0, S * -0.52, S * 0.34, S * 0.32, { muzzle: 0.2325 });
-    EYES(g, t, m, 105, { sep: 0.4118, y: -0.1875, r: 0.2813, iris: '#fff' });
+    EYES(g, t, m, 105, { sep: 0.4118, y: -0.1875, r: 0.28, iris: '#fff' });
     }
     else for (const s of [-1, 1]) {
       PG(g, '#2c2c2c', [[s * S * 0.05, -S * 0.66], [s * S * 0.24, -S * 0.6], [s * S * 0.06, -S * 0.52]]);
@@ -3496,7 +3496,7 @@ const D = {
     E(g, '#e0524a', 0, -S * 0.66, S * 0.4, S * 0.16);                    // hoofdband
     E(g, '#f47a70', -S * 0.14, -S * 0.68, S * 0.12, S * 0.05);
     HEAD(S * 0, S * -0.44, S * 0.4, S * 0.36, { muzzle: 0.42 });
-    EYES(g, t, m, 106, { sep: 0.45, y: 0, r: 0.3056, iris: '#2c2c2c' });
+    EYES(g, t, m, 106, { sep: 0.45, y: 0, r: 0.28, iris: '#2c2c2c' });
     ARC(g, '#5a4530', 0, -S * 0.22, S * 0.12, 0.25, Math.PI - 0.25, S * 0.04);
   },
   monkorage(g, S, t, m) { // boos aapje met stuiterende staart
@@ -3571,7 +3571,7 @@ const D = {
     for (const s of [-1, 1]) PG(g, y1, [[s * S * 0.2, -S * 0.72], [s * S * 0.42, -S * 1.08], [s * S * 0.5, -S * 0.62]]);
     PG(g, br, [[-S * 0.42, -S * 0.5], [-S * 0.2, -S * 0.86], [0, -S * 0.52]]);
     HEAD(S * 0, S * -0.48, S * 0.42, S * 0.38, { muzzle: 0.3147 });
-    EYES(g, t, m, 108, { sep: 0.4286, y: -0.1053, r: 0.2895, iris: '#c0392b' });
+    EYES(g, t, m, 108, { sep: 0.4286, y: -0.1053, r: 0.28, iris: '#c0392b' });
     for (const s of [-1, 1]) LN(g, '#c8a838', S * 0.05, [[s * S * 0.06, -S * 0.3], [s * S * 0.3, -S * 0.22]]);   // snor
   },
   psybig(g, S, t, m) { // meester met twee lepels
@@ -3658,7 +3658,7 @@ const D = {
     for (const s of [-1, 1]) E(g, p, s * S * 0.46, -S * 0.62, S * 0.14, S * 0.18, s * 0.3);
     E(g, '#e090b0', 0, -S * 0.8, S * 0.1, S * 0.12);
     HEAD(S * 0, S * -0.44, S * 0.46, S * 0.42, { muzzle: 0.2771 });
-    EYES(g, t, m, 111, { sep: 0.4348, y: -0.1429, r: 0.2857, iris: '#2c5d8f' });
+    EYES(g, t, m, 111, { sep: 0.4348, y: -0.1429, r: 0.28, iris: '#2c5d8f' });
     E(g, '#e0524a', 0, -S * 0.24, S * 0.11, S * 0.09);                   // rode neus
     smileM(g, 0, -S * 0.1, S * 0.13, m === 'idle' ? 'happy' : m);
     cheeks(g, S * 0.34, -S * 0.28, S * 0.1, 'rgba(230,90,120,0.35)');
@@ -3690,7 +3690,7 @@ const D = {
     E(g, yl, 0, S * 0.12, S * 0.3, S * 0.1);
     E(g, pu, 0, S * 0.16, S * 0.42, S * 0.34);                     // kop
     HEAD(S * 0, S * 0.16, S * 0.42, S * 0.34, { muzzle: 0.2435 });
-    EYES(g, t, m, 112, { sep: 0.4048, y: -0.1765, r: 0.3235, iris: '#d8b428' });
+    EYES(g, t, m, 112, { sep: 0.4048, y: -0.1765, r: 0.28, iris: '#d8b428' });
     const tf = (t * 2.2) % 1 < 0.3;
     if (tf) {
       LN(g, '#e84a5a', S * 0.05, [[0, S * 0.34], [0, S * 0.56]]);
@@ -3944,7 +3944,7 @@ const D = {
     LN(g, gd, S * 0.08, [[-S * 0.42, -S * 0.5], [-S * 0.12, -S * 0.54]]);
     LN(g, gd, S * 0.08, [[S * 0.12, -S * 0.54], [S * 0.42, -S * 0.5]]);
     HEAD(S * 0, S * -0.36, S * 0.46, S * 0.36, { muzzle: 0.42 });
-    EYES(g, t, m, 120, { sep: 0.5217, y: 0, r: 0.3333, iris: '#2c2c2c' });
+    EYES(g, t, m, 120, { sep: 0.5217, y: 0, r: 0.28, iris: '#2c2c2c' });
     smileM(g, 0, -S * 0.12, S * 0.18, m);
     PG(g, '#fff', [[-S * 0.1, -S * 0.13], [-S * 0.05, -S * 0.02], [0, -S * 0.13]]);
     PG(g, '#fff', [[S * 0.1, -S * 0.13], [S * 0.05, -S * 0.02], [0, -S * 0.13]]);
@@ -4020,7 +4020,7 @@ const D = {
     E(g, y1, 0, -S * 0.34, S * 0.48, S * 0.4);
     for (const s of [-1, 1]) PG(g, y1, [[s * S * 0.24, -S * 0.56], [s * S * 0.46, -S * 0.88], [s * S * 0.5, -S * 0.46]]);
     HEAD(S * 0, S * -0.34, S * 0.48, S * 0.4, { muzzle: 0.37 });
-    EYES(g, t, m, 123, { sep: 0.4583, y: -0.05, r: 0.3, iris: '#2c2c2c' });
+    EYES(g, t, m, 123, { sep: 0.4583, y: -0.05, r: 0.28, iris: '#2c2c2c' });
     E(g, cr, 0, -S * 0.14, S * 0.2, S * 0.12);
     smileM(g, 0, -S * 0.08, S * 0.12, m);
   },
@@ -4041,7 +4041,7 @@ const D = {
     PG(g, '#f2ecdc', [[-S * 0.1, -S * 0.6], [0, -S * 1.0], [S * 0.1, -S * 0.6]]);      // hoorn
     for (let i = -1; i <= 1; i++) LN(g, bd, S * 0.05, [[i * S * 0.2, -S * 0.5], [i * S * 0.22, -S * 0.36]]);
     HEAD(S * 0, S * -0.3, S * 0.5, S * 0.42, { muzzle: 0.3724 });
-    EYES(g, t, m, 124, { sep: 0.42, y: -0.0476, r: 0.2857, iris: '#c0392b' });
+    EYES(g, t, m, 124, { sep: 0.42, y: -0.0476, r: 0.28, iris: '#c0392b' });
     smileM(g, 0, -S * 0.06, S * 0.12, m);
   },
   spikequeen(g, S, t, m) { // grote blauwe pantservrouw
@@ -4066,7 +4066,7 @@ const D = {
     PG(g, '#f2ecdc', [[-S * 0.11, -S * 0.72], [0, -S * 1.14], [S * 0.11, -S * 0.72]]);
     for (const s of [-1, 1]) PG(g, bl, [[s * S * 0.28, -S * 0.6], [s * S * 0.52, -S * 0.92], [s * S * 0.54, -S * 0.5]]);
     HEAD(S * 0, S * -0.42, S * 0.5, S * 0.42, { muzzle: 0.3724 });
-    EYES(g, t, m, 125, { sep: 0.44, y: -0.0476, r: 0.2857, iris: '#c0392b' });
+    EYES(g, t, m, 125, { sep: 0.44, y: -0.0476, r: 0.28, iris: '#c0392b' });
     smileM(g, 0, -S * 0.16, S * 0.15, m);
     PG(g, '#fff', [[-S * 0.11, -S * 0.15], [-S * 0.06, -S * 0.04], [-S * 0.01, -S * 0.15]]);
     PG(g, '#fff', [[S * 0.11, -S * 0.15], [S * 0.06, -S * 0.04], [S * 0.01, -S * 0.15]]);
@@ -4090,7 +4090,7 @@ const D = {
     E(g, pu, 0, -S * 0.3, S * 0.5, S * 0.42);
     PG(g, '#f2ecdc', [[-S * 0.1, -S * 0.6], [0, -S * 1.02], [S * 0.1, -S * 0.6]]);
     HEAD(S * 0, S * -0.3, S * 0.5, S * 0.42, { muzzle: 0.3724 });
-    EYES(g, t, m, 126, { sep: 0.42, y: -0.0476, r: 0.2857, iris: '#c0392b' });
+    EYES(g, t, m, 126, { sep: 0.42, y: -0.0476, r: 0.28, iris: '#c0392b' });
     smileM(g, 0, -S * 0.06, S * 0.12, m);
   },
   spikeking(g, S, t, m) { // grote paarse hoornkoning
@@ -4300,7 +4300,7 @@ const D = {
     }
     E(g, bl, 0, -S * 0.42, S * 0.44, S * 0.38);
     HEAD(S * 0, S * -0.42, S * 0.44, S * 0.38, { muzzle: 0.3147 });
-    EYES(g, t, m, 137, { sep: 0.4773, y: -0.1053, r: 0.3158, iris: '#2c2c2c' });
+    EYES(g, t, m, 137, { sep: 0.4773, y: -0.1053, r: 0.28, iris: '#2c2c2c' });
     ARC(g, '#2a4a60', 0, -S * 0.2, S * 0.13, 0.25, Math.PI - 0.25, S * 0.045);
     E(g, '#ffffff', 0, -S * 0.74, S * 0.16, S * 0.1);
   },
@@ -4399,7 +4399,7 @@ const D = {
     for (let i = -1; i <= 1; i++)
       PG(g, bd, [[i * S * 0.12 - S * 0.16, -S * 0.98], [i * S * 0.12 - S * 0.08, -S * 1.24], [i * S * 0.12, -S * 0.96]]);
     HEAD(S * -0.1, S * -0.7, S * 0.38, S * 0.34, { muzzle: 0.3024 });
-    EYES(g, t, m, 141, { sep: 0.6053, y: -0.1176, r: 0.3235, iris: '#2c5d8f' });
+    EYES(g, t, m, 141, { sep: 0.6053, y: -0.1176, r: 0.28, iris: '#2c5d8f' });
     cheeks(g, S * 0.3, -S * 0.56, S * 0.08);
     g.restore();
   },
@@ -4492,7 +4492,7 @@ const D = {
       PG(g, '#fff', [[-S * 0.44 + i * S * 0.22, -S * 0.42], [-S * 0.38 + i * S * 0.22, -S * 0.22], [-S * 0.3 + i * S * 0.22, -S * 0.42]]);
     if (m === 'dizzy' || m === 'sleep') {
     HEAD(S * -0.14, S * -0.62, S * 0.5, S * 0.36, { muzzle: 0.1978 });
-    EYES(g, t, m, 145, { sep: 0.4, y: -0.2222, r: 0.3056, iris: '#fff' });
+    EYES(g, t, m, 145, { sep: 0.4, y: -0.2222, r: 0.28, iris: '#fff' });
     }
     else for (const s of [-1, 1]) {
       E(g, '#ffffff', -S * 0.14 + s * S * 0.2, -S * 0.72, S * 0.13, S * 0.12);
@@ -4517,7 +4517,7 @@ const D = {
     PG(g, cr, [[-S * 0.5, -S * 1.0], [-S * 0.4, -S * 1.2], [-S * 0.28, -S * 0.98]]);
     g.save(); g.translate(-S * 0.4, 0);
     HEAD(0, S * -0.6849, S * 0.4286, S * 0.3514, { muzzle: 0.32 });
-    EYES(g, t, m, 146, { sep: 0.42, y: -0.1, r: 0.34, iris: '#2c5d8f' });
+    EYES(g, t, m, 146, { sep: 0.42, y: -0.1, r: 0.28, iris: '#2c5d8f' });
     smileM(g, 0, -S * 0.5, S * 0.12, m);
     g.restore();
     cheeks(g, S * 0.1, -S * 0.56, S * 0.09);
@@ -4546,7 +4546,7 @@ const D = {
     E(g, bl, 0, S * 0.3, S * 0.4, S * 0.3);
     if (m === 'dizzy' || m === 'sleep') {
     HEAD(S * 0, S * 0.3, S * 0.4, S * 0.3, { muzzle: 0.22 });
-    EYES(g, t, m, 147, { sep: 0.45, y: -0.2, r: 0.3667, iris: '#fff' });
+    EYES(g, t, m, 147, { sep: 0.45, y: -0.2, r: 0.28, iris: '#fff' });
     }
     else for (const s of [-1, 1]) {
       E(g, '#ffffff', s * S * 0.18, S * 0.24, S * 0.13, S * 0.13);
@@ -4581,7 +4581,7 @@ const D = {
     E(g, bl, 0, S * 0.32, S * 0.44, S * 0.32);
     if (m === 'dizzy' || m === 'sleep') {
     HEAD(S * 0, S * 0.32, S * 0.44, S * 0.32, { muzzle: 0.2325 });
-    EYES(g, t, m, 148, { sep: 0.4545, y: -0.1875, r: 0.3438, iris: '#fff' });
+    EYES(g, t, m, 148, { sep: 0.4545, y: -0.1875, r: 0.28, iris: '#fff' });
     }
     else for (const s of [-1, 1]) {
       E(g, '#ffffff', s * S * 0.2, S * 0.26, S * 0.13, S * 0.13);
@@ -4635,7 +4635,7 @@ const D = {
     PG(g, bd, [[-S * 0.4, -S * 0.58], [-S * 0.06, -S * 0.92], [S * 0.3, -S * 0.56]]);
     if (m === 'dizzy' || m === 'sleep') {
     HEAD(S * 0, S * -0.44, S * 0.44, S * 0.38, { muzzle: 0.3674 });
-    EYES(g, t, m, 150, { sep: 0.4545, y: -0.0526, r: 0.2895, iris: '#fff' });
+    EYES(g, t, m, 150, { sep: 0.4545, y: -0.0526, r: 0.28, iris: '#fff' });
     }
     else for (const s of [-1, 1]) {
       E(g, '#e0424a', s * S * 0.2, -S * 0.46, S * 0.13, S * 0.12);
@@ -4720,7 +4720,7 @@ const D = {
       PG(g, pd, [[s * S * 0.3, -S * 0.7], [s * S * 0.42, -S * 0.92], [s * S * 0.46, -S * 0.62]]);
     }
     HEAD(S * 0, S * -0.42, S * 0.46, S * 0.42, { muzzle: 0.3724 });
-    EYES(g, t, m, 153, { sep: 0.4783, y: -0.0476, r: 0.3571, iris: '#4a9fdb' });
+    EYES(g, t, m, 153, { sep: 0.4783, y: -0.0476, r: 0.28, iris: '#4a9fdb' });
     PG(g, '#e08a9a', [[-S * 0.05, -S * 0.2], [S * 0.05, -S * 0.2], [0, -S * 0.14]]);
     smileM(g, 0, -S * 0.1, S * 0.12, m === 'idle' ? 'happy' : m);
     cheeks(g, S * 0.34, -S * 0.26, S * 0.09);
@@ -5143,7 +5143,7 @@ function validateEyes(verbose) {
         // 4. maat van het oog ten opzichte van de kop
         const rel = o.r / Math.min(h.rx, h.ry);
         if (rel < 0.08) probleem.push('oog te klein (' + rel.toFixed(2) + ')');
-        if (rel > 0.42) probleem.push('oog te groot (' + rel.toFixed(2) + ')');
+        if (rel > 0.30) probleem.push('oog te groot (' + rel.toFixed(2) + ')');
         // 6. ogen horen boven de aanzet van een snuit
         if (ny > h.muzzle - 0.12) probleem.push('oog zit op de snuit in plaats van erboven');
       }
