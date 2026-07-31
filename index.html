@@ -27,8 +27,12 @@
 
   #btnBook { right:2%; top:3%; width:11vmin; height:11vmin; min-width:64px; min-height:64px;
       background:linear-gradient(#ffd86b,#f5a623); font-size:6vmin; }
-  #btnMute { right:2%; top:20%; width:9vmin; height:9vmin; min-width:56px; min-height:56px;
-      background:linear-gradient(#9fd9ff,#4a9fdb); font-size:4.5vmin; }
+  /* onder het boek: terug naar het startscherm, en daaronder geluid. Allebei
+     duidelijk kleiner dan het boek zodat er niet per ongeluk op getikt wordt. */
+  #btnHome { right:2.9%; top:17%; width:7.4vmin; height:7.4vmin; min-width:44px; min-height:44px;
+      background:linear-gradient(#ffb0a6,#ef7a6c); font-size:3.7vmin; }
+  #btnMute { right:2.9%; top:28%; width:7.4vmin; height:7.4vmin; min-width:44px; min-height:44px;
+      background:linear-gradient(#9fd9ff,#4a9fdb); font-size:3.7vmin; }
   #bookBadge { position:absolute; right:-6px; top:-6px; min-width:34px; height:34px; padding:0 6px;
       border-radius:17px; background:#ff5a5a; color:#fff; font-size:20px; font-weight:800;
       display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,.3); }
@@ -54,22 +58,29 @@
   #btnStart:active, #btnGuest:active { transform:scale(.93); }
   @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
 
-  /* spelerskiezer en nieuw-spel-scherm */
-  #saveOverlay, #newSaveOverlay { display:none; background:rgba(14,26,12,.82); z-index:12; }
-  .panel { background:linear-gradient(#fff8ea,#f1e2c4); border-radius:3vmin; padding:3vmin 3.4vmin;
-      box-shadow:0 12px 40px rgba(0,0,0,.55); max-width:92%; max-height:92%;
-      display:flex; flex-direction:column; align-items:center; gap:2.2vmin; }
+  /* spelerskiezer: links de lopende spellen, rechts een nieuw spel aanmaken */
+  #saveOverlay { display:none; background:rgba(14,26,12,.82); z-index:12; }
+  .panel { background:linear-gradient(#fff8ea,#f1e2c4); border-radius:3vmin; padding:2.6vmin 3vmin;
+      box-shadow:0 12px 40px rgba(0,0,0,.55); max-width:94%; max-height:94%;
+      display:flex; flex-direction:column; align-items:center; gap:1.8vmin; }
   .panelHead { font-size:4.4vmin; font-weight:900; color:#7a5b25; letter-spacing:.02em; }
-  #saveList { display:flex; flex-wrap:wrap; gap:2vmin; justify-content:center;
-      max-width:78vmin; max-height:46vmin; overflow-y:auto; padding:2px; }
-  #saveList:empty { display:none; }
-  .saveCard { background:#fffdf6; border:none; border-radius:2.2vmin; padding:1.2vmin 1.2vmin 0.8vmin;
-      display:flex; flex-direction:column; align-items:center; gap:.6vmin; cursor:pointer;
+  #saveCols { display:flex; gap:3vmin; align-items:stretch; }
+  #saveListWrap { display:flex; }
+  #saveListWrap.leeg { display:none; }
+  #saveList { display:flex; flex-direction:column; gap:1.4vmin;
+      width:46vmin; max-height:50vmin; overflow-y:auto; padding:2px; }
+  /* langwerpig tegeltje: avatar, naam en aantal gevangen wezentjes */
+  .saveCard { background:#fffdf6; border:none; border-radius:2.2vmin; padding:1vmin 2vmin 1vmin 1vmin;
+      display:flex; flex-direction:row; align-items:center; gap:1.6vmin; cursor:pointer; width:100%;
       box-shadow:0 4px 12px rgba(0,0,0,.28), inset 0 0 0 .5vmin #f0d99b; transition:transform .1s; }
-  .saveCard:active { transform:scale(.93); }
-  .saveCard canvas { display:block; width:15vmin; height:21vmin; }
-  .saveCard span { font-size:2.8vmin; font-weight:800; color:#6b4f20; max-width:16vmin;
+  .saveCard:active { transform:scale(.96); }
+  .saveCard canvas { display:block; width:8vmin; height:11vmin; flex:0 0 auto; }
+  .saveCard .nm { font-size:3.4vmin; font-weight:800; color:#6b4f20; flex:1 1 auto; text-align:left;
       overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .saveCard .cnt { font-size:3.2vmin; font-weight:900; color:#c9852a; display:flex; align-items:center;
+      gap:.5vmin; flex:0 0 auto; }
+  #newSaveCol { display:flex; flex-direction:column; align-items:center; gap:1.6vmin;
+      justify-content:center; }
   .panelRow { display:flex; gap:2.4vmin; align-items:center; }
   .panelBtn { width:15vmin; height:11vmin; min-width:92px; min-height:68px; border:none; border-radius:2.4vmin;
       font-size:6vmin; font-weight:900; color:#fff; cursor:pointer; transition:transform .1s;
@@ -80,13 +91,10 @@
   .panelBtn:active { transform:scale(.9); }
   .panelBtn[disabled] { filter:grayscale(.7) brightness(.85); }
   #avatarPick { display:flex; gap:3vmin; }
-  .avaBtn { background:#fffdf6; border:none; border-radius:2.2vmin; padding:1.4vmin 1.4vmin 0.9vmin; cursor:pointer;
-      box-shadow:0 4px 12px rgba(0,0,0,.25), inset 0 0 0 .5vmin #e8dcc0; transition:transform .1s;
-      display:flex; flex-direction:column; align-items:center; gap:.5vmin; }
+  .avaBtn { background:#fffdf6; border:none; border-radius:2.2vmin; padding:1.2vmin; cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.25), inset 0 0 0 .5vmin #e8dcc0; transition:transform .1s; }
   .avaBtn.sel { box-shadow:0 6px 18px rgba(0,0,0,.35), inset 0 0 0 .7vmin #4caf50; transform:scale(1.05); }
-  .avaBtn canvas { display:block; width:19vmin; height:26vmin; }
-  .avaBtn span { font-size:3vmin; font-weight:800; color:#6b4f20; }
-  .avaBtn.sel span { color:#2e7d32; }
+  .avaBtn canvas { display:block; width:17vmin; height:23vmin; }
   #saveName { font-size:4.4vmin; font-weight:800; text-align:center; padding:1.4vmin 2vmin;
       border:none; border-radius:2vmin; width:48vmin; max-width:80vw; color:#5c4318;
       background:#fffdf6; box-shadow:inset 0 0 0 .45vmin #e0cfa4; font-family:-apple-system, sans-serif; }
@@ -164,6 +172,7 @@
   <canvas id="game"></canvas>
 
   <button class="ui-btn" id="btnBook">&#128214;<span id="bookBadge">0</span></button>
+  <button class="ui-btn" id="btnHome">&#127968;</button>
   <button class="ui-btn" id="btnMute">&#128266;</button>
 
   <div id="battleBtns">
@@ -195,27 +204,19 @@
   <div class="overlay" id="saveOverlay">
     <div class="panel">
       <div class="panelHead">Wie speelt er?</div>
-      <div id="saveList"></div>
-      <div class="panelRow">
-        <button class="panelBtn ghost" id="btnSaveBack">&#8592;</button>
-        <button class="panelBtn" id="btnNewSave">+</button>
+      <div id="saveCols">
+        <div id="saveListWrap"><div id="saveList"></div></div>
+        <div id="newSaveCol">
+          <div id="avatarPick">
+            <button class="avaBtn sel" data-ava="julian"><canvas width="190" height="260"></canvas></button>
+            <button class="avaBtn" data-ava="livea"><canvas width="190" height="260"></canvas></button>
+          </div>
+          <input id="saveName" type="text" maxlength="12" placeholder="naam" autocomplete="off"
+                 autocorrect="off" autocapitalize="words" spellcheck="false">
+          <button class="panelBtn" id="btnNewGo">&#9654;</button>
+        </div>
       </div>
-    </div>
-  </div>
-
-  <div class="overlay" id="newSaveOverlay">
-    <div class="panel">
-      <div class="panelHead">Nieuw spel</div>
-      <div id="avatarPick">
-        <button class="avaBtn sel" data-ava="julian"><canvas width="190" height="260"></canvas><span>Julian</span></button>
-        <button class="avaBtn" data-ava="livea"><canvas width="190" height="260"></canvas><span>LivEa</span></button>
-      </div>
-      <input id="saveName" type="text" maxlength="12" placeholder="naam" autocomplete="off"
-             autocorrect="off" autocapitalize="words" spellcheck="false">
-      <div class="panelRow">
-        <button class="panelBtn ghost" id="btnNewBack">&#8592;</button>
-        <button class="panelBtn" id="btnNewGo">&#9654;</button>
-      </div>
+      <button class="panelBtn ghost" id="btnSaveBack">&#8592;</button>
     </div>
   </div>
 </div>
@@ -7790,7 +7791,6 @@ btnMute.addEventListener('pointerdown', e => {
 // ============================================================ startscherm met twee profielen
 const startOverlay = document.getElementById('startOverlay');
 const saveOverlay = document.getElementById('saveOverlay');
-const newSaveOverlay = document.getElementById('newSaveOverlay');
 const saveList = document.getElementById('saveList');
 const saveName = document.getElementById('saveName');
 const btnNewGo = document.getElementById('btnNewGo');
@@ -7820,19 +7820,34 @@ function drawAvatarPortrait(g, avatar, w, h) {
   drawJulian(g, w / 2, h * 0.97, 0, 'idle', 1.35, h / 76, avatar);
 }
 
+// hoeveel wezentjes heeft dit spel al gevangen? (zonder het spel te openen)
+function savedCaughtCount(p) {
+  try {
+    const d = JSON.parse(localStorage.getItem('juliansPokemon.' + p));
+    if (!d) return 1;
+    if (d.caught && !Array.isArray(d.caught)) return Math.max(1, Object.keys(d.caught).length);
+    if (Array.isArray(d.caught)) return Math.max(1, d.caught.filter(n => n > 0).length);
+  } catch (e) {}
+  return 1;
+}
+
 function renderSaveList() {
   const list = allSaves();
   saveList.innerHTML = '';
   for (const s of list) {
     const card = document.createElement('button');
     card.className = 'saveCard';
-    const cnv = document.createElement('canvas'); cnv.width = 150; cnv.height = 210;
-    drawAvatarPortrait(cnv.getContext('2d'), s.avatar, 150, 210);
-    const nm = document.createElement('span'); nm.textContent = s.name;
-    card.appendChild(cnv); card.appendChild(nm);
+    const cnv = document.createElement('canvas'); cnv.width = 110; cnv.height = 150;
+    drawAvatarPortrait(cnv.getContext('2d'), s.avatar, 110, 150);
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = s.name;
+    const cnt = document.createElement('span'); cnt.className = 'cnt';
+    cnt.textContent = '⭐ ' + savedCaughtCount(s.p);
+    card.appendChild(cnv); card.appendChild(nm); card.appendChild(cnt);
     card.addEventListener('pointerdown', e => { e.stopPropagation(); beginGame(s.p, s.avatar); });
     saveList.appendChild(card);
   }
+  // zonder spellen alleen de aanmaakkolom tonen
+  document.getElementById('saveListWrap').classList.toggle('leeg', list.length === 0);
 }
 
 let pickedAvatar = 'julian';
@@ -7864,31 +7879,38 @@ function beginGame(p, avatar) {
   SFX.uiOpen();
   startOverlay.style.display = 'none';
   saveOverlay.style.display = 'none';
-  newSaveOverlay.style.display = 'none';
 }
-document.getElementById('btnStart').addEventListener('pointerdown', e => { e.stopPropagation(); beginGame('julian', 'julian'); });
-document.getElementById('btnGuest').addEventListener('pointerdown', e => {
-  e.stopPropagation();
+function openSavePicker() {
+  saveName.value = ''; btnNewGo.disabled = true;
+  pickedAvatar = 'julian'; paintAvatarChoices();
   renderSaveList();
   saveOverlay.style.display = 'flex';
-});
+}
+document.getElementById('btnStart').addEventListener('pointerdown', e => { e.stopPropagation(); beginGame('julian', 'julian'); });
+document.getElementById('btnGuest').addEventListener('pointerdown', e => { e.stopPropagation(); openSavePicker(); });
 document.getElementById('btnSaveBack').addEventListener('pointerdown', e => {
   e.stopPropagation(); saveOverlay.style.display = 'none';
 });
-document.getElementById('btnNewSave').addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  saveName.value = ''; btnNewGo.disabled = true;
-  pickedAvatar = 'julian'; paintAvatarChoices();
-  saveOverlay.style.display = 'none';
-  newSaveOverlay.style.display = 'flex';
-  setTimeout(() => saveName.focus(), 60);
-});
-document.getElementById('btnNewBack').addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  newSaveOverlay.style.display = 'none';
-  renderSaveList();
-  saveOverlay.style.display = 'flex';
-});
+
+// terug naar het startscherm: eerst bewaren, dan alles netjes terugzetten
+function backToMenu() {
+  saveProgress();
+  if (AC) SFX.uiClose();
+  G.bookOpen = false;
+  bookOverlay.style.display = 'none';
+  setBtns(false, false);
+  btnFlee.style.display = 'none';
+  G.state = 'world';
+  G.onBoat = false;
+  G.transT = 0;
+  const pl = G.player;
+  pl.x = 15.5 * TILE; pl.y = 13.2 * TILE;
+  pl.tx = null; pl.ty = null; pl.path = null; pl.moving = false; pl.dir = 0;
+  setArea('hub');
+  profile = null;
+  startOverlay.style.display = 'flex';
+}
+document.getElementById('btnHome').addEventListener('pointerdown', e => { e.stopPropagation(); backToMenu(); });
 function createSave() {
   const name = saveName.value.trim().slice(0, 12);
   if (!name) return;
@@ -7899,6 +7921,8 @@ function createSave() {
   try { localStorage.removeItem('juliansPokemon.' + p); } catch (e) {}   // altijd een vers spel
   beginGame(p, pickedAvatar);
 }
+// het invoerveld mag de spelknop niet blokkeren als er nog niets staat
+saveName.addEventListener('focus', () => { btnNewGo.disabled = !saveName.value.trim(); });
 btnNewGo.addEventListener('pointerdown', e => { e.stopPropagation(); createSave(); });
 btnNewGo.disabled = true;
 paintAvatarChoices();
