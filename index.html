@@ -320,9 +320,9 @@ function saveProgress() {
   } catch (e) {}
 }
 function loadProgress() {
-  let activeName = null;
+  let activeName = null, raw = null, leesFout = false;
+  try { raw = localStorage.getItem(storageKey()); } catch (e) {}
   try {
-    const raw = localStorage.getItem(storageKey());
     if (raw) {
       const d = JSON.parse(raw);
       const add = (name, n) => {
@@ -346,7 +346,7 @@ function loadProgress() {
         if (typeof d.active === 'number' && order[d.active]) activeName = RENAMED[order[d.active]] || order[d.active];
       }
     }
-  } catch (e) {}
+  } catch (e) { leesFout = true; }
   G.caught[STARTER] = Math.max(1, G.caught[STARTER]);
   G.caughtCount = G.caught.reduce((n, c) => n + (c > 0 ? 1 : 0), 0);
   G.active = (activeName !== null && IDX_BY_NAME[activeName] !== undefined) ? IDX_BY_NAME[activeName] : STARTER;
@@ -356,7 +356,11 @@ function loadProgress() {
   if (isAsleep(G.active)) {
     for (let i = 0; i < NSPECIES; i++) if (G.caught[i] > 0 && !isAsleep(i)) { G.active = i; break; }
   }
-  saveProgress();                                          // meteen in het nieuwe formaat bewaren
+  // Alleen terugschrijven als er ook echt gelezen kon worden. Bij een leesfout
+  // zou een beschadigde opslag anders meteen door een leeg spel overschreven
+  // worden; nu blijft het origineel als kopie bewaard om te kunnen redden.
+  if (leesFout) { try { localStorage.setItem(storageKey() + '.kapot', raw); } catch (e) {} }
+  else saveProgress();                                     // meteen in het nieuwe formaat bewaren
 }
 
 // ============================================================ audio
@@ -7895,14 +7899,17 @@ for (let i = 0; i < NSPECIES; i++) {
 function updateBadge() { bookBadge.textContent = G.caughtCount; }
 function refreshBook() {
   for (let i = 0; i < NSPECIES; i++) {
-    if (G.caught[i]) {
-      cells[i].classList.remove('uncaught');
-      if (!cells[i].querySelector('.stamp')) {
-        const s = document.createElement('span');
-        s.className = 'stamp'; s.textContent = '⭐';
-        cells[i].appendChild(s);
-      }
-    }
+    // De vakjes worden een keer gemaakt en over profielen heen hergebruikt, dus
+    // de gevangen-staat moet beide kanten op bijgewerkt worden. Anders blijven
+    // de wezens van een vorig spel zichtbaar terwijl ze niet meetellen.
+    const has = G.caught[i] > 0;
+    cells[i].classList.toggle('uncaught', !has);
+    let stamp = cells[i].querySelector('.stamp');
+    if (has && !stamp) {
+      stamp = document.createElement('span');
+      stamp.className = 'stamp'; stamp.textContent = '⭐';
+      cells[i].appendChild(stamp);
+    } else if (!has && stamp) stamp.remove();
     // slapen: net flauwgevallen in dit gevecht, of nog uitgeteld van een vorig
     const sleeping = (G.state === 'battle' && B.phase === 'swap' && i === B.fainted) || isAsleep(i);
     cells[i].classList.toggle('asleep', sleeping);
