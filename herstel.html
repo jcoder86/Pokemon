@@ -173,17 +173,37 @@ document.getElementById('kopieer').addEventListener('click', function () {
   var bron = localStorage.getItem(van), nB = tel(bron);
   if (nB === null) { uit.innerHTML = '<div class="waarschuwing">De bron is onleesbaar; kopiëren zou niets goeds doen.</div>'; return; }
   var nD = tel(localStorage.getItem(naar));
+  // Beveiliging: een goed lopend spel mag nooit stilzwijgend vervangen worden
+  // door een kleiner blok. Dat kan alleen na een extra, expliciete bevestiging.
+  if (nD !== null && nD > nB) {
+    uit.innerHTML = '<div class="waarschuwing"><b>Let op: dit maakt het slechter.</b><br>' +
+      beschrijf(naar).naam + ' heeft nu <b>' + nD + '</b> wezens, de bron maar <b>' + nB + '</b>. ' +
+      'Kopiëren zou ' + (nD - nB) + ' wezens kosten. Weet je het zeker, druk dan hieronder.</div>';
+    var extra = document.createElement('button');
+    extra.className = 'rood';
+    extra.textContent = 'Toch vervangen (' + nD + ' → ' + nB + ')';
+    extra.addEventListener('click', function () {
+      if (!confirm('Zeker weten? ' + beschrijf(naar).naam + ' gaat van ' + nD + ' naar ' + nB + ' wezens.')) return;
+      voerKopieUit(van, naar, nB);
+    });
+    uit.appendChild(extra);
+    return;
+  }
   var vraag = 'Voortgang kopiëren?\n\nVan: ' + beschrijf(van).naam + ' (' + nB + ' wezens)\n' +
               'Naar: ' + beschrijf(naar).naam + ' (nu ' + (nD === null ? 'onleesbaar' : nD + ' wezens') + ')\n\n' +
               'Van het doel wordt eerst een reservekopie gemaakt.';
   if (!confirm(vraag)) return;
+  voerKopieUit(van, naar, nB);
+});
+function voerKopieUit(van, naar, nB) {
   var oud = localStorage.getItem(naar);
   if (oud) localStorage.setItem(naar + '.bak', oud);
-  localStorage.setItem(naar, bron);
-  uit.innerHTML = '<div class="ok">Gelukt. ' + beschrijf(naar).naam + ' heeft nu ' + nB +
-    ' wezens. Sluit het spel helemaal af en open het opnieuw.</div>';
+  localStorage.setItem(naar, localStorage.getItem(van));
+  document.getElementById('kopieerUit').innerHTML = '<div class="ok">Gelukt. ' +
+    beschrijf(naar).naam + ' heeft nu ' + nB + ' wezens. De vorige stand staat als reservekopie ' +
+    'in de lijst. Sluit het spel helemaal af en open het opnieuw.</div>';
   toonOverzicht(); vulKeuzes(); vulUitvoer();
-});
+}
 
 function vulUitvoer() {
   var alles = {};
@@ -206,13 +226,31 @@ document.getElementById('importeer').addEventListener('click', function () {
   }
   var sleutels = Object.keys(obj).filter(function (k) { return k.indexOf(VOOR) === 0; });
   if (!sleutels.length) { uit.innerHTML = '<div class="waarschuwing">Geen bekende blokken in die tekst.</div>'; return; }
-  if (!confirm('Terugzetten van ' + sleutels.length + ' blokken? Bestaande blokken met dezelfde naam worden overschreven.')) return;
-  sleutels.forEach(function (k) {
+  // Blokken die het huidige spel slechter zouden maken slaan we over. Wie er
+  // toch overheen wil, gebruikt daarvoor bewust het kopieerdeel hierboven.
+  var over = [];
+  var doen = sleutels.filter(function (k) {
+    if (k === VOOR + 'saves') return true;
+    var nu = tel(localStorage.getItem(k)), komt = tel(obj[k]);
+    if (nu !== null && komt !== null && komt < nu) { over.push(beschrijf(k).naam + ' (' + nu + ' → ' + komt + ')'); return false; }
+    return true;
+  });
+  if (!doen.length) {
+    uit.innerHTML = '<div class="waarschuwing">Niets teruggezet: alle blokken in die tekst hebben ' +
+      'minder wezens dan wat er nu staat.<br>' + over.join('<br>') + '</div>';
+    return;
+  }
+  if (!confirm('Terugzetten van ' + doen.length + ' blokken?' +
+      (over.length ? '\n\n' + over.length + ' blok(ken) worden overgeslagen omdat het huidige spel meer wezens heeft.' : '') +
+      '\n\nVan overschreven blokken wordt eerst een reservekopie gemaakt.')) return;
+  doen.forEach(function (k) {
     var oud = localStorage.getItem(k);
     if (oud && oud !== obj[k]) localStorage.setItem(k + '.bak', oud);
     localStorage.setItem(k, obj[k]);
   });
-  uit.innerHTML = '<div class="ok">Teruggezet. Sluit het spel helemaal af en open het opnieuw.</div>';
+  uit.innerHTML = '<div class="ok">' + doen.length + ' blok(ken) teruggezet.' +
+    (over.length ? '<br>Overgeslagen omdat het huidige spel verder is: ' + over.join(', ') + '.' : '') +
+    '<br>Sluit het spel helemaal af en open het opnieuw.</div>';
   toonOverzicht(); vulKeuzes(); vulUitvoer();
 });
 
