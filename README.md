@@ -7,9 +7,10 @@ Een vrolijk, tekstloos Pokémon-achtig verzamelspel voor Julian (5 jaar): vijf g
 - **Reizen:** vanuit de weide-hub gaan vier poorten naar de andere gebieden — rotspoort links (jungle), houten poort boven (dorp), ijspoort rechts (besneeuwde bergen) en palmpoort onder (strand). Elk gebied heeft dezelfde poort terug.
 - **Wie woont waar:** de 150 wezentjes zijn over de vijf gebieden verdeeld op thema, en verschijnen op zeldzaamheid — kleine wezentjes vaak, imposante zelden en de legendes bijna nooit.
 - **Vechten:** het actieve wezentje (kies in het boek, groene gloed = actief) valt aan met de 💥-knop. Mik met de ring: klein = raak, allerkleinst (goud) = dubbele klap.
-- **Krachtaanval:** twaalf bekende wezentjes hebben een tweede aanval op de paarse 🌟-knop linksonder. Die doet altijd twee hartjes en ziet er flink imposanter uit, maar de mikring raast dan twee keer zo snel — moeilijker te raken, en zonder dubbele-klap-bonus. Vangen gaat met hetzelfde mik-spelletje zodra de hartjes leeg zijn; vluchten kan altijd met 🏃.
+- **Krachtaanval:** de meeste wezentjes (alles met vier of meer hartjes, plus een reeks bekende kleintjes — 117 van de 150) hebben een tweede aanval op de paarse 🌟-knop. Dat is dezelfde aanval als de gewone, maar dan in bulk en van boven naar beneden: een regen van elf projectielen die op de tegenstander inslaat. Altijd twee hartjes, maar de mikring raast twee keer zo snel — moeilijker te raken, en zonder dubbele-klap-bonus. De twee aanvalsknoppen staan naast elkaar onder Julians eigen wezentje. Vangen gaat met hetzelfde mik-spelletje zodra de hartjes leeg zijn; vluchten kan altijd met 🏃.
 - **Flauwvallen:** raken de hartjes van je maatje op, dan gaat het slapen en opent het boek zodat Julian meteen een ander wezentje kiest. Na het gevecht is de slaper weer helemaal fit. Elk wezentje vecht met het aantal hartjes dat het zelf heeft.
 - **Boek in het gevecht:** de 📖-knop werkt ook tijdens een gevecht.
+- **Julian zelf:** alle vier de aanzichten (voor, achter, beide zijkanten) zijn opgebouwd naar het startscherm-artwork, met verlopen in plaats van vlakke kleurvlakken, weefsel- en leertextuur, haarslierten en tapse contourlijnen.
 
 ## Lokaal openen
 
