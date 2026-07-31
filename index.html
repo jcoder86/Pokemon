@@ -4910,24 +4910,30 @@ BIG.forEach(n => SCALE[n] = 1.17);
 MID.forEach(n => SCALE[n] = 1.07);
 SMALL.forEach(n => SCALE[n] = 0.88);
 
-function drawCreature(g, id, x, y, S, t, mood, flash) {
+// ============================================================ wezens tekenen
+// Elk wezen werd elke frame vanaf nul opgebouwd: teken-code, schaduwpass,
+// silhouetpass en vier contour-blits van een canvas van 960 bij 960. Dat is de
+// zwaarste post op een iPad. Nu wordt elke stand een keer gerenderd naar een
+// eigen canvas op de maat waarop hij nodig is, en daarna alleen nog geblit.
+const CFRAMES = 8, CCYCLE = 2.0;      // acht standen over twee seconden
+const CCACHE = new Map(), CCACHE_MAX = 140;
+
+function creatureFrame(id, mood, bucket, frame) {
+  const key = id + '|' + mood + '|' + bucket + '|' + frame;
+  const hit = CCACHE.get(key);
+  if (hit) { CCACHE.delete(key); CCACHE.set(key, hit); return hit; }   // recent gebruikt
+
   const sp = SPECIES[id];
-  mood = mood || 'idle';
-  flash = flash || 0;
-  const fly = sp.fly;
-  let bob = fly ? Math.sin(t * 2.4 + id) * S * 0.12 - S * 0.15 : Math.sin(t * 2.8 + id) * S * 0.05;
-  if (mood === 'happy') bob -= Math.abs(Math.sin(t * 5 + id)) * S * 0.14;
-  const shake = flash > 0.02 ? Math.sin(t * 55) * S * 0.07 * flash : 0;
-  g.fillStyle = 'rgba(40,60,30,0.18)';
-  ell(g, x, y + S * 1.05, S * 0.8 * (fly ? 0.55 : 1), S * 0.18);
+  const t = frame / CFRAMES * CCYCLE;
+  const S = bucket;
   const br = 1 + Math.sin(t * 2.8 + id) * 0.022;
-  // teken in scratch, dan schaduw-onderkant + lichtval + evt. flits eroverheen
+
   sg.save(); sg.setTransform(2, 0, 0, 2, 0, 0); sg.clearRect(0, 0, 480, 480);
   sg.translate(240, 240); sg.scale(br, 2 - br);
   if (mood === 'attack') sg.rotate(0.1);
-  if (mood === 'faint') { sg.translate(-S * 0.25, S * 0.65); sg.rotate(-1.42); }   // languit op de grond
+  if (mood === 'faint') { sg.translate(-S * 0.25, S * 0.65); sg.rotate(-1.42); }
   const sc = SCALE[sp.draw] || 1;
-  sg.translate(0, S * (1 - sc));                 // voetjes blijven op de grond staan
+  sg.translate(0, S * (1 - sc));
   D[sp.draw](sg, S * sc, t, mood === 'faint' ? 'sleep' : mood);
   sg.setTransform(2, 0, 0, 2, 0, 0);
   sg.globalCompositeOperation = 'source-atop';
@@ -4939,10 +4945,6 @@ function drawCreature(g, id, x, y, S, t, mood, flash) {
   hiGrad.addColorStop(0, 'rgba(255,255,250,0.22)');
   hiGrad.addColorStop(1, 'rgba(255,255,250,0)');
   sg.fillStyle = hiGrad; sg.fillRect(0, 0, 480, 480);
-  if (flash > 0.02) {
-    sg.fillStyle = 'rgba(255,255,255,' + (flash * 0.85) + ')';
-    sg.fillRect(0, 0, 480, 480);
-  }
   sg.restore();
   sg.globalCompositeOperation = 'source-over';
   // zachte donkere contour: maakt elk wezen scherper tegen de achtergrond
@@ -4953,10 +4955,49 @@ function drawCreature(g, id, x, y, S, t, mood, flash) {
   sg2.fillStyle = 'rgba(26,42,24,0.5)';
   sg2.fillRect(0, 0, 960, 960);
   sg2.globalCompositeOperation = 'source-over';
+
+  // alles samenvoegen op de maat waarop dit wezen getekend wordt
+  const half = Math.ceil(S * 2.55), sz = half * 2;   // ruim genoeg voor vleugels en staarten
+  const c = document.createElement('canvas');
+  c.width = sz; c.height = sz;
+  const cg = c.getContext('2d');
   const ow = Math.max(1.6, S * 0.035);
+  const sx = 240 - half, sy = 240 - half;      // uitsnede uit de 480-ruimte
   for (const [ox, oy] of [[-ow, 0], [ow, 0], [0, -ow], [0, ow]])
-    g.drawImage(scr2, 0, 0, 960, 960, x - 240 + shake + ox, y + bob - 240 + oy, 480, 480);
-  g.drawImage(scr, 0, 0, 960, 960, x - 240 + shake, y + bob - 240, 480, 480);
+    cg.drawImage(scr2, sx * 2, sy * 2, sz * 2, sz * 2, ox, oy, sz, sz);
+  cg.drawImage(scr, sx * 2, sy * 2, sz * 2, sz * 2, 0, 0, sz, sz);
+
+  const e = { c: c, half: half };
+  CCACHE.set(key, e);
+  if (CCACHE.size > CCACHE_MAX) CCACHE.delete(CCACHE.keys().next().value);
+  return e;
+}
+
+function drawCreature(g, id, x, y, S, t, mood, flash) {
+  const sp = SPECIES[id];
+  mood = mood || 'idle';
+  flash = flash || 0;
+  const fly = sp.fly;
+  let bob = fly ? Math.sin(t * 2.4 + id) * S * 0.12 - S * 0.15 : Math.sin(t * 2.8 + id) * S * 0.05;
+  if (mood === 'happy') bob -= Math.abs(Math.sin(t * 5 + id)) * S * 0.14;
+  const shake = flash > 0.02 ? Math.sin(t * 55) * S * 0.07 * flash : 0;
+  g.fillStyle = 'rgba(40,60,30,0.18)';
+  ell(g, x, y + S * 1.05, S * 0.8 * (fly ? 0.55 : 1), S * 0.18);
+
+  // maatklassen: wereld, boek, gevecht. Zo blijft de cache klein en scherp.
+  const bucket = S <= 16 ? 14 : S <= 24 ? 20 : S <= 34 ? 30 : S <= 48 ? 40 :
+                 S <= 68 ? 60 : S <= 84 ? 78 : S <= 110 ? 100 : 150;
+  const frame = Math.floor(((t + id * 0.37) % CCYCLE) / CCYCLE * CFRAMES) % CFRAMES;
+  const e = creatureFrame(id, mood, bucket, frame);
+  const k = S / bucket, w = e.c.width * k;
+  const dx = x + shake - w / 2, dy = y + bob - w / 2;
+  g.drawImage(e.c, dx, dy, w, w);
+  if (flash > 0.02) {                          // raak-flits over de gecachte stand heen
+    g.save(); g.globalAlpha = Math.min(1, flash * 0.9);
+    g.globalCompositeOperation = 'lighter';
+    g.drawImage(e.c, dx, dy, w, w);
+    g.restore();
+  }
   if (mood === 'dizzy') {
     g.fillStyle = '#ffd23d';
     for (let i = 0; i < 3; i++) {
@@ -4967,16 +5008,17 @@ function drawCreature(g, id, x, y, S, t, mood, flash) {
   }
   if (mood === 'faint') {                      // slaapbelletjes
     for (let i = 0; i < 3; i++) {
-      const k = ((t * 0.7 + i * 0.33) % 1);
+      const kk = ((t * 0.7 + i * 0.33) % 1);
       g.save();
-      g.globalAlpha = 0.85 * (1 - k);
+      g.globalAlpha = 0.85 * (1 - kk);
       g.fillStyle = '#ffffff';
-      g.font = 'bold ' + (S * (0.3 + k * 0.3)) + 'px sans-serif';
-      g.fillText('z', x + S * (0.5 + k * 0.7), y - S * (0.4 + k * 1.1));
+      g.font = 'bold ' + (S * (0.3 + kk * 0.3)) + 'px sans-serif';
+      g.fillText('z', x + S * (0.5 + kk * 0.7), y - S * (0.4 + kk * 1.1));
       g.restore();
     }
   }
 }
+
 
 // ============================================================ oogvalidatie
 // Draait over alle wezens en meldt per wezen wat er mis is met de oogplaatsing.
