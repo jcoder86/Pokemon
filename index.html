@@ -6844,6 +6844,26 @@ function renderArea(area) {
         wg.beginPath(); wg.ellipse(px + 14, py + 24, 6, 4.5, 0.1, 0, TAU); wg.fill();
         wg.fillStyle = 'rgba(60,60,50,0.18)';
         wg.beginPath(); wg.ellipse(px + 26, py + 25, 4.5, 3.5, 0, 0, TAU); wg.fill();
+      } else if (st.pier) {
+        // steiger alleen waar het pad het water op loopt; op het land blijft
+        // het gewoon een zandpad, anders lijkt het hele eiland een vlonder
+        const bijWater = [[1,0],[-1,0],[0,1],[0,-1]].some(([ddx,ddy]) =>
+          m[y+ddy] && m[y+ddy][x+ddx] === T_WATER);
+        if (bijWater) {
+          wg.fillStyle = '#c1935a'; wg.fillRect(px, py, TILE, TILE);
+          wg.fillStyle = '#a87c46';
+          for (let i = 0; i < 3; i++) wg.fillRect(px, py + 1 + i * 11, TILE, 9);
+          wg.fillStyle = 'rgba(255,238,198,0.4)';
+          for (let i = 0; i < 3; i++) wg.fillRect(px, py + 1 + i * 11, TILE, 2);
+          wg.fillStyle = 'rgba(90,60,30,0.32)';
+          wg.fillRect(px + (h > 0.5 ? 10 : 20), py, 2, TILE);
+        } else {
+          wg.fillStyle = st.path; wg.fillRect(px, py, TILE, TILE);
+          wg.fillStyle = 'rgba(214,188,140,0.35)';
+          if (h > 0.45) { wg.beginPath(); wg.ellipse(px + 9 + h * 12, py + 11 + h * 9, 5, 2.6, 0, 0, TAU); wg.fill(); }
+          wg.fillStyle = 'rgba(255,250,236,0.5)';
+          if (h > 0.7) { wg.beginPath(); wg.arc(px + 22 - h * 8, py + 22, 2, 0, TAU); wg.fill(); }
+        }
       } else if (st.boardwalk) {                           // houten vlonderpad
         wg.fillStyle = '#b8894f'; wg.fillRect(px, py, TILE, TILE);
         wg.fillStyle = '#a2743f';
@@ -7399,6 +7419,42 @@ function renderArea(area) {
       gg.beginPath(); gg.arc(px + 8 + h * 14, py + 14 + (h * 13 % 1) * 10, 2, 0, TAU); gg.fill();
     }
   }
+  if (area.coast) {
+    // gestrande wrakken die als brug over het water liggen
+    for (const [wx, wy, wl] of [[21, 11, 4], [22, 19, 3]]) {
+      const px = wx * TILE, py = wy * TILE + TILE * 0.5;
+      wg.fillStyle = 'rgba(30,70,80,0.22)';
+      wg.beginPath(); wg.ellipse(px + wl * TILE / 2, py + 13, wl * TILE * 0.55, 11, 0, 0, TAU); wg.fill();
+      const romp = wg.createLinearGradient(0, py - 16, 0, py + 14);
+      romp.addColorStop(0, '#c39a68'); romp.addColorStop(1, '#6f5232');
+      wg.fillStyle = romp;
+      wg.beginPath();
+      wg.moveTo(px - 6, py - 13); wg.lineTo(px + wl * TILE + 6, py - 13);
+      wg.quadraticCurveTo(px + wl * TILE - 6, py + 13, px + wl * TILE / 2, py + 14);
+      wg.quadraticCurveTo(px + 6, py + 13, px - 6, py - 13);
+      wg.closePath(); wg.fill();
+      wg.fillStyle = '#e2bd85'; wg.fillRect(px - 6, py - 15, wl * TILE + 12, 5);
+      wg.fillStyle = 'rgba(60,40,20,0.3)';
+      for (let i = 0; i < wl * 2; i++) { wg.beginPath(); wg.arc(px + 8 + i * 16, py + 2, 2.6, 0, TAU); wg.fill(); }
+      wg.strokeStyle = '#8a6a42'; wg.lineWidth = 4;           // gebroken mast
+      wg.beginPath(); wg.moveTo(px + wl * TILE * 0.35, py - 13);
+      wg.lineTo(px + wl * TILE * 0.35 + 9, py - 44); wg.stroke();
+      wg.fillStyle = 'rgba(244,232,206,0.85)';
+      wg.beginPath(); wg.moveTo(px + wl * TILE * 0.35 + 9, py - 42);
+      wg.quadraticCurveTo(px + wl * TILE * 0.35 + 34, py - 30, px + wl * TILE * 0.35 + 11, py - 18);
+      wg.closePath(); wg.fill();
+    }
+    // palen onder de houten steigers
+    for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+      if (m[y][x] !== T_PATH) continue;
+      const omringdDoorWater = [[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy]) =>
+        m[y+dy] && m[y+dy][x+dx] === T_WATER);
+      if (!omringdDoorWater) continue;
+      wg.fillStyle = 'rgba(40,80,90,0.28)';
+      wg.fillRect(x * TILE + 5, y * TILE + TILE - 3, 5, 8);
+      wg.fillRect(x * TILE + TILE - 10, y * TILE + TILE - 3, 5, 8);
+    }
+  }
   if (!area.sky) obstacleDarkenPass(wg, m);
   area.world = base;
   area.grass = grass;
@@ -7460,37 +7516,77 @@ function buildSkyway() {
   };
 }
 
-// Kristalkust: aankomstpunt van wereld 2. In deze fase nog kaal en begaanbaar,
-// zodat de route eerst rond is; de inrichting volgt in fase 2a.
+// Kristalkust: aankomstpunt van wereld 2. Wit strand, turquoise ondiepten,
+// houten steigers over het water, gestrande wrakken die als brug dienen, en aan
+// de oostrand stort de zee in het niets met opstijgende nevel.
 function buildShore() {
   const m = newMap();
-  addPond(m, 25, 6, 8.5, 5.4);
+  // de zee: een brede baai die naar de oostrand toe openbreekt
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+    const dx = (x - 27) / 13, dy = (y - 9) / 11;
+    if (x >= 21 || dx * dx + dy * dy < 1) m[y][x] = T_WATER;
+  }
+  for (let y = 15; y < MH; y++) for (let x = 24; x < MW; x++) m[y][x] = T_WATER;
+  // een lagune landinwaarts, met een smalle doorgang
+  for (let y = 16; y <= 20; y++) for (let x = 4; x <= 9; x++) {
+    const dx = (x - 6.5) / 3.2, dy = (y - 18) / 2.6;
+    if (dx * dx + dy * dy < 1) m[y][x] = T_WATER;
+  }
   addSandRing(m);
-  addBorder(m);
-  for (let x = 2; x <= 29; x++) if (m[16][x] === T_GRASS) m[16][x] = T_PATH;
-  for (let y = 2; y <= 21; y++) if (m[y][16] === T_GRASS) m[y][16] = T_PATH;
+  addBorder(m);                                  // de oostrand is water en blijft open
+  // paden over het strand
+  for (let x = 3; x <= 20; x++) if (m[14][x] !== T_WATER) m[14][x] = T_PATH;
+  for (let y = 3; y <= 21; y++) if (m[y][15] !== T_WATER) m[y][15] = T_PATH;
+  for (let x = 15; x <= 19; x++) if (m[5][x] !== T_WATER) m[5][x] = T_PATH;
+  // aanlegsteiger voor het luchtschip, onderaan
+  for (let y = 21; y <= 23; y++) for (let x = 14; x <= 16; x++) m[y][x] = T_PATH;
+  // houten steigers die het water op lopen
+  const steigers = [[17, 8, 4, 0], [18, 17, 5, 0], [12, 18, 0, 3]];
+  for (const [sx, sy, w, h] of steigers) {
+    for (let i = 0; i <= w; i++) if (m[sy] && m[sy][sx + i] === T_WATER) m[sy][sx + i] = T_PATH;
+    for (let i = 0; i <= h; i++) if (m[sy + i] && m[sy + i][sx] === T_WATER) m[sy + i][sx] = T_PATH;
+  }
+  // gestrande wrakken als brug over het water
+  const wrakken = [[21, 11, 4], [22, 19, 3]];
+  for (const [wx, wy, wl] of wrakken)
+    for (let i = 0; i < wl; i++) if (m[wy] && m[wy][wx + i] === T_WATER) m[wy][wx + i] = T_PATH;
+  // rotspunten op het strand
+  for (const [rx, ry] of [[6, 6], [9, 9], [3, 12], [11, 4], [18, 21], [8, 22]])
+    if (m[ry][rx] === T_GRASS || m[ry][rx] === T_SAND) m[ry][rx] = T_ROCK;
   const patches = [
-    { x: 5,  y: 6,  w: 5, h: 4, pool: 'shore' },
-    { x: 21, y: 18, w: 5, h: 4, pool: 'shore' },
-    { x: 4,  y: 18, w: 4, h: 3, pool: 'shore' },
+    { x: 4,  y: 3,  w: 5, h: 4, pool: 'shore' },
+    { x: 10, y: 16, w: 4, h: 4, pool: 'shore' },
+    { x: 2,  y: 8,  w: 4, h: 3, pool: 'shore' },
+    { x: 17, y: 2,  w: 3, h: 3, pool: 'shore' },
   ];
   addPatches(m, patches);
-  m[22][16] = T_PATH; m[23][16] = T_PATH; m[22][15] = T_PATH; m[23][15] = T_PATH;
+  // kristallen schelpen op het zand: lichten op als je erlangs komt
+  const schelpen = [];
+  let z = 771133;
+  const rnd = () => { z = (z * 1103515245 + 12345) % 2147483648; return z / 2147483648; };
+  const zand = [];
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (m[y][x] === T_SAND) zand.push([x, y]);
+  for (let i = 0; i < zand.length; i += 2) {          // om de andere zandtegel een schelp
+    const [x, y] = zand[i];
+    schelpen.push({ x: x * TILE + 8 + rnd() * 16, y: y * TILE + 10 + rnd() * 14,
+                    r: 5 + rnd() * 4, k: rnd(), t: 0 });
+  }
   return {
     name: 'shore', map: m, patches, waterPool: 'shwater',
-    pond: [17, 1, 32, 12], mill: null, houses: [],
+    pond: [21, 1, 32, 14], mill: null, houses: [],
+    shells: schelpen, waterfall: true, coast: true,
     portals: [
       { dest: 'skyway', icon: 'airdock', side: 'bottom',
-        zone: [14.6 * TILE, 22.4 * TILE, 17.4 * TILE, 24 * TILE], tap: [13.6 * TILE, 21 * TILE, 18.4 * TILE, 24 * TILE],
-        walk: [16 * TILE, 22.9 * TILE], spawn: [15.5 * TILE, 3.4 * TILE] },
+        zone: [13.8 * TILE, 22.4 * TILE, 17.2 * TILE, 24 * TILE], tap: [12.8 * TILE, 21 * TILE, 18.2 * TILE, 24 * TILE],
+        walk: [15.5 * TILE, 22.6 * TILE], spawn: [15.5 * TILE, 3.4 * TILE] },
     ],
     style: {
-      g1: '#bfe8cf', g2: '#b4e2c6', path: '#f0e6cf', sand: '#f6efdc', water: '#5fd8d0',
-      tallBase: '#7cc9a8', bush: '#57b58f', bushTop: '#78d0aa',
-      tufts: ['#5fbf9c', '#74cfae', '#8fe0c2'], canopy: ['#4fc2a0', '#58cfab'],
-      canopyDk: ['#3fa286', '#47ad90'],
-      trunk: '#c09a68', trunkDk: '#9a7448',
-      palms: true, shells: true, seafoam: true, flowers: false, shrooms: false,
+      g1: '#a8e3c4', g2: '#9edcbc', path: '#f4ead0', sand: '#fbf4e2', water: '#4fd4d0',
+      tallBase: '#6fc8a4', bush: '#4fb890', bushTop: '#6fd4ac',
+      tufts: ['#54bf9a', '#68d0ab', '#84e0c0'], canopy: ['#46c2a0', '#4fceaa'],
+      canopyDk: ['#37a184', '#3fae8e'],
+      trunk: '#c8a070', trunkDk: '#9c7850',
+      palms: true, shells: true, seafoam: true, pier: true, flowers: false, shrooms: false,
     },
   };
 }
@@ -8889,6 +8985,92 @@ function tekenLuchtVoor(g) {
   g.fillStyle = vig; g.fillRect(0, 0, VW, VH);
 }
 
+
+// ============================================================ Kristalkust
+// De bewegende laag van de kust: de waterval aan de oostrand met opstijgende
+// nevel, langzaam schuivende glanslijnen op de ondiepten, en kristallen
+// schelpen die oplichten zodra de speler er langs komt.
+function tekenKustAchter(g) {
+  // trage glanslijnen op het turquoise water
+  g.save();
+  for (let i = 0; i < 10; i++) {
+    const y = 40 + i * 74 + Math.sin(G.t * 0.5 + i) * 6;
+    const x = 640 + Math.sin(G.t * 0.28 + i * 1.3) * 70;
+    g.fillStyle = 'rgba(226,255,252,0.14)';
+    g.beginPath(); g.ellipse(x, y, 150, 6, 0, 0, TAU); g.fill();
+  }
+  g.restore();
+}
+function tekenKustVoor(g) {
+  // --- de waterval aan de oostrand: de zee stort in het niets --------------
+  const rand = VW - 14;
+  g.save();
+  const val = g.createLinearGradient(rand - 26, 0, VW, 0);
+  val.addColorStop(0, 'rgba(120,235,232,0.0)');
+  val.addColorStop(0.5, 'rgba(198,250,248,0.75)');
+  val.addColorStop(1, 'rgba(255,255,255,0.95)');
+  g.fillStyle = val; g.fillRect(rand - 26, 0, 40, VH);
+  g.strokeStyle = 'rgba(255,255,255,0.8)'; g.lineWidth = 2.4; g.lineCap = 'round';
+  for (let i = 0; i < 16; i++) {                       // vallende slierten
+    const y = ((i * 61 + G.t * 190) % (VH + 90)) - 45;
+    const x = rand - 18 + (i % 4) * 8;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + 3, y + 42); g.stroke();
+  }
+  g.restore();
+  // opstijgende nevel
+  for (let i = 0; i < 12; i++) {
+    const k = ((G.t * 0.32 + i * 0.083) % 1);
+    const y = VH - k * VH * 0.85;
+    const x = rand - 8 + Math.sin(G.t * 0.8 + i * 2.1) * 16;
+    g.save(); g.globalAlpha = 0.34 * (1 - k) * (k < 0.12 ? k / 0.12 : 1);
+    g.fillStyle = '#ffffff';
+    g.beginPath(); g.ellipse(x, y, 20 + k * 40, 11 + k * 20, 0, 0, TAU); g.fill();
+    g.restore();
+  }
+}
+// schelpen reageren op de speler: dichtbij lichten ze op en doven daarna traag
+function updateShells(dt) {
+  if (!cur.shells) return;
+  const pl = G.player;
+  for (const sc of cur.shells) {
+    const d = Math.hypot(sc.x - pl.x, sc.y - pl.y);
+    if (d < 68) sc.t = 1;
+    else sc.t = Math.max(0, sc.t - dt * 0.7);
+  }
+}
+function tekenSchelpen(g) {
+  if (!cur.shells) return;
+  for (const sc of cur.shells) {
+    const gl = sc.t;
+    const wieg = Math.sin(G.t * 1.4 + sc.k * 9) * 0.12;
+    g.save(); g.translate(sc.x, sc.y); g.rotate(wieg + sc.k * 1.2);
+    if (gl > 0.02) {                                    // gloed eromheen
+      const gr = g.createRadialGradient(0, 0, 1, 0, 0, sc.r * 5.5);
+      gr.addColorStop(0, 'rgba(150,250,244,' + (0.5 * gl) + ')');
+      gr.addColorStop(1, 'rgba(150,250,244,0)');
+      g.fillStyle = gr;
+      g.beginPath(); g.arc(0, 0, sc.r * 5.5, 0, TAU); g.fill();
+    }
+    // schelpvorm met ribbels
+    const sch = g.createLinearGradient(0, -sc.r, 0, sc.r);
+    sch.addColorStop(0, gl > 0.02 ? '#ffffff' : '#f2e8dc');
+    sch.addColorStop(1, gl > 0.02 ? '#8ff0e6' : '#d8c8bc');
+    g.fillStyle = sch;
+    g.beginPath(); g.moveTo(0, sc.r * 0.7);
+    g.quadraticCurveTo(-sc.r * 1.25, sc.r * 0.1, -sc.r * 0.75, -sc.r * 0.85);
+    g.quadraticCurveTo(0, -sc.r * 0.35, sc.r * 0.75, -sc.r * 0.85);
+    g.quadraticCurveTo(sc.r * 1.25, sc.r * 0.1, 0, sc.r * 0.7);
+    g.closePath(); g.fill();
+    g.strokeStyle = gl > 0.02 ? 'rgba(90,220,212,0.85)' : 'rgba(150,130,116,0.5)';
+    g.lineWidth = Math.max(0.6, sc.r * 0.11);
+    for (let i = -2; i <= 2; i++) {
+      g.beginPath(); g.moveTo(0, sc.r * 0.6);
+      g.lineTo(i * sc.r * 0.42, -sc.r * 0.72); g.stroke();
+    }
+    g.restore();
+  }
+}
+
 function drawWorld(g) {
   if (cur.sky) tekenLuchtAchter(g);                     // zee, wolkendek en eilandjes eerst
   g.drawImage(cur.world, 0, 0, VW, VH);
@@ -8897,6 +9079,7 @@ function drawWorld(g) {
   g.save(); g.transform(1, 0, sw, 1, -sw * VH * 0.55, 0);
   g.drawImage(cur.grass, 0, 0, VW, VH);
   g.restore();
+  if (cur.coast) { tekenKustAchter(g); tekenSchelpen(g); }
   // Doorgangen zijn het luidste op het scherm: een zachte pulserende gloed plus
   // een oplichtende ring, zodat geen enkele mooie boom meer aandacht trekt.
   for (const po of cur.portals) {
@@ -8992,6 +9175,7 @@ function drawWorld(g) {
     g.restore();
   }
   if (cur.sky) tekenLuchtVoor(g);                       // slierten over het schip heen
+  if (cur.coast) tekenKustVoor(g);                      // waterval en nevel over alles heen
   drawParticles(g);
   drawHeartFx(g);
 }
@@ -9321,7 +9505,7 @@ function frame(now) {
   G.t += dt;
 
   if (G.bookOpen) { /* boek open: de wereld en het gevecht wachten even */ }
-  else if (G.state === 'world') { updateWorld(dt); updateParticles(dt); }
+  else if (G.state === 'world') { updateWorld(dt); updateParticles(dt); updateShells(dt); }
   else if (G.state === 'battle') { updateBattle(dt); updateParticles(dt); updateHeartFx(dt); }
   else if (G.state === 'toBattle') {
     G.transT += dt; updateParticles(dt);
