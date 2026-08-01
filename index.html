@@ -208,7 +208,14 @@
       flex-direction:column; align-items:center; }
   #bookHeader { display:flex; align-items:center; gap:12px; margin-bottom:1.4vmin; font-weight:800;
       font-size:4.6vmin; color:#7a5b25; }
-  #bookGrid { display:grid; grid-template-columns:repeat(8, 1fr); gap:1.1vmin; overflow-y:auto;
+  #bookCols { display:flex; gap:2.4vmin; min-height:0; flex:1; align-items:stretch; }
+  .bookCol { display:flex; flex-direction:column; min-height:0; }
+  .bookColHead { display:flex; align-items:center; justify-content:center; gap:8px; font-weight:800;
+      font-size:3.1vmin; color:#7a5b25; padding-bottom:.7vmin; border-bottom:3px solid #e0c98f;
+      margin-bottom:.9vmin; white-space:nowrap; }
+  .bookColHead .bol { width:2.4vmin; height:2.4vmin; min-width:15px; min-height:15px; border-radius:50%;
+      border:2px solid rgba(0,0,0,.18); }
+  .bookColGrid { display:grid; grid-template-columns:repeat(5, 1fr); gap:1.1vmin; overflow-y:auto;
       overflow-x:hidden; min-height:0; touch-action:pan-y; -webkit-overflow-scrolling:touch; padding:4px; }
   .cell { width:10.6vmin; height:10.6vmin; min-width:66px; min-height:66px; background:#fffdf6;
       border-radius:18px; border:3px solid #e0c98f; display:flex; align-items:center; justify-content:center;
@@ -282,7 +289,16 @@
   <div class="overlay" id="bookOverlay">
     <div id="bookPanel">
       <div id="bookHeader"><span style="font-size:5.5vmin">&#11088;</span><span id="bookCount">0 / 24</span></div>
-      <div id="bookGrid"></div>
+      <div id="bookCols">
+        <div class="bookCol">
+          <div class="bookColHead"><span class="bol" style="background:#8fe05f"></span><span id="bookCount1">0</span></div>
+          <div class="bookColGrid" id="bookGrid1"></div>
+        </div>
+        <div class="bookCol">
+          <div class="bookColHead"><span class="bol" style="background:#8fd8f8"></span><span id="bookCount2">0</span></div>
+          <div class="bookColGrid" id="bookGrid2"></div>
+        </div>
+      </div>
     </div>
     <button class="btn btn-round btn-warn" id="btnCloseBook">&#10005;</button>
   </div>
@@ -347,7 +363,7 @@ function fit() {
 window.addEventListener('resize', fit); fit();
 // blokkeer paginascroll/zoom, maar laat scrollen in de pokedex-lijst toe
 document.addEventListener('touchmove', e => {
-  if (e.target && e.target.closest && e.target.closest('#bookGrid')) return;
+  if (e.target && e.target.closest && e.target.closest('.bookColGrid')) return;
   e.preventDefault();
 }, { passive: false });
 document.addEventListener('contextmenu', e => e.preventDefault());
@@ -7149,6 +7165,12 @@ const WATER_NAAR_LAND = {
 };
 // Elk water moet bewoners hebben. Staat een poel leeg, dan valt pickSpecies
 // terug op de complete lijst en zwemmen er ineens vuurwezens in de rivier.
+// Krabben, schelpen en zeesterren horen net zo goed op het zand als in zee.
+// Zij zijn de enige uitzondering op de regel dat watervolk niet op het land komt.
+const KUSTDIEREN = ['pinchy', 'kingcrab', 'shellteen', 'shelltank', 'shellclam', 'heremiet',
+                    'krabkristal', 'zeester', 'schelphoorn', 'parelmossel', 'zeeslak'];
+const KUSTLAND = { bwater: 'beach', shwater: 'shore', water: 'meadow', swater: 'snow' };
+
 const WATERBEWONERS = {
   jwater:   ['taddy', 'tadmid', 'tadbig', 'goldfish', 'jellyfloat'],
   vwater:   ['goldfish', 'goldbig', 'duckles', 'duckblue', 'taddy'],
@@ -7174,6 +7196,20 @@ const WATERBEWONERS = {
     if (sp.fly && ps.indexOf(SKYPOOL) < 0) ps.push(SKYPOOL);
     sp.pools = ps.filter((p, i) => ps.indexOf(p) === i);
   });
+  // kustdieren mogen terug het strand op: voor elk water waar ze in zwemmen
+  // krijgen ze ook het bijbehorende stuk land erbij
+  const LAND_NAAR_KUSTWATER = { beach: 'bwater', shore: 'shwater', meadow: 'water', snow: 'swater' };
+  KUSTDIEREN.forEach(function (naam) {
+    const sp = SPECIES[IDX_BY_NAME[naam]];
+    if (!sp) return;
+    sp.kust = true;
+    sp.pools.slice().forEach(function (poel) {
+      const land = KUSTLAND[poel];                       // zwemt hier, mag ook op het zand
+      if (land && sp.pools.indexOf(land) < 0) sp.pools.push(land);
+      const water = LAND_NAAR_KUSTWATER[poel];           // loopt hier, mag ook het water in
+      if (water && sp.pools.indexOf(water) < 0) sp.pools.push(water);
+    });
+  });
   // de lege waterpoelen bevolken
   for (const poel in WATERBEWONERS) {
     WATERBEWONERS[poel].forEach(function (naam) {
@@ -7189,10 +7225,12 @@ function habitatCheck(verbose) {
   const meld = [];
   SPECIES.forEach(function (sp) {
     const ps = sp.pools || [];
-    if (sp.type === 'water' && ps.some(p => !isWater(p) && p !== SKYPOOL))
+    if (sp.type === 'water' && !sp.kust && ps.some(p => !isWater(p) && p !== SKYPOOL))
       meld.push(sp.draw + ' is water maar staat op het land: ' + ps.join(','));
-    if (sp.type !== 'water' && ps.some(isWater))
+    if (sp.type !== 'water' && !sp.kust && ps.some(isWater))
       meld.push(sp.draw + ' (' + sp.type + ') staat in het water: ' + ps.join(','));
+    if (sp.kust && !ps.some(isWater))
+      meld.push(sp.draw + ' is een kustdier maar zit nergens meer in het water');
     if (!ps.length && sp.draw !== 'kittylegend' && sp.draw !== 'sparky')
       meld.push(sp.draw + ' heeft helemaal geen leefgebied');
   });
@@ -11844,7 +11882,34 @@ function drawTransition(g, k) {
 
 // ============================================================ boek-UI
 const bookOverlay = document.getElementById('bookOverlay');
-const bookGrid = document.getElementById('bookGrid');
+const bookGrid1 = document.getElementById('bookGrid1');
+const bookGrid2 = document.getElementById('bookGrid2');
+const bookCount1 = document.getElementById('bookCount1');
+const bookCount2 = document.getElementById('bookCount2');
+
+// Volgorde van een kolom. Evolutiefamilies staan bij elkaar op de plek van hun
+// eerste lid, zodat een lijn niet over de hele lijst verspreid raakt. Het
+// mythische katje sluit wereld 1 af. Nergens een vast aantal: dit volgt de data.
+function dexVolgorde(wereld) {
+  const uit = [], gedaan = {};
+  const mythisch = IDX_BY_NAME['kittylegend'];
+  for (let i = 0; i < NSPECIES; i++) {
+    const sp = SPECIES[i];
+    if ((sp.world === 2 ? 2 : 1) !== wereld) continue;
+    if (i === mythisch) continue;
+    if (sp.fam) {
+      if (gedaan[sp.fam]) continue;
+      gedaan[sp.fam] = 1;
+      const leden = [];
+      for (let k = 0; k < NSPECIES; k++) if (SPECIES[k].fam === sp.fam) leden.push(k);
+      leden.sort((a, b) => (SPECIES[a].trap || 0) - (SPECIES[b].trap || 0));
+      leden.forEach(k => uit.push(k));
+    } else uit.push(i);
+  }
+  if (wereld === 1 && mythisch !== undefined) uit.push(mythisch);
+  return uit;
+}
+const DEX1 = dexVolgorde(1), DEX2 = dexVolgorde(2);
 const bookCount = document.getElementById('bookCount');
 const bookBadge = document.getElementById('bookBadge');
 const cells = [];
@@ -11886,9 +11951,11 @@ for (let i = 0; i < NSPECIES; i++) {
       spawnParticles(PC.x, PC.y - 30, 18, 'star', ['#ffd23d', '#8fe05f', '#ffffff']);
     }
   });
-  bookGrid.appendChild(cell);
   cells.push(cell);
 }
+// de vakjes in de goede kolom hangen, in de volgorde van hierboven
+DEX1.forEach(i => bookGrid1.appendChild(cells[i]));
+DEX2.forEach(i => bookGrid2.appendChild(cells[i]));
 function updateBadge() { bookBadge.textContent = G.caughtCount; }
 function refreshBook() {
   for (let i = 0; i < NSPECIES; i++) {
@@ -11928,6 +11995,11 @@ function refreshBook() {
     }
   }
   bookCount.textContent = G.caughtCount + ' / ' + NSPECIES;
+  let g1 = 0, g2 = 0;
+  DEX1.forEach(i => { if (G.caught[i] > 0) g1++; });
+  DEX2.forEach(i => { if (G.caught[i] > 0) g2++; });
+  bookCount1.textContent = g1 + ' / ' + DEX1.length;
+  bookCount2.textContent = g2 + ' / ' + DEX2.length;
 }
 function openBook() {
   if (G.state !== 'world' && G.state !== 'battle') return;
