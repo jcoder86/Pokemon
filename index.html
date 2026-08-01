@@ -5394,6 +5394,39 @@ function validateEyes(verbose) {
 // vastloper in de luchtroute meteen gevangen: de speler landde op een plek waar
 // zijn hoofd in een geblokkeerde tegel zat, waardoor bewegen onmogelijk was.
 // Shift+R draait hem.
+// Controleert of elk gebied uit een stuk bestaat: vanaf de doorgang moet je
+// bij elke begaanbare tegel kunnen komen. Deze test ving dat het aankomstplein
+// van de Wolkentempel volledig los lag van de rest van de kaart.
+function connectCheck(verbose) {
+  const meld = [];
+  const bewaar = cur;
+  for (const naam in AREAS) {
+    cur = AREAS[naam];
+    if (!cur.portals.length) continue;
+    let totaal = 0;
+    for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (pathWalkable(x, y)) totaal++;
+    const po = cur.portals[0];
+    const q = [[Math.floor(po.walk[0] / TILE), Math.floor(po.walk[1] / TILE)]];
+    const gezien = {}; gezien[q[0][0] + ',' + q[0][1]] = 1;
+    let bereik = 1;
+    while (q.length) {
+      const c = q.shift();
+      for (const d of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = c[0] + d[0], ny = c[1] + d[1], k = nx + ',' + ny;
+        if (gezien[k] || nx < 0 || ny < 0 || nx >= MW || ny >= MH || !pathWalkable(nx, ny)) continue;
+        gezien[k] = 1; bereik++; q.push([nx, ny]);
+      }
+    }
+    if (bereik < totaal) meld.push(naam + ': ' + bereik + ' van ' + totaal + ' tegels bereikbaar');
+  }
+  cur = bewaar;
+  if (verbose !== false) {
+    if (!meld.length) console.log('[samenhang] elk gebied is uit een stuk');
+    else meld.forEach(function (m) { console.warn('[samenhang] ' + m + ' - LOSSE STUKKEN'); });
+  }
+  return meld;
+}
+
 function routeCheck(verbose) {
   const meld = [];
   const bewaar = cur;
@@ -5525,7 +5558,7 @@ window.addEventListener('keydown', e => {
   } else if (e.key === 'O' || e.key === 'o') {
     e.preventDefault(); validateEyes(true);
   } else if (e.key === 'R' || e.key === 'r') {
-    e.preventDefault(); routeCheck(true);
+    e.preventDefault(); routeCheck(true); connectCheck(true);
   }
 });
 
@@ -7992,7 +8025,9 @@ function buildTemple() {
   plein(12, 17, 8, 6);
   for (let y = 9; y <= 12; y++) { m[y][15] = T_PATH; m[y][16] = T_PATH; }
   for (let x = 10; x <= 21; x++) { m[13][x] = T_PATH; m[14][x] = T_PATH; }
-  for (let y = 16; y <= 18; y++) { m[y][15] = T_PATH; m[y][16] = T_PATH; }
+  // Deze brug liep van rij 16 tot 18 terwijl de dwarsbalk op rij 13 en 14 ligt.
+  // Rij 15 ontbrak, waardoor het aankomstplein volledig los lag van de rest.
+  for (let y = 14; y <= 18; y++) { m[y][15] = T_PATH; m[y][16] = T_PATH; }
   for (let x = 14; x <= 17; x++) { m[22][x] = T_PATH; m[23][x] = T_PATH; }
   for (const cp of [[12,3],[19,3],[12,8],[19,8],[4,12],[9,12],[22,12],[27,12]])
     if (m[cp[1]][cp[0]] === T_PATH) m[cp[1]][cp[0]] = T_HOUSE;
@@ -8123,12 +8158,36 @@ function findPath(sx, sy, txp, typ) {
   }
   return out.length ? out : [[goalPx, goalPy]];
 }
+// Zoekt de dichtstbijzijnde plek waar je wel kunt staan. Nodig omdat op kaarten
+// met veel leegte, zoals de Wolkentempel, het grootste deel van het scherm niet
+// begaanbaar is: een tik daarop deed eerst helemaal niets en dat voelt als
+// vastzitten. Nu loopt hij naar de dichtstbijzijnde rand van het platform.
+function nearestWalkable(px, py) {
+  if (!blocked(px, py)) return [px, py];
+  const tx = Math.floor(px / TILE), ty = Math.floor(py / TILE);
+  for (let r = 1; r <= 10; r++) {
+    let best = null, bestD = 1e9;
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;   // alleen de nieuwe ring
+      const x = tx + dx, y = ty + dy;
+      if (x < 0 || y < 0 || x >= MW || y >= MH) continue;
+      if (!pathWalkable(x, y)) continue;
+      const cx = x * TILE + TILE / 2, cy = y * TILE + TILE / 2;
+      const d = Math.hypot(cx - px, cy - py);
+      if (d < bestD) { bestD = d; best = [cx, cy]; }
+    }
+    if (best) return best;
+  }
+  return null;
+}
 function walkTo(px, py) {
   const pl = G.player;
   px = clamp(px, TILE * 0.5, VW - TILE * 0.5);
   py = clamp(py, TILE * 0.5, VH - TILE * 0.5);
-  pl.path = findPath(pl.x, pl.y, px, py);
-  pl.tx = px; pl.ty = py; pl.moving = true;
+  const doel = nearestWalkable(px, py);
+  if (!doel) return;                       // nergens in de buurt te staan: negeer de tik
+  pl.path = findPath(pl.x, pl.y, doel[0], doel[1]);
+  pl.tx = doel[0]; pl.ty = doel[1]; pl.moving = true;
 }
 function patchPoolAt(px, py) {
   const tx = Math.floor(px / TILE), ty = Math.floor(py / TILE);
