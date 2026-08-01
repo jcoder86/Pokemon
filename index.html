@@ -5473,6 +5473,88 @@ const TYPECOL = { water: '#58b6ff', fire: '#ff7a1f', grass: '#6fc750', electric:
                   dark: '#5a4a6e', steel: '#9fb4c8',
                   ice: '#a8e4f4', fight: '#e0704a' };
 
+
+// ====================================================== leefgebieden
+// Regel: in het water hoort uitsluitend watervolk, watervolk hoort niet op het
+// land, en in de lucht kom je alleen vliegers tegen. Dit is een automatische
+// pass over de hele lijst in plaats van honderd losse regels, zodat een wezen
+// dat er later bij komt vanzelf op de goede plek belandt.
+const WATERPOOLS = ['water', 'jwater', 'vwater', 'bwater', 'swater', 'shwater', 'cavwater', 'hotspring'];
+const SKYPOOL = 'sky';
+// welk water hoort bij welk stuk land
+const LAND_NAAR_WATER = {
+  meadow: 'water', forest: 'water', jungle: 'jwater', village: 'vwater', beach: 'bwater',
+  snow: 'swater', shore: 'shwater', ravine: 'jwater', caverns: 'cavwater',
+  terraces: 'hotspring', temple: 'water',
+};
+const WATER_NAAR_LAND = {
+  water: 'meadow', jwater: 'jungle', vwater: 'village', bwater: 'beach', swater: 'snow',
+  shwater: 'shore', cavwater: 'caverns', hotspring: 'terraces',
+};
+// Elk water moet bewoners hebben. Staat een poel leeg, dan valt pickSpecies
+// terug op de complete lijst en zwemmen er ineens vuurwezens in de rivier.
+const WATERBEWONERS = {
+  jwater:   ['taddy', 'tadmid', 'tadbig', 'goldfish', 'jellyfloat'],
+  vwater:   ['goldfish', 'goldbig', 'duckles', 'duckblue', 'taddy'],
+  shwater:  ['pingduik', 'bijtkaak', 'bijtklauw', 'bijtkoning', 'twinkle', 'foxwater'],
+  cavwater: ['ammoshell', 'ammobig', 'shellclam', 'jellyfloat', 'seahorse'],
+  hotspring: ['splashy', 'twinkle', 'seahorse', 'goldfish'],
+};
+
+(function verdeelLeefgebieden() {
+  const isWater = p => WATERPOOLS.indexOf(p) >= 0;
+  SPECIES.forEach(function (sp) {
+    let ps = (sp.pools || []).slice();
+    if (sp.type === 'water') {
+      // watervolk van het land halen: elk landstuk wordt zijn eigen water
+      ps = ps.map(p => (isWater(p) || p === SKYPOOL) ? p : (LAND_NAAR_WATER[p] || 'water'));
+    } else {
+      // al het andere uit het water halen, maar niemand zonder woonplek laten
+      const land = ps.filter(p => !isWater(p));
+      const vervang = ps.filter(isWater).map(p => WATER_NAAR_LAND[p]).filter(Boolean);
+      ps = land.length ? land : vervang;
+    }
+    // vliegers zijn ook in de lucht te vinden
+    if (sp.fly && ps.indexOf(SKYPOOL) < 0) ps.push(SKYPOOL);
+    sp.pools = ps.filter((p, i) => ps.indexOf(p) === i);
+  });
+  // de lege waterpoelen bevolken
+  for (const poel in WATERBEWONERS) {
+    WATERBEWONERS[poel].forEach(function (naam) {
+      const sp = SPECIES[IDX_BY_NAME[naam]];
+      if (sp && sp.pools.indexOf(poel) < 0) sp.pools.push(poel);
+    });
+  }
+})();
+
+// Controleert de drie regels. Draait mee op Shift+R.
+function habitatCheck(verbose) {
+  const isWater = p => WATERPOOLS.indexOf(p) >= 0;
+  const meld = [];
+  SPECIES.forEach(function (sp) {
+    const ps = sp.pools || [];
+    if (sp.type === 'water' && ps.some(p => !isWater(p) && p !== SKYPOOL))
+      meld.push(sp.draw + ' is water maar staat op het land: ' + ps.join(','));
+    if (sp.type !== 'water' && ps.some(isWater))
+      meld.push(sp.draw + ' (' + sp.type + ') staat in het water: ' + ps.join(','));
+    if (!ps.length && sp.draw !== 'kittylegend' && sp.draw !== 'sparky')
+      meld.push(sp.draw + ' heeft helemaal geen leefgebied');
+  });
+  WATERPOOLS.concat([SKYPOOL]).forEach(function (poel) {
+    const n = SPECIES.filter(sp => (sp.pools || []).indexOf(poel) >= 0).length;
+    if (n === 0) meld.push('poel ' + poel + ' heeft geen bewoners');
+  });
+  SPECIES.forEach(function (sp) {
+    if ((sp.pools || []).indexOf(SKYPOOL) >= 0 && !sp.fly)
+      meld.push(sp.draw + ' zit in de lucht maar kan niet vliegen');
+  });
+  if (verbose !== false) {
+    if (!meld.length) console.log('[leefgebied] alle wezens wonen waar ze horen');
+    else meld.forEach(m => console.warn('[leefgebied] ' + m));
+  }
+  return meld;
+}
+
 // scratch-canvas: alle wezentjes krijgen hier een licht/schaduw-pass en evt. raak-flits
 const scr = document.createElement('canvas'); scr.width = 960; scr.height = 960;
 const sg = scr.getContext('2d');
@@ -5881,7 +5963,7 @@ window.addEventListener('keydown', e => {
   } else if (e.key === 'O' || e.key === 'o') {
     e.preventDefault(); validateEyes(true);
   } else if (e.key === 'R' || e.key === 'r') {
-    e.preventDefault(); routeCheck(true); connectCheck(true);
+    e.preventDefault(); routeCheck(true); connectCheck(true); habitatCheck(true);
   }
 });
 
@@ -9624,7 +9706,13 @@ function updateWorld(dt) {
       if (tileKey !== pl.lastTile) {
         pl.lastTile = tileKey;
         if (geheimeVangst()) { /* het mythische katje gaat voor */ }
-        else if (cur.fly) { /* in de lucht geen ontmoetingen: puur sfeer */ }
+        else if (cur.fly) {
+          // hoog boven de wolken kom je alleen vliegers tegen
+          if (G.encounterCooldown <= 0 && Math.random() < 0.11) {
+            G.encounterCooldown = 4.5;
+            startEncounter(SKYPOOL);
+          }
+        }
         else if (!G.onBoat && tileAt(pl.x, pl.y) === T_TALL) {
           pl.grassSteps++;
           const force = G.caughtCount <= 1 && pl.grassSteps >= 3;
