@@ -6831,7 +6831,7 @@ function renderArea(area) {
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     const t = m[y][x], px = x * TILE, py = y * TILE;
     const h = hash2(x, y);
-    if (!area.sky) {                    // luchtkaart blijft doorzichtig voor de parallax
+    if (!area.sky || area.temple) {     // luchtkaart blijft doorzichtig voor de parallax
       wg.fillStyle = (x + y) % 2 === 0 ? st.g1 : st.g2;
       wg.fillRect(px, py, TILE, TILE);
     }
@@ -6918,11 +6918,21 @@ function renderArea(area) {
       wg.fillRect(px + 3 + h * 8, py + 6 + h * 10, 9, 6);
       wg.fillRect(px + 16 - h * 6, py + 18, 8, 5);
     } else if (t === T_SKY) {
-      // rand van het gebied: alleen wat dichtere nevel, geen muur
-      wg.fillStyle = 'rgba(238,247,255,0.30)';
-      wg.fillRect(px, py, TILE, TILE);
-      wg.fillStyle = 'rgba(255,255,255,0.42)';
-      wg.beginPath(); wg.ellipse(px + 8 + h * 12, py + 12 + h * 8, 15, 8, 0, 0, TAU); wg.fill();
+      if (st.voidBelow) {
+        // de leegte onder de tempel: diep en donker, zodat de witte platformen
+        // er onmiskenbaar bovenuit springen
+        const leeg = wg.createLinearGradient(px, py, px, py + TILE);
+        leeg.addColorStop(0, '#3c5a80'); leeg.addColorStop(1, '#335074');
+        wg.fillStyle = leeg; wg.fillRect(px, py, TILE, TILE);
+        if (h > 0.8) { wg.fillStyle = 'rgba(255,255,255,0.08)';
+          wg.beginPath(); wg.ellipse(px + 9 + h * 12, py + 14, 12, 4, 0, 0, TAU); wg.fill(); }
+      } else {
+        // rand van het gebied: alleen wat dichtere nevel, geen muur
+        wg.fillStyle = 'rgba(238,247,255,0.30)';
+        wg.fillRect(px, py, TILE, TILE);
+        wg.fillStyle = 'rgba(255,255,255,0.42)';
+        wg.beginPath(); wg.ellipse(px + 8 + h * 12, py + 12 + h * 8, 15, 8, 0, 0, TAU); wg.fill();
+      }
     } else if (t === T_CLOUD) {
       // open lucht waar je doorheen vliegt: het doorlopende verloop blijft staan
     } else if (t === T_FIELD) {
@@ -7421,7 +7431,7 @@ function renderArea(area) {
   }
   if (area.coast) {
     // gestrande wrakken die als brug over het water liggen
-    for (const [wx, wy, wl] of [[21, 11, 4], [22, 19, 3]]) {
+    for (const [wx, wy, wl] of [[22, 6, 4], [25, 11, 3]]) {
       const px = wx * TILE, py = wy * TILE + TILE * 0.5;
       wg.fillStyle = 'rgba(30,70,80,0.22)';
       wg.beginPath(); wg.ellipse(px + wl * TILE / 2, py + 13, wl * TILE * 0.55, 11, 0, 0, TAU); wg.fill();
@@ -7522,36 +7532,35 @@ function buildSkyway() {
 function buildShore() {
   const m = newMap();
   // de zee: een brede baai die naar de oostrand toe openbreekt
-  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
-    const dx = (x - 27) / 13, dy = (y - 9) / 11;
-    if (x >= 21 || dx * dx + dy * dy < 1) m[y][x] = T_WATER;
-  }
-  for (let y = 15; y < MH; y++) for (let x = 24; x < MW; x++) m[y][x] = T_WATER;
+  // De baai ligt in de noordoosthoek. De vier randmiddens blijven land, want
+  // daar komen de doorgangen naar de vier andere eilanden.
+  for (let y = 0; y <= 9; y++) for (let x = 20; x < MW; x++) m[y][x] = T_WATER;
+  for (let y = 10; y <= 12; y++) for (let x = 24; x < MW; x++) m[y][x] = T_WATER;
   // een lagune landinwaarts, met een smalle doorgang
-  for (let y = 16; y <= 20; y++) for (let x = 4; x <= 9; x++) {
-    const dx = (x - 6.5) / 3.2, dy = (y - 18) / 2.6;
+  for (let y = 15; y <= 19; y++) for (let x = 4; x <= 10; x++) {
+    const dx = (x - 7) / 3.4, dy = (y - 17) / 2.4;
     if (dx * dx + dy * dy < 1) m[y][x] = T_WATER;
   }
   addSandRing(m);
   addBorder(m);                                  // de oostrand is water en blijft open
   // paden over het strand
-  for (let x = 3; x <= 20; x++) if (m[14][x] !== T_WATER) m[14][x] = T_PATH;
-  for (let y = 3; y <= 21; y++) if (m[y][15] !== T_WATER) m[y][15] = T_PATH;
-  for (let x = 15; x <= 19; x++) if (m[5][x] !== T_WATER) m[5][x] = T_PATH;
-  // aanlegsteiger voor het luchtschip, onderaan
-  for (let y = 21; y <= 23; y++) for (let x = 14; x <= 16; x++) m[y][x] = T_PATH;
+  for (let x = 1; x < MW - 1; x++) if (m[12][x] !== T_WATER) m[12][x] = T_PATH;
+  for (let y = 1; y < MH - 1; y++) if (m[y][15] !== T_WATER) m[y][15] = T_PATH;
+  for (let x = 16; x <= 18; x++) if (m[8][x] !== T_WATER) m[8][x] = T_PATH;
+  // aanlegplatform voor het luchtschip: een steiger de baai in
+  for (let y = 6; y <= 8; y++) for (let x = 17; x <= 18; x++) m[y][x] = T_PATH;
   // houten steigers die het water op lopen
-  const steigers = [[17, 8, 4, 0], [18, 17, 5, 0], [12, 18, 0, 3]];
+  const steigers = [[18, 5, 4, 0], [17, 8, 0, 3], [21, 2, 3, 0]];
   for (const [sx, sy, w, h] of steigers) {
     for (let i = 0; i <= w; i++) if (m[sy] && m[sy][sx + i] === T_WATER) m[sy][sx + i] = T_PATH;
     for (let i = 0; i <= h; i++) if (m[sy + i] && m[sy + i][sx] === T_WATER) m[sy + i][sx] = T_PATH;
   }
   // gestrande wrakken als brug over het water
-  const wrakken = [[21, 11, 4], [22, 19, 3]];
+  const wrakken = [[22, 6, 4], [25, 11, 3]];
   for (const [wx, wy, wl] of wrakken)
     for (let i = 0; i < wl; i++) if (m[wy] && m[wy][wx + i] === T_WATER) m[wy][wx + i] = T_PATH;
   // rotspunten op het strand
-  for (const [rx, ry] of [[6, 6], [9, 9], [3, 12], [11, 4], [18, 21], [8, 22]])
+  for (const [rx, ry] of [[6, 6], [9, 9], [3, 14], [11, 4], [18, 20], [8, 21]])
     if (m[ry][rx] === T_GRASS || m[ry][rx] === T_SAND) m[ry][rx] = T_ROCK;
   const patches = [
     { x: 4,  y: 3,  w: 5, h: 4, pool: 'shore' },
@@ -7576,9 +7585,21 @@ function buildShore() {
     pond: [21, 1, 32, 14], mill: null, houses: [],
     shells: schelpen, waterfall: true, coast: true,
     portals: [
-      { dest: 'skyway', icon: 'airdock', side: 'bottom',
-        zone: [13.8 * TILE, 22.4 * TILE, 17.2 * TILE, 24 * TILE], tap: [12.8 * TILE, 21 * TILE, 18.2 * TILE, 24 * TILE],
-        walk: [15.5 * TILE, 22.6 * TILE], spawn: [15.5 * TILE, 3.4 * TILE] },
+      { dest: 'skyway', icon: 'airdock', side: 'top',
+        zone: [16.9 * TILE, 5.6 * TILE, 19.1 * TILE, 7.6 * TILE], tap: [16 * TILE, 4.6 * TILE, 20 * TILE, 8.6 * TILE],
+        walk: [18 * TILE, 6.6 * TILE], spawn: [15.5 * TILE, 3.4 * TILE] },
+      { dest: 'ravine', icon: 'cave', side: 'left',
+        zone: [0, 11.1 * TILE, 1.6 * TILE, 12.9 * TILE], tap: [0, 9.8 * TILE, 3.2 * TILE, 14.2 * TILE],
+        walk: [1.1 * TILE, 12 * TILE], spawn: [28.6 * TILE, 12 * TILE] },
+      { dest: 'temple', icon: 'gate', side: 'top',
+        zone: [14 * TILE, 0, 18 * TILE, 1.6 * TILE], tap: [13 * TILE, 0, 19 * TILE, 3.2 * TILE],
+        walk: [15.5 * TILE, 1.1 * TILE], spawn: [15.5 * TILE, 21.2 * TILE] },
+      { dest: 'terraces', icon: 'icegate', side: 'right',
+        zone: [30.4 * TILE, 11.1 * TILE, 32 * TILE, 12.9 * TILE], tap: [28.8 * TILE, 9.8 * TILE, 32 * TILE, 14.2 * TILE],
+        walk: [30.9 * TILE, 12 * TILE], spawn: [2.4 * TILE, 12 * TILE] },
+      { dest: 'caverns', icon: 'palmgate', side: 'bottom',
+        zone: [14 * TILE, 22.4 * TILE, 18 * TILE, 24 * TILE], tap: [13 * TILE, 21 * TILE, 19 * TILE, 24 * TILE],
+        walk: [15.5 * TILE, 22.9 * TILE], spawn: [15.5 * TILE, 2.6 * TILE] },
     ],
     style: {
       g1: '#a8e3c4', g2: '#9edcbc', path: '#f4ead0', sand: '#fbf4e2', water: '#4fd4d0',
@@ -7591,11 +7612,171 @@ function buildShore() {
   };
 }
 
+
+// ---- de vier eilanden om de Kristalkust heen, in dezelfde + vorm als wereld 1
+// Elk eiland heeft een eigen thema, palet en spawn-pool, en een doorgang terug.
+function spokeBase(naam, icon, side, zone, tap, walk, spawn, patches, style, extra) {
+  return Object.assign({
+    name: naam, patches: patches, mill: null, houses: [],
+    portals: [{ dest: 'shore', icon: icon, side: side, zone: zone, tap: tap, walk: walk, spawn: spawn }],
+    style: style,
+  }, extra);
+}
+
+// 2. Zwevende Junglekloof: een ravijn dwars door de jungle, overspannen door
+//    touwbruggen. Hoge en lage paden die elkaar kruisen.
+function buildRavine() {
+  const m = newMap();
+  for (let y = 8; y <= 15; y++) for (let x = 3; x < MW - 3; x++) m[y][x] = T_WATER;
+  for (const bx of [7, 15, 24])
+    for (let y = 8; y <= 15; y++) { m[y][bx] = T_PATH; m[y][bx + 1] = T_PATH; }
+  addBorder(m);
+  for (let x = 1; x < MW - 1; x++) { if (m[4][x] !== T_WATER) m[4][x] = T_PATH; if (m[19][x] !== T_WATER) m[19][x] = T_PATH; }
+  for (let y = 4; y <= 19; y++) if (m[y][15] !== T_WATER) m[y][15] = T_PATH;
+  for (let y = 4; y <= 12; y++) if (m[y][28] !== T_WATER) m[y][28] = T_PATH;
+  for (let x = 15; x <= 30; x++) if (m[12][x] !== T_WATER) m[12][x] = T_PATH;
+  for (const tp of [[5,2],[9,2],[20,2],[26,2],[4,21],[11,21],[19,21],[27,21],[2,6],[29,17]])
+    if (m[tp[1]][tp[0]] === T_GRASS) m[tp[1]][tp[0]] = T_TREE;
+  for (const rp of [[6,6],[22,5],[8,18],[25,18]]) if (m[rp[1]][rp[0]] === T_GRASS) m[rp[1]][rp[0]] = T_ROCK;
+  const patches = [
+    { x: 4, y: 5, w: 5, h: 3, pool: 'ravine' }, { x: 19, y: 5, w: 5, h: 3, pool: 'ravine' },
+    { x: 5, y: 16, w: 5, h: 3, pool: 'ravine' }, { x: 21, y: 16, w: 5, h: 3, pool: 'ravine' },
+  ];
+  addPatches(m, patches);
+  return spokeBase('ravine', 'cave', 'right',
+    [30.4 * TILE, 11.1 * TILE, 32 * TILE, 12.9 * TILE], [28.8 * TILE, 9.8 * TILE, 32 * TILE, 14.2 * TILE],
+    [30.9 * TILE, 12 * TILE], [2.4 * TILE, 12 * TILE], patches, {
+      g1: '#4fae72', g2: '#47a56a', path: '#c8a86a', sand: '#d8c090', water: '#2a6a7a',
+      tallBase: '#2f7a48', bush: '#28703f', bushTop: '#3a9257',
+      tufts: ['#2c7a46', '#379256', '#43a866'], canopy: ['#2f8a52', '#37985c'],
+      canopyDk: ['#26703f', '#2c7c48'], trunk: '#7a5a34', trunkDk: '#5c4426',
+      vines: true, flowers: false, shrooms: true,
+    }, { map: m, waterPool: null, pond: [3, 8, 29, 16] });
+}
+
+// 3. Bioluminescente Grotten: donker, met gloeiende paddenstoelen en kristallen
+//    en een ondergronds meer.
+function buildCaverns() {
+  const m = newMap();
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) m[y][x] = T_ROCK;
+  const gang = function (x1, y1, x2, y2, w) {
+    for (let y = Math.min(y1, y2) - w; y <= Math.max(y1, y2) + w; y++)
+      for (let x = Math.min(x1, x2) - w; x <= Math.max(x1, x2) + w; x++)
+        if (m[y] && m[y][x] !== undefined) m[y][x] = T_GRASS;
+  };
+  gang(15, 2, 15, 21, 1); gang(3, 12, 28, 12, 1);
+  gang(5, 5, 5, 12, 1); gang(5, 5, 12, 5, 1);
+  gang(26, 5, 26, 12, 1); gang(20, 5, 26, 5, 1);
+  gang(7, 17, 7, 20, 1); gang(7, 17, 14, 17, 1);
+  gang(24, 16, 24, 20, 1); gang(17, 20, 24, 20, 1);
+  for (let y = 8; y <= 11; y++) for (let x = 9; x <= 14; x++) {
+    const dx = (x - 11.5) / 3.2, dy = (y - 9.5) / 2.2;
+    if (dx * dx + dy * dy < 1) m[y][x] = T_WATER;
+  }
+  addBorder(m);
+  const patches = [
+    { x: 4, y: 6, w: 4, h: 3, pool: 'caverns' }, { x: 21, y: 6, w: 4, h: 3, pool: 'caverns' },
+    { x: 8, y: 18, w: 4, h: 3, pool: 'caverns' }, { x: 19, y: 18, w: 4, h: 3, pool: 'caverns' },
+  ];
+  addPatches(m, patches);
+  return spokeBase('caverns', 'palmgate', 'top',
+    [14 * TILE, 0, 18 * TILE, 1.6 * TILE], [13 * TILE, 0, 19 * TILE, 3.2 * TILE],
+    [15.5 * TILE, 1.1 * TILE], [15.5 * TILE, 21.4 * TILE], patches, {
+      g1: '#8a7fc0', g2: '#8276b8', path: '#9a8fd0', sand: '#9086c6', water: '#4f8ac8',
+      tallBase: '#5f5490', bush: '#6b5f9e', bushTop: '#8074b4',
+      tufts: ['#50447e', '#5d4c92', '#6c58a4'], canopy: ['#453a70', '#4d417c'],
+      canopyDk: ['#382f5e', '#3f3568'], trunk: '#504472', trunkDk: '#3c3358',
+      shrooms: true, flowers: false,
+    }, { map: m, waterPool: 'cavwater', pond: [9, 8, 15, 12], dark: true });
+}
+
+// 4. Vulkanische Terrassen: getrapte terrassen met warmwaterbronnen, stoom en
+//    zwarte basaltpaden. Warme kleuren als contrast met de rest.
+function buildTerraces() {
+  const m = newMap();
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++)
+    if ((y + Math.floor(x / 8) * 3) % 7 === 0) m[y][x] = T_ROCK;
+  for (let x = 1; x < MW - 1; x++) m[12][x] = T_PATH;
+  for (let y = 1; y < MH - 1; y++) m[y][15] = T_PATH;
+  for (let x = 4; x <= 27; x++) { m[5][x] = T_PATH; m[19][x] = T_PATH; }
+  for (const bp of [[6,7],[24,8],[9,17],[22,16],[18,10]])
+    for (let y = bp[1]; y <= bp[1] + 1; y++) for (let x = bp[0]; x <= bp[0] + 1; x++) m[y][x] = T_WATER;
+  addBorder(m);
+  const patches = [
+    { x: 3, y: 8, w: 4, h: 3, pool: 'terraces' }, { x: 20, y: 2, w: 4, h: 2, pool: 'terraces' },
+    { x: 5, y: 14, w: 4, h: 3, pool: 'terraces' }, { x: 24, y: 14, w: 4, h: 3, pool: 'terraces' },
+  ];
+  addPatches(m, patches);
+  return spokeBase('terraces', 'icegate', 'left',
+    [0, 11.1 * TILE, 1.6 * TILE, 12.9 * TILE], [0, 9.8 * TILE, 3.2 * TILE, 14.2 * TILE],
+    [1.1 * TILE, 12 * TILE], [28.6 * TILE, 12 * TILE], patches, {
+      g1: '#d69a70', g2: '#cd9268', path: '#e0a878', sand: '#e8b686', water: '#f0a83c',
+      tallBase: '#7f4a36', bush: '#98523c', bushTop: '#b4694c',
+      tufts: ['#a45c40', '#bc6e4c', '#d4845a'], canopy: ['#8e4c36', '#a0583e'],
+      canopyDk: ['#783e2a', '#854632'], trunk: '#5e3c2c', trunkDk: '#452b1f',
+      flowers: false, shrooms: false,
+    }, { map: m, waterPool: 'hotspring', pond: [5, 6, 26, 18], steam: true });
+}
+
+// 5. Wolkentempel: witte steen met goud, gebroken zuilen en lichtbruggen over
+//    de leegte. Rustig en plechtig, het eindpunt van de wereld.
+function buildTemple() {
+  const m = newMap();
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) m[y][x] = T_SKY;
+  const plein = function (cx, cy, w, h) {
+    for (let y = cy; y < cy + h; y++) for (let x = cx; x < cx + w; x++) if (m[y] && x < MW) m[y][x] = T_PATH;
+  };
+  plein(11, 2, 10, 8);
+  plein(3, 11, 8, 6); plein(21, 11, 8, 6);
+  plein(12, 17, 8, 6);
+  for (let y = 9; y <= 12; y++) { m[y][15] = T_PATH; m[y][16] = T_PATH; }
+  for (let x = 10; x <= 21; x++) { m[13][x] = T_PATH; m[14][x] = T_PATH; }
+  for (let y = 16; y <= 18; y++) { m[y][15] = T_PATH; m[y][16] = T_PATH; }
+  for (let x = 14; x <= 17; x++) { m[22][x] = T_PATH; m[23][x] = T_PATH; }
+  for (const cp of [[12,3],[19,3],[12,8],[19,8],[4,12],[9,12],[22,12],[27,12]])
+    if (m[cp[1]][cp[0]] === T_PATH) m[cp[1]][cp[0]] = T_HOUSE;
+  const patches = [
+    { x: 13, y: 5, w: 5, h: 3, pool: 'temple' },
+    { x: 4, y: 13, w: 5, h: 3, pool: 'temple' },
+    { x: 22, y: 13, w: 5, h: 3, pool: 'temple' },
+  ];
+  addPatches(m, patches);
+  return spokeBase('temple', 'gate', 'bottom',
+    [14 * TILE, 22.4 * TILE, 18 * TILE, 24 * TILE], [13 * TILE, 21 * TILE, 19 * TILE, 24 * TILE],
+    [15.5 * TILE, 22.9 * TILE], [15.5 * TILE, 2.6 * TILE], patches, {
+      g1: '#efe8d8', g2: '#e8e0cd', path: '#f8f3e6', sand: '#f0e6cc', water: '#bfe4f0',
+      tallBase: '#d4cba8', bush: '#c7bd96', bushTop: '#ded5b6',
+      tufts: ['#cec5a0', '#dbd2ae', '#e6debe'], canopy: ['#c6bd94', '#d2c9a2'],
+      canopyDk: ['#b2a77e', '#bdb289'], trunk: '#c0b48e', trunkDk: '#9c9070',
+      flowers: false, shrooms: false, voidBelow: true,
+    }, { map: m, waterPool: null, pond: null, sky: true, temple: true });
+}
+
 const AREAS = { hub: buildHub(), jungle: buildJungle(), village: buildVillage(), beach: buildBeach(), snow: buildSnow(),
-                skyway: buildSkyway(), shore: buildShore() };
+                skyway: buildSkyway(), shore: buildShore(),
+                ravine: buildRavine(), caverns: buildCaverns(),
+                terraces: buildTerraces(), temple: buildTemple() };
+// Elke doorgang moet ook echt begaanbaar zijn. addBorder zet een rand van bomen
+// of rots om de kaart; hier snijden we bij elk aanmeerpunt een opening, zodat
+// geen enkele poort per ongeluk dichtzit.
+for (const naam in AREAS) {
+  const a = AREAS[naam];
+  for (const po of a.portals) {
+    const tx = Math.floor(po.walk[0] / TILE), ty = Math.floor(po.walk[1] / TILE);
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const x = tx + dx, y = ty + dy;
+      if (x < 0 || y < 0 || x >= MW || y >= MH) continue;
+      const t = a.map[y][x];
+      if (t === T_TREE || t === T_ROCK || t === T_HOUSE || t === T_FENCE || t === T_SKY)
+        a.map[y][x] = T_PATH;
+    }
+  }
+}
 renderArea(AREAS.hub); renderArea(AREAS.jungle); renderArea(AREAS.village);
 renderArea(AREAS.beach); renderArea(AREAS.snow);
 renderArea(AREAS.skyway); renderArea(AREAS.shore);
+renderArea(AREAS.ravine); renderArea(AREAS.caverns);
+renderArea(AREAS.terraces); renderArea(AREAS.temple);
 let cur = AREAS.hub;
 
 function tileAt(px, py) {
