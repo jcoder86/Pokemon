@@ -865,120 +865,141 @@ const D = {
   // ---- lijn 2: vuur. Roomwit lijf met vlammen op de rug ---------------------
   vlamrug(g, S, t, m) {
     const c = '#f4e4c4', d = '#3f5a8a';
-    VE(g, d, -S * 0.44, S * 0.8, S * 0.22, S * 0.18); VE(g, d, S * 0.44, S * 0.8, S * 0.22, S * 0.18);
-    VE(g, d, 0, S * 0.16, S * 0.76, S * 0.52);                   // donkerblauwe rug
-    for (let i = 0; i < 5; i++) {                                // vlammetjes op de rug
-      const f = 1 + Math.sin(t * 7 + i) * 0.2;
-      const fx = -S * 0.44 + i * S * 0.22, fy = -S * 0.28;
-      E(g, 'rgba(255,122,31,0.35)', fx, fy, S * 0.11 * f, S * 0.2 * f);
-      E(g, '#ff7a1f', fx, fy, S * 0.075 * f, S * 0.15 * f);
-      E(g, '#ffd23d', fx, fy + S * 0.03, S * 0.04 * f, S * 0.09 * f);
+    VE(g, d, -S * 0.44, S * 0.82, S * 0.22, S * 0.18); VE(g, d, S * 0.44, S * 0.82, S * 0.22, S * 0.18);
+    VE(g, d, S * 0.06, S * 0.22, S * 0.72, S * 0.5);             // donkerblauwe rug
+    VE(g, c, S * 0.02, S * 0.42, S * 0.56, S * 0.34);            // romige buik
+    VE(g, c, -S * 0.34, -S * 0.12, S * 0.5, S * 0.38);           // kop met snuit naar links
+    VE(g, c, -S * 0.72, -S * 0.04, S * 0.22, S * 0.15);
+    HEAD(-S * 0.34, -S * 0.16, S * 0.46, S * 0.32, { muzzle: 0.2 });
+    EYES(g, t, m, 203, { sep: 0.38, y: -0.3, r: 0.22, iris: '#2c2c2c' });
+    E(g, '#c46a2a', -S * 0.9, -S * 0.04, S * 0.04, S * 0.034);
+    // De vlammen komen na de kop en steken duidelijk boven de rug uit; eerder
+    // werden ze door de kop overtekend en leken het oortjes.
+    for (let i = 0; i < 5; i++) {
+      const f = 1 + Math.sin(t * 7 + i * 0.9) * 0.22;
+      const fx = -S * 0.16 + i * S * 0.22, fy = -S * 0.5 - Math.abs(i - 2) * S * -0.04;
+      E(g, 'rgba(255,122,31,0.32)', fx, fy, S * 0.2 * f, S * 0.42 * f);
+      E(g, '#ff7a1f', fx, fy, S * 0.14 * f, S * 0.32 * f);
+      E(g, '#ffb627', fx, fy + S * 0.05, S * 0.09 * f, S * 0.21 * f);
+      E(g, '#ffe45c', fx, fy + S * 0.1, S * 0.05 * f, S * 0.12 * f);
     }
-    VE(g, c, 0, S * 0.36, S * 0.62, S * 0.4);                    // romige buik
-    RIM(g, 'rgba(255,244,214,0.6)', 0, S * 0.36, S * 0.58, S * 0.36, S * 0.05, 0.5, Math.PI - 0.3);
-    VE(g, c, -S * 0.02, -S * 0.16, S * 0.46, S * 0.34);          // langgerekte snuit
-    VE(g, c, -S * 0.36, -S * 0.1, S * 0.2, S * 0.16);
-    HEAD(-S * 0.02, -S * 0.2, S * 0.44, S * 0.3, { muzzle: 0.2 });
-    EYES(g, t, m, 203, { sep: 0.4, y: -0.28, r: 0.22, iris: '#2c2c2c' });
-    E(g, '#c46a2a', -S * 0.5, -S * 0.1, S * 0.035, S * 0.03);
   },
   vlamnek(g, S, t, m) {
     const c = '#f2e0bc', d = '#37507c';
-    VE(g, d, -S * 0.5, S * 0.82, S * 0.24, S * 0.2); VE(g, d, S * 0.5, S * 0.82, S * 0.24, S * 0.2);
-    VE(g, d, 0, S * 0.14, S * 0.8, S * 0.56);
+    VE(g, d, -S * 0.5, S * 0.84, S * 0.24, S * 0.2); VE(g, d, S * 0.5, S * 0.84, S * 0.24, S * 0.2);
+    VE(g, d, S * 0.08, S * 0.2, S * 0.78, S * 0.54);
+    VE(g, c, S * 0.04, S * 0.44, S * 0.6, S * 0.36);
+    VE(g, c, -S * 0.36, -S * 0.16, S * 0.54, S * 0.4);
+    VE(g, c, -S * 0.78, -S * 0.08, S * 0.24, S * 0.17);
+    HEAD(-S * 0.36, -S * 0.2, S * 0.5, S * 0.34, { muzzle: 0.2 });
+    EYES(g, t, m, 204, { sep: 0.38, y: -0.3, r: 0.21, iris: '#2c2c2c' });
+    E(g, '#c46a2a', -S * 0.98, -S * 0.08, S * 0.042, S * 0.036);
     for (let i = 0; i < 6; i++) {
-      const f = 1 + Math.sin(t * 7 + i * 0.8) * 0.22;
-      const fx = -S * 0.5 + i * S * 0.2, fy = -S * 0.34;
-      E(g, 'rgba(255,122,31,0.35)', fx, fy, S * 0.13 * f, S * 0.26 * f);
-      E(g, '#ff7a1f', fx, fy, S * 0.09 * f, S * 0.19 * f);
-      E(g, '#ffd23d', fx, fy + S * 0.04, S * 0.05 * f, S * 0.11 * f);
+      const f = 1 + Math.sin(t * 7 + i * 0.8) * 0.24;
+      const fx = -S * 0.2 + i * S * 0.22, fy = -S * 0.58;
+      E(g, 'rgba(255,122,31,0.32)', fx, fy, S * 0.22 * f, S * 0.48 * f);
+      E(g, '#ff7a1f', fx, fy, S * 0.15 * f, S * 0.36 * f);
+      E(g, '#ffb627', fx, fy + S * 0.06, S * 0.1 * f, S * 0.24 * f);
+      E(g, '#ffe45c', fx, fy + S * 0.12, S * 0.055, S * 0.13);
     }
-    VE(g, c, 0, S * 0.38, S * 0.66, S * 0.42);
-    RIM(g, 'rgba(255,244,214,0.6)', 0, S * 0.38, S * 0.62, S * 0.38, S * 0.05, 0.5, Math.PI - 0.3);
-    VE(g, c, -S * 0.02, -S * 0.2, S * 0.5, S * 0.36);
-    VE(g, c, -S * 0.4, -S * 0.14, S * 0.22, S * 0.17);
-    HEAD(-S * 0.02, -S * 0.24, S * 0.48, S * 0.32, { muzzle: 0.2 });
-    EYES(g, t, m, 204, { sep: 0.4, y: -0.28, r: 0.21, iris: '#2c2c2c' });
-    E(g, '#c46a2a', -S * 0.56, -S * 0.14, S * 0.038, S * 0.032);
   },
   vlamkraag(g, S, t, m) {
     const c = '#f0dcb4', d = '#2f4670';
-    VE(g, d, -S * 0.56, S * 0.84, S * 0.26, S * 0.22); VE(g, d, S * 0.56, S * 0.84, S * 0.26, S * 0.22);
-    VE(g, d, 0, S * 0.16, S * 0.88, S * 0.58);
-    for (let i = 0; i < 7; i++) {                                // brede vlammenkraag
-      const f = 1 + Math.sin(t * 6.5 + i * 0.7) * 0.24;
-      const a = -1.3 + i * 0.42;
-      const fx = Math.cos(a) * S * 0.62, fy = -S * 0.2 + Math.sin(a) * S * 0.2;
-      E(g, 'rgba(255,122,31,0.32)', fx, fy, S * 0.16 * f, S * 0.3 * f);
-      E(g, '#ff7a1f', fx, fy, S * 0.11 * f, S * 0.22 * f);
-      E(g, '#ffe45c', fx, fy + S * 0.05, S * 0.06 * f, S * 0.13 * f);
+    VE(g, d, -S * 0.56, S * 0.86, S * 0.26, S * 0.22); VE(g, d, S * 0.56, S * 0.86, S * 0.26, S * 0.22);
+    VE(g, d, S * 0.1, S * 0.22, S * 0.84, S * 0.56);
+    VE(g, c, S * 0.06, S * 0.46, S * 0.64, S * 0.38);
+    VE(g, c, -S * 0.38, -S * 0.2, S * 0.56, S * 0.42);
+    VE(g, c, -S * 0.82, -S * 0.12, S * 0.26, S * 0.19);
+    HEAD(-S * 0.38, -S * 0.24, S * 0.52, S * 0.36, { muzzle: 0.2 });
+    EYES(g, t, m, 205, { sep: 0.38, y: -0.3, r: 0.2, iris: '#2c2c2c' });
+    E(g, '#c46a2a', -S * 1.02, -S * 0.12, S * 0.045, S * 0.038);
+    // een brede kraag van vlammen die om de nek en over de rug staat
+    for (let i = 0; i < 8; i++) {
+      const f = 1 + Math.sin(t * 6.5 + i * 0.7) * 0.26;
+      const a = -1.5 + i * 0.34;
+      const fx = -S * 0.1 + Math.cos(a) * S * 0.5, fy = -S * 0.4 + Math.sin(a) * S * 0.28;
+      E(g, 'rgba(255,122,31,0.3)', fx, fy, S * 0.24 * f, S * 0.5 * f);
+      E(g, '#ff7a1f', fx, fy, S * 0.16 * f, S * 0.38 * f);
+      E(g, '#ffb627', fx, fy + S * 0.06, S * 0.11 * f, S * 0.25 * f);
+      E(g, '#ffe45c', fx, fy + S * 0.13, S * 0.06, S * 0.14);
     }
-    VE(g, c, 0, S * 0.4, S * 0.72, S * 0.44);
-    VE(g, c, -S * 0.02, -S * 0.24, S * 0.54, S * 0.38);
-    VE(g, c, -S * 0.44, -S * 0.18, S * 0.24, S * 0.18);
-    HEAD(-S * 0.02, -S * 0.28, S * 0.52, S * 0.34, { muzzle: 0.2 });
-    EYES(g, t, m, 205, { sep: 0.4, y: -0.28, r: 0.2, iris: '#2c2c2c' });
-    E(g, '#c46a2a', -S * 0.62, -S * 0.18, S * 0.04, S * 0.034);
   },
-
   // ---- lijn 3: water. Blauwe kaaiman met rode rugkam -----------------------
   bijtkaak(g, S, t, m) {
     const c = '#6fc2e8', d = '#4a9cc8';
-    VE(g, d, -S * 0.42, S * 0.84, S * 0.24, S * 0.18); VE(g, d, S * 0.42, S * 0.84, S * 0.24, S * 0.18);
-    g.save(); g.translate(S * 0.62, S * 0.5); g.rotate(Math.sin(t * 2.2) * 0.1);
-    VE(g, c, S * 0.3, -S * 0.06, S * 0.34, S * 0.16, -0.25);     // staart
+    VE(g, d, -S * 0.44, S * 0.86, S * 0.24, S * 0.18); VE(g, d, S * 0.44, S * 0.86, S * 0.24, S * 0.18);
+    g.save(); g.translate(S * 0.6, S * 0.5); g.rotate(Math.sin(t * 2.2) * 0.1);
+    VE(g, c, S * 0.3, -S * 0.06, S * 0.34, S * 0.17, -0.25);
     g.restore();
-    VE(g, c, 0, S * 0.3, S * 0.66, S * 0.52);
-    VE(g, '#e8f4fa', 0, S * 0.42, S * 0.42, S * 0.34);
-    for (let i = 0; i < 4; i++)                                  // rode rugkam
-      PG(g, '#e05a4a', [[-S * 0.3 + i * S * 0.2, -S * 0.02], [-S * 0.22 + i * S * 0.2, -S * 0.34], [-S * 0.14 + i * S * 0.2, -S * 0.02]]);
-    VE(g, c, 0, -S * 0.3, S * 0.5, S * 0.36);                    // kop
-    VE(g, c, S * 0.32, -S * 0.18, S * 0.34, S * 0.2);            // snuit vooruit
-    VE(g, '#e8f4fa', S * 0.38, -S * 0.12, S * 0.26, S * 0.1);
-    for (let i = 0; i < 5; i++)                                  // tandjes
-      PG(g, '#ffffff', [[S * 0.16 + i * S * 0.1, -S * 0.1], [S * 0.2 + i * S * 0.1, -S * 0.02], [S * 0.24 + i * S * 0.1, -S * 0.1]]);
-    HEAD(0, -S * 0.34, S * 0.48, S * 0.34, { muzzle: 0.24 });
-    EYES(g, t, m, 206, { sep: 0.42, y: -0.24, r: 0.22, iris: '#c04a3a' });
+    VE(g, c, S * 0.08, S * 0.34, S * 0.34, S * 0.5);                // lijf
+    VE(g, '#e8f4fa', S * 0.08, S * 0.46, S * 0.44, S * 0.32);
+    // rugkam: staat nu boven de ruglijn in plaats van erin
+    for (let i = 0; i < 4; i++)
+      PG(g, '#e05a4a', [[-S * 0.1 + i * S * 0.2, -S * 0.06], [-S * 0.02 + i * S * 0.2, -S * 0.44],
+                        [S * 0.06 + i * S * 0.2, -S * 0.06]]);
+    VE(g, c, -S * 0.3, -S * 0.14, S * 0.46, S * 0.36);            // kop
+    // snuit steekt duidelijk vooruit, met een donkere mondlijn en tanden
+    VE(g, c, -S * 0.74, -S * 0.02, S * 0.36, S * 0.19);
+    VE(g, '#e8f4fa', -S * 0.78, S * 0.02, S * 0.3, S * 0.1);
+    LN(g, 'rgba(40,90,120,0.6)', S * 0.035, [[-S * 1.06, S * 0.02], [-S * 0.4, S * 0.04]]);
+    for (let i = 0; i < 5; i++) {
+      PG(g, '#ffffff', [[-S * (0.98 - i * 0.11), S * 0.02], [-S * (0.94 - i * 0.11), S * 0.11],
+                        [-S * (0.9 - i * 0.11), S * 0.02]]);
+    }
+    E(g, '#2c4a60', -S * 1.02, -S * 0.06, S * 0.03, S * 0.026);
+    HEAD(-S * 0.3, -S * 0.2, S * 0.44, S * 0.32, { muzzle: 0.22 });
+    EYES(g, t, m, 206, { sep: 0.42, y: -0.28, r: 0.22, iris: '#c04a3a' });
   },
   bijtklauw(g, S, t, m) {
     const c = '#5fb6e0', d = '#3f8ebc';
-    VE(g, d, -S * 0.48, S * 0.86, S * 0.26, S * 0.2); VE(g, d, S * 0.48, S * 0.86, S * 0.26, S * 0.2);
-    g.save(); g.translate(S * 0.68, S * 0.52); g.rotate(Math.sin(t * 2.1) * 0.1);
-    VE(g, c, S * 0.34, -S * 0.08, S * 0.38, S * 0.18, -0.25);
+    VE(g, d, -S * 0.44, S * 0.86, S * 0.24, S * 0.18); VE(g, d, S * 0.44, S * 0.86, S * 0.24, S * 0.18);
+    g.save(); g.translate(S * 0.6, S * 0.5); g.rotate(Math.sin(t * 2.2) * 0.1);
+    VE(g, c, S * 0.3, -S * 0.06, S * 0.4, S * 0.17, -0.25);
     g.restore();
-    VE(g, c, 0, S * 0.32, S * 0.74, S * 0.56);
-    VE(g, '#e4f2fa', 0, S * 0.44, S * 0.48, S * 0.36);
+    VE(g, c, S * 0.08, S * 0.34, S * 0.4, S * 0.5);                // lijf
+    VE(g, '#e8f4fa', S * 0.08, S * 0.46, S * 0.44, S * 0.32);
+    // rugkam: staat nu boven de ruglijn in plaats van erin
     for (let i = 0; i < 5; i++)
-      PG(g, '#dc5244', [[-S * 0.36 + i * S * 0.19, -S * 0.04], [-S * 0.28 + i * S * 0.19, -S * 0.4], [-S * 0.2 + i * S * 0.19, -S * 0.04]]);
-    VE(g, c, 0, -S * 0.32, S * 0.54, S * 0.38);
-    VE(g, c, S * 0.36, -S * 0.2, S * 0.38, S * 0.22);
-    VE(g, '#e4f2fa', S * 0.42, -S * 0.14, S * 0.3, S * 0.11);
-    for (let i = 0; i < 6; i++)
-      PG(g, '#ffffff', [[S * 0.16 + i * S * 0.1, -S * 0.11], [S * 0.2 + i * S * 0.1, -S * 0.02], [S * 0.24 + i * S * 0.1, -S * 0.11]]);
-    HEAD(0, -S * 0.36, S * 0.52, S * 0.36, { muzzle: 0.24 });
-    EYES(g, t, m, 207, { sep: 0.42, y: -0.24, r: 0.21, iris: '#c04a3a' });
+      PG(g, '#e05a4a', [[-S * 0.1 + i * S * 0.2, -S * 0.06], [-S * 0.02 + i * S * 0.2, -S * 0.44],
+                        [S * 0.06 + i * S * 0.2, -S * 0.06]]);
+    VE(g, c, -S * 0.3, -S * 0.14, S * 0.46, S * 0.36);            // kop
+    // snuit steekt duidelijk vooruit, met een donkere mondlijn en tanden
+    VE(g, c, -S * 0.74, -S * 0.02, S * 0.36, S * 0.19);
+    VE(g, '#e8f4fa', -S * 0.78, S * 0.02, S * 0.3, S * 0.1);
+    LN(g, 'rgba(40,90,120,0.6)', S * 0.035, [[-S * 1.06, S * 0.02], [-S * 0.4, S * 0.04]]);
+    for (let i = 0; i < 6; i++) {
+      PG(g, '#ffffff', [[-S * (0.98 - i * 0.11), S * 0.02], [-S * (0.94 - i * 0.11), S * 0.11],
+                        [-S * (0.9 - i * 0.11), S * 0.02]]);
+    }
+    E(g, '#2c4a60', -S * 1.02, -S * 0.06, S * 0.03, S * 0.026);
+    HEAD(-S * 0.3, -S * 0.2, S * 0.44, S * 0.32, { muzzle: 0.22 });
+    EYES(g, t, m, 207, { sep: 0.42, y: -0.28, r: 0.22, iris: '#c04a3a' });
   },
   bijtkoning(g, S, t, m) {
     const c = '#52aad8', d = '#3480b0';
-    VE(g, d, -S * 0.54, S * 0.88, S * 0.3, S * 0.22); VE(g, d, S * 0.54, S * 0.88, S * 0.3, S * 0.22);
-    g.save(); g.translate(S * 0.74, S * 0.54); g.rotate(Math.sin(t * 2) * 0.09);
-    VE(g, c, S * 0.38, -S * 0.1, S * 0.44, S * 0.2, -0.25);
-    for (let i = 0; i < 3; i++)
-      PG(g, '#d44a3c', [[S * 0.14 + i * S * 0.2, -S * 0.16], [S * 0.22 + i * S * 0.2, -S * 0.42], [S * 0.3 + i * S * 0.2, -S * 0.16]]);
+    VE(g, d, -S * 0.44, S * 0.86, S * 0.24, S * 0.18); VE(g, d, S * 0.44, S * 0.86, S * 0.24, S * 0.18);
+    g.save(); g.translate(S * 0.6, S * 0.5); g.rotate(Math.sin(t * 2.2) * 0.1);
+    VE(g, c, S * 0.3, -S * 0.06, S * 0.46, S * 0.17, -0.25);
     g.restore();
-    VE(g, c, 0, S * 0.34, S * 0.84, S * 0.6);
-    VE(g, '#e0f0fa', 0, S * 0.46, S * 0.54, S * 0.38);
+    VE(g, c, S * 0.08, S * 0.34, S * 0.46, S * 0.5);                // lijf
+    VE(g, '#e8f4fa', S * 0.08, S * 0.46, S * 0.44, S * 0.32);
+    // rugkam: staat nu boven de ruglijn in plaats van erin
     for (let i = 0; i < 6; i++)
-      PG(g, '#d44a3c', [[-S * 0.42 + i * S * 0.18, -S * 0.06], [-S * 0.34 + i * S * 0.18, -S * 0.46], [-S * 0.26 + i * S * 0.18, -S * 0.06]]);
-    VE(g, c, 0, -S * 0.34, S * 0.58, S * 0.4);
-    VE(g, c, S * 0.4, -S * 0.22, S * 0.44, S * 0.24);
-    VE(g, '#e0f0fa', S * 0.46, -S * 0.15, S * 0.34, S * 0.12);
-    for (let i = 0; i < 7; i++)
-      PG(g, '#ffffff', [[S * 0.14 + i * S * 0.1, -S * 0.12], [S * 0.18 + i * S * 0.1, -S * 0.02], [S * 0.22 + i * S * 0.1, -S * 0.12]]);
-    HEAD(0, -S * 0.38, S * 0.56, S * 0.38, { muzzle: 0.24 });
-    EYES(g, t, m, 208, { sep: 0.42, y: -0.24, r: 0.2, iris: '#c04a3a' });
+      PG(g, '#e05a4a', [[-S * 0.1 + i * S * 0.2, -S * 0.06], [-S * 0.02 + i * S * 0.2, -S * 0.44],
+                        [S * 0.06 + i * S * 0.2, -S * 0.06]]);
+    VE(g, c, -S * 0.3, -S * 0.14, S * 0.46, S * 0.36);            // kop
+    // snuit steekt duidelijk vooruit, met een donkere mondlijn en tanden
+    VE(g, c, -S * 0.74, -S * 0.02, S * 0.36, S * 0.19);
+    VE(g, '#e8f4fa', -S * 0.78, S * 0.02, S * 0.3, S * 0.1);
+    LN(g, 'rgba(40,90,120,0.6)', S * 0.035, [[-S * 1.06, S * 0.02], [-S * 0.4, S * 0.04]]);
+    for (let i = 0; i < 7; i++) {
+      PG(g, '#ffffff', [[-S * (0.98 - i * 0.11), S * 0.02], [-S * (0.94 - i * 0.11), S * 0.11],
+                        [-S * (0.9 - i * 0.11), S * 0.02]]);
+    }
+    E(g, '#2c4a60', -S * 1.02, -S * 0.06, S * 0.03, S * 0.026);
+    HEAD(-S * 0.3, -S * 0.2, S * 0.44, S * 0.32, { muzzle: 0.22 });
+    EYES(g, t, m, 208, { sep: 0.42, y: -0.28, r: 0.22, iris: '#c04a3a' });
   },
-
   bulby(g, S, t, m) { // plant-dier met bol op de rug
     const c = '#6fc7a8', d = '#4da085';
     VE(g, d, -S * 0.72, S * 0.66, S * 0.28, S * 0.24); VE(g, d, S * 0.72, S * 0.66, S * 0.28, S * 0.24);
