@@ -5302,7 +5302,9 @@ const SPECIES = [
   { hp: 4, draw: 'trilobig',    type: 'rock',     pools: ['jwater'] },
   { hp: 4, draw: 'snekmid',     type: 'water',    pools: ['water'] },
   { hp: 5, draw: 'psycat',      type: 'psychic',  pools: ['jungle'] },
-  { hp: 5, draw: 'kittylegend', type: 'psychic',  pools: ['meadow'], fly: true },
+  // Alleen te vinden op de geheime plek, zie GEHEIM hieronder. Lege pools
+  // zorgt dat het nooit uit een gewone grasontmoeting komt.
+  { hp: 5, draw: 'kittylegend', type: 'psychic',  pools: [], fly: true },
   { hp: 3, draw: 'spikeblue2',  type: 'poison',   pools: ['meadow'] },
   { hp: 3, draw: 'spikepurp2',  type: 'poison',   pools: ['forest'] },
 ];
@@ -5350,7 +5352,7 @@ const POOLS = {
   birdie:['meadow'], birdmid:['meadow'], birdking:['forest'], ratty:['meadow','village'], sparrowy:['meadow'],
   spikeblue:['meadow'], spikepurp:['meadow'], puffball:['meadow','village'], weedie:['forest','jungle'],
   taddy:['water','bwater'], goldfish:['water','bwater'], splashking:['water','bwater','swater'],
-  foxy:['meadow','shore','ravine'], kittylegend:['meadow'],
+  foxy:['meadow','shore','ravine'],
   // jungle: donker bos, gif, spoken en vechters
   bloomback:['jungle'], flamewing:['jungle'], buzzbee:['jungle'], serpurple:['jungle'], cobrahood:['jungle'],
   spikeblue2:['jungle'], spikequeen:['jungle'], spikepurp2:['jungle'], spikeking:['jungle'],
@@ -5399,6 +5401,12 @@ SPECIES.forEach(s => { if (!s.world) s.world = 1; });
 // dus de balans verandert er niet door.
 function typeOf(sp, alt) { return (alt && sp.type2) ? sp.type2 : sp.type; }
 // zeldzaamheid: kleine wezens kom je vaak tegen, imposante zelden, legendes bijna nooit
+// Het mythische katje woont op een vaste geheime plek: het bovenste plein van
+// de Wolkentempel. Wie daar gaat staan heeft elke keer een kleine kans dat het
+// verschijnt. Er glinstert altijd iets op die tegel, zodat een kind dat er
+// toevallig langsloopt ziet dat daar iets bijzonders is - zonder tekst.
+const GEHEIM = { area: 'temple', tx: 15, ty: 4, kans: 0.14, draw: 'kittylegend' };
+
 const LEGENDARY = { icebird: 1, voltbird: 1, firebird: 1, psycat: 1, kittylegend: 1, dragonwing: 1, stonewing: 1 };
 // Tweede aanval: dezelfde aanval als de eerste, maar dan in bulk en van boven
 // naar beneden. Twee hartjes schade, snellere mikring, geen dubbele-klap-bonus.
@@ -8660,11 +8668,30 @@ function pickSpecies(pool) {
   for (let k = 0; k < ids.length; k++) { r -= ws[k]; if (r <= 0) return ids[k]; }
   return ids[ids.length - 1];
 }
-function startEncounter(pool) {
+// Staat de speler op de geheime tegel? Dan een kleine kans op het mythische
+// katje. Heb je het al, dan verschijnt het niet nog eens: er is er maar een.
+function opGeheimePlek() {
+  if (G.area !== GEHEIM.area) return false;
+  const pl = G.player;
+  return Math.floor(pl.x / TILE) === GEHEIM.tx && Math.floor(pl.y / TILE) === GEHEIM.ty;
+}
+function geheimAl() {
+  const i = IDX_BY_NAME[GEHEIM.draw];
+  return i === undefined || G.caught[i] > 0;
+}
+function geheimeVangst() {
+  if (!opGeheimePlek() || geheimAl()) return false;
+  if (G.encounterCooldown > 0 || Math.random() >= GEHEIM.kans) return false;
+  G.encounterCooldown = 3.5;
+  startEncounter(null, IDX_BY_NAME[GEHEIM.draw]);
+  return true;
+}
+
+function startEncounter(pool, opgelegd) {
   if (isAsleep(G.active)) {                 // nooit met een slaper het veld in
     for (let i = 0; i < NSPECIES; i++) if (G.caught[i] > 0 && !isAsleep(i)) { G.active = i; break; }
   }
-  B.id = pickSpecies(pool);
+  B.id = (opgelegd === undefined || opgelegd < 0) ? pickSpecies(pool) : opgelegd;
   const hb = DF().hp;                        // tegenstanders zijn taaier op hoger niveau
   B.max = (SPECIES[B.id].hp || 3) + hb[0] + Math.floor(Math.random() * (hb[1] - hb[0] + 1));
   B.hearts = B.max;
@@ -9596,7 +9623,8 @@ function updateWorld(dt) {
       const tileKey = Math.floor(pl.x / TILE) + ',' + Math.floor(pl.y / TILE);
       if (tileKey !== pl.lastTile) {
         pl.lastTile = tileKey;
-        if (cur.fly) { /* in de lucht geen ontmoetingen: puur sfeer */ }
+        if (geheimeVangst()) { /* het mythische katje gaat voor */ }
+        else if (cur.fly) { /* in de lucht geen ontmoetingen: puur sfeer */ }
         else if (!G.onBoat && tileAt(pl.x, pl.y) === T_TALL) {
           pl.grassSteps++;
           const force = G.caughtCount <= 1 && pl.grassSteps >= 3;
@@ -9917,6 +9945,39 @@ function tekenSchelpen(g) {
   }
 }
 
+
+// Een zachte glinstering op de geheime tegel. Geen tekst en geen pijl: een kind
+// dat erlangs loopt ziet dat daar iets is en gaat er vanzelf op staan. Zodra
+// het katje gevangen is dooft de glinstering, want er valt niets meer te halen.
+function tekenGeheimeHint(g) {
+  if (G.area !== GEHEIM.area || geheimAl()) return;
+  const cx = GEHEIM.tx * TILE + TILE / 2, cy = GEHEIM.ty * TILE + TILE / 2;
+  const t = G.t;
+  g.save();
+  const adem = 0.5 + 0.5 * Math.sin(t * 1.6);
+  const gr = g.createRadialGradient(cx, cy, 0, cx, cy, TILE * 1.1);
+  gr.addColorStop(0, 'rgba(190,90,220,' + (0.30 + 0.20 * adem) + ')');
+  gr.addColorStop(0.55, 'rgba(150,80,230,' + (0.16 + 0.12 * adem) + ')');
+  gr.addColorStop(1, 'rgba(150,80,230,0)');
+  g.fillStyle = gr;
+  g.beginPath(); g.arc(cx, cy, TILE * 1.1, 0, TAU); g.fill();
+  for (let i = 0; i < 5; i++) {                       // rondzwevende vonkjes
+    const a = t * 0.9 + i * (TAU / 5);
+    const r = TILE * (0.34 + 0.16 * Math.sin(t * 1.3 + i));
+    const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r * 0.6 - Math.sin(t * 2 + i) * 4;
+    const fel = 0.45 + 0.45 * Math.sin(t * 3 + i * 1.7);
+    const d = 2.2 + fel * 2.2;
+    g.fillStyle = 'rgba(255,196,40,' + (0.55 + 0.45 * fel) + ')';
+    g.beginPath();                                    // vierpuntige fonkeling
+    g.moveTo(x, y - d * 2.2); g.lineTo(x + d * 0.55, y - d * 0.55);
+    g.lineTo(x + d * 2.2, y); g.lineTo(x + d * 0.55, y + d * 0.55);
+    g.lineTo(x, y + d * 2.2); g.lineTo(x - d * 0.55, y + d * 0.55);
+    g.lineTo(x - d * 2.2, y); g.lineTo(x - d * 0.55, y - d * 0.55);
+    g.closePath(); g.fill();
+  }
+  g.restore();
+}
+
 function drawWorld(g) {
   if (cur.sky) tekenLuchtAchter(g);                     // zee, wolkendek en eilandjes eerst
   g.drawImage(cur.world, 0, 0, VW, VH);
@@ -10022,6 +10083,7 @@ function drawWorld(g) {
   }
   if (cur.sky) tekenLuchtVoor(g);                       // slierten over het schip heen
   if (cur.coast) tekenKustVoor(g);                      // waterval en nevel over alles heen
+  tekenGeheimeHint(g);                                  // glinstering op de geheime tegel
   drawParticles(g);
   drawHeartFx(g);
 }
