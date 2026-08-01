@@ -5049,7 +5049,7 @@ const POOLS = {
   birdie:['meadow'], birdmid:['meadow'], birdking:['forest'], ratty:['meadow','village'], sparrowy:['meadow'],
   spikeblue:['meadow'], spikepurp:['meadow'], puffball:['meadow','village'], weedie:['forest','jungle'],
   taddy:['water','bwater'], goldfish:['water','bwater'], splashking:['water','bwater','swater'],
-  foxy:['meadow'], kittylegend:['meadow'],
+  foxy:['meadow','shore','ravine'], kittylegend:['meadow'],
   // jungle: donker bos, gif, spoken en vechters
   bloomback:['jungle'], flamewing:['jungle'], buzzbee:['jungle'], serpurple:['jungle'], cobrahood:['jungle'],
   spikeblue2:['jungle'], spikequeen:['jungle'], spikepurp2:['jungle'], spikeking:['jungle'],
@@ -5083,8 +5083,20 @@ const POOLS = {
   voltbird:['snow'], snek:['swater'], snekmid:['swater'], dragonwing:['snow'],
 };
 SPECIES.forEach(s => { if (POOLS[s.draw]) s.pools = POOLS[s.draw]; });
+// De vossenfamilie loopt door in wereld 2: de vier die al bestonden zijn daar
+// ook te vinden, zonder dat ze hun plek of nummer in wereld 1 kwijtraken.
+const VOS_W2 = { foxy: ['shore', 'ravine'], foxwater: ['shore'], foxvolt: ['terraces'], foxfire: ['terraces'] };
+SPECIES.forEach(function (sp) {
+  const extra = VOS_W2[sp.draw];
+  if (!extra) return;
+  sp.pools = (sp.pools || []).concat(extra.filter(function (q) { return sp.pools.indexOf(q) < 0; }));
+});
 // Alles wat hierboven staat hoort bij wereld 1; wereld 2 zet zijn eigen vlag.
 SPECIES.forEach(s => { if (!s.world) s.world = 1; });
+// Een wezen mag een tweede type hebben. Dat is puur uiterlijk: bij een aanval
+// wisselt het effect af tussen beide types. Er is geen effectiviteitstabel,
+// dus de balans verandert er niet door.
+function typeOf(sp, alt) { return (alt && sp.type2) ? sp.type2 : sp.type; }
 // zeldzaamheid: kleine wezens kom je vaak tegen, imposante zelden, legendes bijna nooit
 const LEGENDARY = { icebird: 1, voltbird: 1, firebird: 1, psycat: 1, kittylegend: 1, dragonwing: 1, stonewing: 1 };
 // Tweede aanval: dezelfde aanval als de eerste, maar dan in bulk en van boven
@@ -5135,7 +5147,8 @@ const TYPECOL = { water: '#58b6ff', fire: '#ff7a1f', grass: '#6fc750', electric:
                   bug: '#9adb4f', rock: '#a8927a', ghost: '#a06ae0', fairy: '#ff9ec6', psychic: '#e070c0',
                   poison: '#9a5fc8', normal: '#ffd23d',
                   // wereld 2 brengt twee nieuwe types mee
-                  dark: '#5a4a6e', steel: '#9fb4c8' };
+                  dark: '#5a4a6e', steel: '#9fb4c8',
+                  ice: '#a8e4f4', fight: '#e0704a' };
 
 // scratch-canvas: alle wezentjes krijgen hier een licht/schaduw-pass en evt. raak-flits
 const scr = document.createElement('canvas'); scr.width = 960; scr.height = 960;
@@ -8712,6 +8725,24 @@ function fxToken(g, type, x, y, s, t, i) {
       ARC(g, 'rgba(224,112,192,0.85)', x, y, s * 1.15, 0, TAU, s * 0.34);
       E(g, 'rgba(255,190,240,0.6)', x, y, s * 0.5, s * 0.5);
       break;
+    case 'ice': {
+      g.save(); g.translate(x, y); g.rotate(t * 2 + i);
+      g.fillStyle = '#dff4ff';
+      for (let k = 0; k < 3; k++) {
+        g.save(); g.rotate(k * Math.PI / 3);
+        g.fillRect(-s * 0.12, -s * 1.1, s * 0.24, s * 2.2);
+        g.restore();
+      }
+      E(g, 'rgba(255,255,255,0.8)', 0, 0, s * 0.4, s * 0.4);
+      g.restore();
+      break;
+    }
+    case 'fight':
+      E(g, 'rgba(224,112,74,0.4)', x, y, s * 1.4, s * 1.4);
+      E(g, '#e0704a', x, y, s * 0.9, s * 0.8);
+      E(g, '#f4a88a', x - s * 0.28, y - s * 0.26, s * 0.3, s * 0.26);
+      ARC(g, 'rgba(140,50,26,0.6)', x, y, s * 0.9, 0.4, Math.PI - 0.4, s * 0.16);
+      break;
     case 'dark':
       E(g, 'rgba(40,28,58,0.55)', x, y, s * 1.5, s * 1.5);
       E(g, '#4a3a62', x, y, s * 0.95, s * 0.95);
@@ -9019,8 +9050,9 @@ function drawBattleScene(g) {
   // aanval-effect onderweg
   if (B.phase === 'pAtk' && B.pt >= 0.22 && B.pt <= 0.62) {
     const prog = clamp((B.pt - 0.22) / 0.38, 0, 1);
-    if (B.special) drawFxBig(g, SPECIES[G.active].type, PC.x + 70, PC.y - 30, WILD.x, WILD.y, prog, G.t);
-    else drawFx(g, SPECIES[G.active].type, PC.x + 70, PC.y - 30, WILD.x, WILD.y, prog, G.t);
+    const tp = typeOf(SPECIES[G.active], Math.floor(G.t * 0.7) % 2 === 1);
+    if (B.special) drawFxBig(g, tp, PC.x + 70, PC.y - 30, WILD.x, WILD.y, prog, G.t);
+    else drawFx(g, tp, PC.x + 70, PC.y - 30, WILD.x, WILD.y, prog, G.t);
   }
   if (B.special && B.phase === 'pAtk' && B.pt > 0.6 && B.pt < 0.95) {   // inslag-flits
     const k = 1 - (B.pt - 0.6) / 0.35;
