@@ -1153,6 +1153,399 @@ const D = {
     g.restore();
   },
 
+
+  // ================= wereld 2, tweede blok van twintig ===================
+
+  // ---- Kristalkust --------------------------------------------------------
+  otterkiezel(g, S, t, m) {
+    const c = '#9a7a5a', d = '#7a5c40', buik = '#e0cbb0';
+    g.save(); g.translate(S * 0.5, S * 0.56); g.rotate(Math.sin(t * 2) * 0.2);
+    LN(g, d, S * 0.13, [[0, 0], [S * 0.36, S * 0.06], [S * 0.6, -S * 0.1]]);
+    g.restore();
+    for (const sg of [-1, 1]) VE(g, d, sg * S * 0.24, S * 0.82, S * 0.15, S * 0.11);
+    VE(g, c, 0, S * 0.34, S * 0.42, S * 0.42);
+    VE(g, buik, 0, S * 0.38, S * 0.26, S * 0.3);
+    for (const sg of [-1, 1])                                       // pootjes om de kiezel
+      VE(g, c, sg * S * 0.26, S * 0.24, S * 0.11, S * 0.16, sg * 0.5);
+    VE(g, '#9aa8b0', 0, S * 0.16, S * 0.19, S * 0.16);              // kiezel op de buik
+    VE(g, 'rgba(255,255,255,0.4)', -S * 0.05, S * 0.11, S * 0.08, S * 0.05);
+    for (const sg of [-1, 1]) E(g, d, sg * S * 0.26, -S * 0.44, S * 0.1, S * 0.09);
+    VE(g, c, 0, -S * 0.26, S * 0.34, S * 0.29);
+    VE(g, buik, 0, -S * 0.14, S * 0.19, S * 0.13);
+    HEAD(0, -S * 0.28, S * 0.33, S * 0.28, { muzzle: 0.36 });
+    EYES(g, t, m, 270, { sep: 0.46, y: -0.16, r: 0.2, iris: '#3a2a1a' });
+    E(g, '#2c2018', 0, -S * 0.14, S * 0.055, S * 0.04);
+  },
+  koraalkop(g, S, t, m) {
+    const c = '#ff8fa8', d = '#e06a86';
+    for (let i = 0; i < 5; i++) {                                   // koraaltakken
+      const a = -1.9 + i * 0.72;
+      g.save(); g.translate(Math.cos(a) * S * 0.28, -S * 0.1 + Math.sin(a) * S * 0.2); g.rotate(a + 1.57);
+      LN(g, d, S * 0.11, [[0, 0], [0, -S * 0.42]]);
+      VE(g, c, 0, -S * 0.46, S * 0.11, S * 0.13);
+      VE(g, c, -S * 0.1, -S * 0.3, S * 0.08, S * 0.09);
+      g.restore();
+    }
+    VE(g, c, 0, S * 0.42, S * 0.46, S * 0.38);                      // voetstuk
+    for (let i = 0; i < 6; i++)
+      E(g, 'rgba(255,255,255,0.35)', -S * 0.28 + i * S * 0.11, S * 0.5 + Math.sin(i * 2) * S * 0.1,
+        S * 0.05, S * 0.05);
+    HEAD(0, S * 0.3, S * 0.44, S * 0.32, { muzzle: 0.25 });
+    EYES(g, t, m, 271, { sep: 0.44, y: -0.12, r: 0.21, iris: '#8a2a4a' });
+  },
+  bolvis(g, S, t, m) {
+    const bol = 0.86 + 0.16 * Math.sin(t * 1.8);
+    const c = '#f0c05a', d = '#d8a038';
+    for (let i = 0; i < 16; i++) {                                  // stekels rondom
+      const a = i * (TAU / 16);
+      PG(g, d, [[Math.cos(a - 0.14) * S * 0.44 * bol, S * 0.14 + Math.sin(a - 0.14) * S * 0.42 * bol],
+                [Math.cos(a) * S * 0.72 * bol, S * 0.14 + Math.sin(a) * S * 0.68 * bol],
+                [Math.cos(a + 0.14) * S * 0.44 * bol, S * 0.14 + Math.sin(a + 0.14) * S * 0.42 * bol]]);
+    }
+    VE(g, c, 0, S * 0.14, S * 0.48 * bol, S * 0.45 * bol);
+    VE(g, '#f8e0a0', 0, S * 0.28 * bol, S * 0.3 * bol, S * 0.2 * bol);
+    for (const sg of [-1, 1])                                       // vinnetjes
+      VE(g, d, sg * S * 0.5 * bol, S * 0.26, S * 0.12, S * 0.09, sg * 0.4);
+    HEAD(0, S * 0.1, S * 0.44, S * 0.38, { muzzle: 0.34 });
+    EYES(g, t, m, 272, { sep: 0.48, y: -0.12, r: 0.23, iris: '#4a3a10' });
+    LN(g, '#8a6a20', S * 0.035, [[-S * 0.09, S * 0.26], [S * 0.09, S * 0.26]]);
+  },
+  heremiet(g, S, t, m) {
+    const sch = '#c8a878', d = '#a08050', lijf = '#e0704a';
+    for (const sg of [-1, 1]) {                                     // pootjes
+      LN(g, lijf, S * 0.06, [[sg * S * 0.16, S * 0.66], [sg * S * 0.34, S * 0.86]]);
+      LN(g, lijf, S * 0.06, [[sg * S * 0.06, S * 0.68], [sg * S * 0.18, S * 0.9]]);
+    }
+    for (let i = 7; i >= 0; i--) {                                  // spiraalhuis
+      const f = i / 7, r = S * (0.12 + f * 0.36);
+      VE(g, i % 2 ? sch : d, S * 0.24 + Math.sin(f * 3.4) * S * 0.14, S * 0.16 - f * S * 0.1, r, r * 0.88);
+    }
+    for (const sg of [-1, 1]) {                                     // scharen
+      g.save(); g.translate(-S * 0.34 + sg * S * 0.16, S * 0.36 + sg * S * 0.14);
+      g.rotate(sg * (0.4 + Math.sin(t * 3.4) * 0.2));
+      VE(g, lijf, 0, 0, S * 0.14, S * 0.11);
+      PG(g, lijf, [[-S * 0.02, -S * 0.1], [-S * 0.24, -S * 0.18], [-S * 0.14, S * 0.0]]);
+      g.restore();
+    }
+    VE(g, lijf, -S * 0.3, S * 0.34, S * 0.24, S * 0.2);
+    HEAD(-S * 0.3, S * 0.32, S * 0.23, S * 0.19, { muzzle: 0.28 });
+    EYES(g, t, m, 273, { sep: 0.5, y: -0.16, r: 0.19, iris: '#3a1a10' });
+  },
+
+  // ---- Junglekloof --------------------------------------------------------
+  slingeraap(g, S, t, m) {
+    const c = '#b08050', d = '#8a6038', gez = '#f0d0a8';
+    g.save(); g.translate(S * 0.4, S * 0.3); g.rotate(Math.sin(t * 1.8) * 0.3);
+    g.strokeStyle = d; g.lineWidth = S * 0.07; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(0, 0);
+    g.bezierCurveTo(S * 0.5, S * 0.1, S * 0.6, -S * 0.4, S * 0.3, -S * 0.5);
+    g.stroke(); g.restore();
+    for (const sg of [-1, 1]) VE(g, d, sg * S * 0.24, S * 0.8, S * 0.14, S * 0.12);
+    for (const sg of [-1, 1]) {                                     // slingerarmen
+      g.save(); g.translate(sg * S * 0.4, S * 0.24); g.rotate(sg * (-0.5 + Math.sin(t * 2.6) * 0.3));
+      VE(g, c, 0, S * 0.1, S * 0.1, S * 0.26); VE(g, d, 0, S * 0.3, S * 0.11, S * 0.09);
+      g.restore();
+    }
+    VE(g, c, 0, S * 0.34, S * 0.38, S * 0.36);
+    VE(g, gez, 0, S * 0.38, S * 0.22, S * 0.24);
+    for (const sg of [-1, 1]) E(g, c, sg * S * 0.36, -S * 0.24, S * 0.14, S * 0.15);   // flaporen
+    VE(g, c, 0, -S * 0.24, S * 0.34, S * 0.3);
+    VE(g, gez, 0, -S * 0.16, S * 0.24, S * 0.2);
+    HEAD(0, -S * 0.26, S * 0.33, S * 0.29, { muzzle: 0.34 });
+    EYES(g, t, m, 274, { sep: 0.46, y: -0.16, r: 0.2, iris: '#3a2410' });
+    E(g, '#8a5a3a', 0, -S * 0.1, S * 0.06, S * 0.045);
+  },
+  bladkikker(g, S, t, m) {
+    const c = '#7ac85a', d = '#5aa83a', buik = '#d8f0a8';
+    for (const sg of [-1, 1]) {                                     // gehurkte springpoten
+      VE(g, d, sg * S * 0.44, S * 0.5, S * 0.16, S * 0.24, sg * 0.4);
+      VE(g, d, sg * S * 0.46, S * 0.8, S * 0.18, S * 0.1);
+      for (let i = -1; i <= 1; i++) E(g, '#f0d060', sg * S * (0.56 + i * 0.02), S * 0.86 + i * S * 0.06, S * 0.05, S * 0.045);
+    }
+    for (const sg of [-1, 1]) { VE(g, c, sg * S * 0.2, S * 0.62, S * 0.09, S * 0.18);
+      for (let i = -1; i <= 1; i++) E(g, '#f0d060', sg * S * (0.2 + i * 0.06), S * 0.8, S * 0.05, S * 0.045); }
+    VE(g, c, 0, S * 0.3, S * 0.46, S * 0.36);
+    VE(g, buik, 0, S * 0.38, S * 0.3, S * 0.22);
+    VE(g, c, 0, -S * 0.16, S * 0.44, S * 0.3);                      // brede platte kop
+    for (const sg of [-1, 1]) {                                     // bolle ogen bovenop
+      E(g, c, sg * S * 0.26, -S * 0.4, S * 0.17, S * 0.16);
+    }
+    HEAD(0, -S * 0.3, S * 0.44, S * 0.26, { muzzle: 0.5 });
+    EYES(g, t, m, 275, { sep: 0.6, y: -0.24, r: 0.22, iris: '#c8a020' });
+    LN(g, '#3a7a24', S * 0.04, [[-S * 0.22, -S * 0.06], [0, S * 0.0], [S * 0.22, -S * 0.06]]);
+    D.katBlaadje(g, S, 0, -S * 0.62, 0.8, 0.1);
+  },
+  paddestoelpop(g, S, t, m) {
+    const hoed = '#d85a5a', stip = '#f8f0e0', steel = '#f0e4d0';
+    for (const sg of [-1, 1]) VE(g, '#d8c8b0', sg * S * 0.2, S * 0.82, S * 0.13, S * 0.1);
+    VE(g, steel, 0, S * 0.42, S * 0.28, S * 0.36);                  // steel
+    VE(g, '#e8dcc4', 0, S * 0.12, S * 0.32, S * 0.12);              // kraagje
+    g.beginPath();                                                  // hoed
+    g.moveTo(-S * 0.62, S * 0.04);
+    g.bezierCurveTo(-S * 0.58, -S * 0.62, S * 0.58, -S * 0.62, S * 0.62, S * 0.04);
+    g.closePath(); g.fillStyle = hoed; g.fill();
+    for (let i = 0; i < 5; i++)                                     // stippen
+      E(g, stip, -S * 0.4 + i * S * 0.2, -S * 0.2 - Math.abs(i - 2) * S * -0.08, S * 0.09, S * 0.075);
+    HEAD(0, S * 0.36, S * 0.3, S * 0.3, { muzzle: 0.3 });
+    EYES(g, t, m, 276, { sep: 0.5, y: -0.1, r: 0.22, iris: '#6a4a3a' });
+  },
+  kameleonblad(g, S, t, m) {
+    const c = '#8ac86a', d = '#6aa84a';
+    g.save(); g.translate(S * 0.42, S * 0.42);                      // opgerolde staart
+    g.strokeStyle = d; g.lineWidth = S * 0.09; g.lineCap = 'round';
+    g.beginPath();
+    for (let i = 0; i <= 20; i++) { const a = i / 20 * 5.4, r = S * (0.3 - i / 20 * 0.24);
+      const px = Math.cos(a) * r, py = Math.sin(a) * r;
+      if (i === 0) g.moveTo(px, py); else g.lineTo(px, py); }
+    g.stroke(); g.restore();
+    for (const sg of [-1, 1]) { VE(g, d, sg * S * 0.34, S * 0.62, S * 0.1, S * 0.22, sg * 0.3);
+      VE(g, d, sg * S * 0.4, S * 0.82, S * 0.12, S * 0.09); }
+    VE(g, c, 0, S * 0.3, S * 0.44, S * 0.34);
+    for (let i = 0; i < 5; i++)                                     // rugkam
+      PG(g, d, [[-S * 0.28 + i * S * 0.14, S * 0.02], [-S * 0.24 + i * S * 0.14, -S * 0.16],
+                [-S * 0.18 + i * S * 0.14, S * 0.02]]);
+    PG(g, d, [[-S * 0.1, -S * 0.4], [S * 0.34, -S * 0.72], [S * 0.2, -S * 0.24]]);   // helmkam
+    VE(g, c, 0, -S * 0.26, S * 0.38, S * 0.3);
+    HEAD(0, -S * 0.28, S * 0.36, S * 0.28, { muzzle: 0.4 });
+    EYES(g, t, m, 277, { sep: 0.54, y: -0.1, r: 0.23, iris: '#d8a020' });
+    LN(g, '#3a6a24', S * 0.035, [[-S * 0.2, -S * 0.12], [S * 0.2, -S * 0.12]]);
+  },
+
+  // ---- Grotten ------------------------------------------------------------
+  rotsgolem(g, S, t, m) {
+    const c = '#8a8078', d = '#6a625c', licht = '#a89e94';
+    for (const sg of [-1, 1]) {                                     // zware blokpoten
+      PG(g, d, [[sg * S * 0.12, S * 0.5], [sg * S * 0.46, S * 0.5], [sg * S * 0.5, S * 0.94], [sg * S * 0.1, S * 0.94]]);
+    }
+    for (const sg of [-1, 1]) {                                     // blokarmen
+      g.save(); g.translate(sg * S * 0.56, S * 0.16); g.rotate(sg * Math.sin(t * 2.4) * 0.14);
+      PG(g, c, [[-S * 0.14, -S * 0.16], [S * 0.14, -S * 0.16], [S * 0.17, S * 0.3], [-S * 0.17, S * 0.3]]);
+      PG(g, d, [[-S * 0.18, S * 0.26], [S * 0.18, S * 0.26], [S * 0.2, S * 0.5], [-S * 0.2, S * 0.5]]);
+      g.restore();
+    }
+    PG(g, c, [[-S * 0.44, -S * 0.28], [S * 0.44, -S * 0.28], [S * 0.5, S * 0.54], [-S * 0.5, S * 0.54]]);
+    for (let i = 0; i < 3; i++)                                     // barsten
+      LN(g, d, S * 0.035, [[-S * 0.3 + i * S * 0.3, -S * 0.2], [-S * 0.22 + i * S * 0.3, S * 0.44]]);
+    PG(g, licht, [[-S * 0.34, -S * 0.66], [S * 0.34, -S * 0.66], [S * 0.38, -S * 0.2], [-S * 0.38, -S * 0.2]]);
+    HEAD(0, -S * 0.44, S * 0.36, S * 0.24, { muzzle: 0.2 });
+    EYES(g, t, m, 278, { sep: 0.5, y: -0.06, r: 0.2, iris: '#ffcc44' });
+  },
+  lantaarnspook(g, S, t, m) {
+    const zw = Math.sin(t * 1.6) * S * 0.06;
+    const puls = 0.5 + 0.5 * Math.sin(t * 2.4);
+    E(g, 'rgba(255,190,80,' + (0.14 + 0.12 * puls) + ')', 0, S * 0.1 + zw, S * 0.9, S * 0.9);
+    LN(g, '#5a4a3a', S * 0.05, [[0, -S * 0.86 + zw], [0, -S * 0.56 + zw]]);
+    ARC(g, '#5a4a3a', 0, -S * 0.9 + zw, S * 0.09, 0, TAU, S * 0.05);
+    PG(g, '#4a3e30', [[-S * 0.3, -S * 0.56 + zw], [S * 0.3, -S * 0.56 + zw],
+                      [S * 0.22, -S * 0.44 + zw], [-S * 0.22, -S * 0.44 + zw]]);   // kapje
+    PG(g, 'rgba(255,205,110,0.9)', [[-S * 0.34, S * 0.44 + zw], [S * 0.34, S * 0.44 + zw],
+                                     [S * 0.26, -S * 0.44 + zw], [-S * 0.26, -S * 0.44 + zw]]);
+    for (const sg of [-1, 1])                                       // hoekstijlen
+      LN(g, '#4a3e30', S * 0.04, [[sg * S * 0.3, S * 0.44 + zw], [sg * S * 0.24, -S * 0.44 + zw]]);
+    PG(g, '#4a3e30', [[-S * 0.38, S * 0.44 + zw], [S * 0.38, S * 0.44 + zw],
+                      [S * 0.3, S * 0.58 + zw], [-S * 0.3, S * 0.58 + zw]]);
+    D.vlamPluk(g, S, 0, S * 0.3 + zw, 0.5, t, false);               // vlammetje binnenin
+    HEAD(0, -S * 0.02 + zw, S * 0.3, S * 0.3, { muzzle: 0.2 });
+    EYES(g, t, m, 279, { sep: 0.5, y: -0.1, r: 0.2, iris: '#3a2a10' });
+  },
+  gravelworm(g, S, t, m) {
+    const c = '#b09878', d = '#8a7458', boor = '#e0d0b0';
+    for (let i = 7; i >= 1; i--) {                                  // segmenten, dikker naar voren
+      const f = i / 7, a = 0.5 + f * 1.9;
+      VE(g, i % 2 ? c : d, Math.cos(a) * S * 0.52, S * 0.56 - Math.sin(a) * S * 0.5,
+        S * (0.3 - f * 0.12), S * (0.26 - f * 0.1));
+      LN(g, 'rgba(110,92,68,0.5)', S * 0.02,
+        [[Math.cos(a) * S * 0.52, S * 0.56 - Math.sin(a) * S * 0.5 - S * 0.18],
+         [Math.cos(a) * S * 0.52, S * 0.56 - Math.sin(a) * S * 0.5 + S * 0.18]]);
+    }
+    const kx = Math.cos(0.5) * S * 0.52, ky = S * 0.56 - Math.sin(0.5) * S * 0.5;
+    for (let i = 0; i < 8; i++) {                                   // boortanden rondom de kop
+      const a = i * (TAU / 8) + Math.sin(t * 3) * 0.3;
+      PG(g, boor, [[kx + Math.cos(a - 0.3) * S * 0.26, ky + Math.sin(a - 0.3) * S * 0.24],
+                   [kx + Math.cos(a) * S * 0.46, ky + Math.sin(a) * S * 0.42],
+                   [kx + Math.cos(a + 0.3) * S * 0.26, ky + Math.sin(a + 0.3) * S * 0.24]]);
+    }
+    VE(g, c, kx, ky, S * 0.32, S * 0.28);
+    ARC(g, d, kx, ky, S * 0.22, 0, TAU, S * 0.04);                  // ring om de bek
+    HEAD(kx, ky, S * 0.31, S * 0.27, { muzzle: 0.3 });
+    EYES(g, t, m, 280, { sep: 0.48, y: -0.14, r: 0.2, iris: '#4a3418' });
+  },
+  spinweb(g, S, t, m) {
+    const c = '#4a3a52', d = '#33283a', mrk = '#e8c84a';
+    for (const sg of [-1, 1]) for (let i = 0; i < 4; i++) {         // acht poten
+      const h = S * (0.3 + i * 0.12);
+      LN(g, d, S * 0.045, [[sg * S * 0.2, S * 0.3], [sg * (S * 0.5 + i * S * 0.05), S * 0.1 + i * S * 0.12],
+                           [sg * (S * 0.62 + i * S * 0.04), S * 0.5 + i * S * 0.12]]);
+    }
+    VE(g, c, 0, S * 0.38, S * 0.42, S * 0.38);                      // achterlijf
+    PG(g, mrk, [[0, S * 0.16], [S * 0.14, S * 0.4], [0, S * 0.62], [-S * 0.14, S * 0.4]]);
+    VE(g, c, 0, -S * 0.1, S * 0.3, S * 0.26);                       // kopborststuk
+    HEAD(0, -S * 0.12, S * 0.29, S * 0.25, { muzzle: 0.24 });
+    EYES(g, t, m, 281, { sep: 0.44, y: -0.1, r: 0.19, iris: '#e8504a' });
+    for (const sg of [-1, 1]) {                                     // extra oogjes
+      E(g, '#fff', sg * S * 0.2, S * 0.02, S * 0.05, S * 0.05);
+      E(g, '#2a1a2a', sg * S * 0.2, S * 0.02, S * 0.025, S * 0.025);
+    }
+  },
+
+  // ---- Terrassen ----------------------------------------------------------
+  vuursalamander(g, S, t, m) {
+    const c = '#e8622a', d = '#c04418', vlek = '#ffcc44';
+    g.save(); g.translate(S * 0.44, S * 0.5); g.rotate(Math.sin(t * 2.2) * 0.24);
+    LN(g, d, S * 0.12, [[0, 0], [S * 0.34, S * 0.04], [S * 0.56, -S * 0.16]]);
+    g.restore();
+    for (const sg of [-1, 1]) { VE(g, d, sg * S * 0.4, S * 0.66, S * 0.15, S * 0.11, sg * 0.4);
+      VE(g, d, sg * S * 0.2, S * 0.78, S * 0.13, S * 0.1, sg * 0.3); }
+    VE(g, c, 0, S * 0.38, S * 0.5, S * 0.3);                        // laag gestrekt lijf
+    for (let i = 0; i < 4; i++)                                     // gele vlekken
+      E(g, vlek, -S * 0.3 + i * S * 0.2, S * 0.26 + (i % 2) * S * 0.14, S * 0.08, S * 0.07);
+    D.vlamPluk(g, S, 0, S * 0.1, 0.5, t, false);
+    VE(g, c, 0, -S * 0.06, S * 0.36, S * 0.26);                     // brede platte kop
+    HEAD(0, -S * 0.08, S * 0.35, S * 0.25, { muzzle: 0.44 });
+    EYES(g, t, m, 282, { sep: 0.5, y: -0.2, r: 0.2, iris: '#ffcc44' });
+    LN(g, '#8a2a10', S * 0.035, [[-S * 0.2, S * 0.06], [S * 0.2, S * 0.06]]);
+  },
+  magmaschild(g, S, t, m) {
+    const sch = '#5a3a2a', d = '#3e2418', lava = '#ff7a2a';
+    const puls = 0.5 + 0.5 * Math.sin(t * 2);
+    for (const sg of [-1, 1]) { VE(g, '#8a6a52', sg * S * 0.42, S * 0.74, S * 0.15, S * 0.14);
+      VE(g, '#8a6a52', sg * S * 0.18, S * 0.78, S * 0.13, S * 0.12); }
+    E(g, 'rgba(255,130,40,' + (0.16 + 0.16 * puls) + ')', 0, S * 0.16, S * 0.8, S * 0.6);
+    VE(g, sch, 0, S * 0.2, S * 0.62, S * 0.44);                     // schild
+    for (let i = 0; i < 4; i++)                                     // lavaspleten
+      LN(g, 'rgba(255,140,50,' + (0.6 + 0.4 * puls) + ')', S * 0.05,
+        [[-S * 0.44 + i * S * 0.28, -S * 0.1], [-S * 0.38 + i * S * 0.28, S * 0.5]]);
+    for (let i = 0; i < 3; i++)                                     // schoorsteentjes
+      D.vlamPluk(g, S, -S * 0.28 + i * S * 0.28, -S * 0.16, 0.5, t + i, false);
+    ARC(g, d, 0, S * 0.2, S * 0.5, Math.PI, TAU, S * 0.05);        // rand van het schild
+    VE(g, '#8a6a52', 0, -S * 0.3, S * 0.28, S * 0.24);              // kop
+    HEAD(0, -S * 0.32, S * 0.27, S * 0.23, { muzzle: 0.34 });
+    EYES(g, t, m, 283, { sep: 0.48, y: -0.14, r: 0.19, iris: '#ff8a2a' });
+  },
+  sintelram(g, S, t, m) {
+    const c = '#8a4a3a', d = '#6a3428', wol = '#c86a4a';
+    for (const sg of [-1, 1]) { VE(g, d, sg * S * 0.3, S * 0.76, S * 0.13, S * 0.18);
+      VE(g, '#2e1a14', sg * S * 0.3, S * 0.92, S * 0.14, S * 0.08); }
+    for (let i = 0; i < 9; i++) {                                   // sintelvacht
+      const a = i * (TAU / 9);
+      VE(g, i % 2 ? wol : c, Math.cos(a) * S * 0.4, S * 0.3 + Math.sin(a) * S * 0.3, S * 0.2, S * 0.18);
+    }
+    VE(g, wol, 0, S * 0.3, S * 0.42, S * 0.34);
+    for (let i = 0; i < 3; i++) D.vlamPluk(g, S, -S * 0.26 + i * S * 0.26, S * 0.0, 0.5, t + i, false);
+    for (const sg of [-1, 1]) {                                     // zware krulhoorns
+      ARC(g, '#e8c86a', sg * S * 0.36, -S * 0.3, S * 0.2, 0, TAU * 0.8, S * 0.1);
+      ARC(g, '#c8a44a', sg * S * 0.36, -S * 0.3, S * 0.2, 0, TAU * 0.4, S * 0.05);
+    }
+    VE(g, c, 0, -S * 0.26, S * 0.3, S * 0.28);
+    HEAD(0, -S * 0.28, S * 0.29, S * 0.26, { muzzle: 0.36 });
+    EYES(g, t, m, 284, { sep: 0.46, y: -0.14, r: 0.19, iris: '#ffcc44' });
+    for (const sg of [-1, 1])                                       // vastberaden blik
+      LN(g, '#3a1a10', S * 0.045, [[sg * S * 0.06, -S * 0.42], [sg * S * 0.22, -S * 0.36]]);
+  },
+  rookpluim(g, S, t, m) {
+    const zw = Math.sin(t * 1.4) * S * 0.05;
+    for (let i = 0; i < 7; i++) {                                   // opstijgende rook
+      const f = i / 7;
+      E(g, 'rgba(120,110,120,' + (0.4 - f * 0.3) + ')',
+        Math.sin(t * 1.6 + f * 3) * S * 0.24, S * 0.3 - f * S * 0.9 + zw,
+        S * (0.3 - f * 0.14), S * (0.26 - f * 0.12));
+    }
+    E(g, 'rgba(90,80,95,0.55)', 0, S * 0.5 + zw, S * 0.5, S * 0.34);
+    VE(g, '#6a5f70', 0, S * 0.24 + zw, S * 0.42, S * 0.38);
+    D.vlamPluk(g, S, 0, S * 0.5 + zw, 0.55, t, false);              // gloeiende kern
+    HEAD(0, S * 0.18 + zw, S * 0.4, S * 0.34, { muzzle: 0.24 });
+    EYES(g, t, m, 285, { sep: 0.44, y: -0.1, r: 0.23, iris: '#ff8a3a' });
+  },
+
+  // ---- Wolkentempel -------------------------------------------------------
+  windgeest(g, S, t, m) {
+    const c = '#cfe4f4', d = '#a8c8e0';
+    for (let i = 0; i < 3; i++) {                                   // wervelende slierten
+      g.strokeStyle = 'rgba(200,225,245,' + (0.7 - i * 0.16) + ')';
+      g.lineWidth = S * (0.1 - i * 0.02); g.lineCap = 'round';
+      g.beginPath();
+      for (let k = 0; k <= 26; k++) {
+        const f = k / 26, a = t * 1.4 + i * 2.1 + f * 5.4;
+        const r = S * (0.12 + f * 0.5);
+        const x = Math.cos(a) * r, y = S * 0.5 - f * S * 0.9 + Math.sin(a) * r * 0.4;
+        if (k === 0) g.moveTo(x, y); else g.lineTo(x, y);
+      }
+      g.stroke();
+    }
+    for (let i = 0; i < 8; i++) {                                   // wolkenkraag
+      const a = i * (TAU / 8);
+      VE(g, i % 2 ? c : d, Math.cos(a) * S * 0.34, S * 0.16 + Math.sin(a) * S * 0.26, S * 0.19, S * 0.16);
+    }
+    VE(g, c, 0, S * 0.1, S * 0.44, S * 0.4);                        // steviger lijfje
+    VE(g, 'rgba(255,255,255,0.6)', -S * 0.12, -S * 0.04, S * 0.18, S * 0.12, -0.4);
+    for (const sg of [-1, 1])                                       // sliertjes als staartjes
+      VE(g, d, sg * S * 0.4, S * 0.42, S * 0.16, S * 0.1, sg * 0.5);
+    HEAD(0, S * 0.06, S * 0.42, S * 0.36, { muzzle: 0.24 });
+    EYES(g, t, m, 286, { sep: 0.46, y: -0.1, r: 0.22, iris: '#4a7aa0' });
+  },
+  wolkdraak(g, S, t, m) {
+    const c = '#e8f0fa', d = '#c0d4e8', vl = '#a8c4e0';
+    const fl = Math.sin(t * 3.4) * 0.3;
+    for (const sg of [-1, 1]) {                                     // wolkige vleugels
+      g.save(); g.translate(sg * S * 0.24, -S * 0.04); g.rotate(sg * (0.3 + fl));
+      for (let i = 0; i < 4; i++)
+        VE(g, i % 2 ? vl : d, sg * S * (0.22 + i * 0.16), -S * 0.12 + i * S * 0.05,
+          S * 0.22, S * 0.18);
+      g.restore();
+    }
+    for (let i = 5; i >= 0; i--) {                                  // slingerende staart
+      const f = i / 5;
+      VE(g, i % 2 ? c : d, S * 0.3 + Math.sin(t * 1.6 + f * 2.6) * S * 0.22, S * 0.5 + f * S * 0.3,
+        S * (0.2 - f * 0.06), S * (0.16 - f * 0.05));
+    }
+    VE(g, c, 0, S * 0.3, S * 0.4, S * 0.36);
+    for (const sg of [-1, 1])                                       // hoorntjes
+      PG(g, '#e8c86a', [[sg * S * 0.14, -S * 0.5], [sg * S * 0.3, -S * 0.86], [sg * S * 0.28, -S * 0.44]]);
+    VE(g, c, 0, -S * 0.26, S * 0.36, S * 0.3);
+    VE(g, d, 0, -S * 0.12, S * 0.2, S * 0.13);                      // snuit
+    HEAD(0, -S * 0.28, S * 0.35, S * 0.29, { muzzle: 0.34 });
+    EYES(g, t, m, 287, { sep: 0.46, y: -0.14, r: 0.21, iris: '#5a8ac0' });
+  },
+  klokkenspel(g, S, t, m) {
+    const c = '#d8c88a', d = '#a89a58';
+    LN(g, d, S * 0.05, [[-S * 0.5, -S * 0.6], [S * 0.5, -S * 0.6]]);   // draagbalk
+    for (let i = 0; i < 4; i++) {                                      // vier buisjes
+      const x = -S * 0.36 + i * S * 0.24;
+      const zw = Math.sin(t * 2.4 + i * 0.8) * 0.1;
+      g.save(); g.translate(x, -S * 0.6); g.rotate(zw);
+      LN(g, d, S * 0.02, [[0, 0], [0, S * 0.16]]);
+      VE(g, i % 2 ? c : d, 0, S * (0.46 - i * 0.04), S * 0.075, S * (0.3 - i * 0.03));
+      VE(g, 'rgba(255,255,255,0.4)', -S * 0.025, S * (0.36 - i * 0.03), S * 0.02, S * 0.1);
+      g.restore();
+    }
+    VE(g, c, 0, S * 0.5, S * 0.34, S * 0.3);                           // kopje eronder
+    HEAD(0, S * 0.48, S * 0.33, S * 0.29, { muzzle: 0.24 });
+    EYES(g, t, m, 288, { sep: 0.46, y: -0.1, r: 0.21, iris: '#6a5a20' });
+  },
+  veerkat(g, S, t, m) {
+    const c = '#f0e0f0', d = '#d8c0d8', vl = '#fff8ff';
+    const fl = Math.sin(t * 3.8) * 0.32;
+    for (const sg of [-1, 1]) {                                     // engelenvleugels
+      g.save(); g.translate(sg * S * 0.28, S * 0.06); g.rotate(sg * (0.34 + fl));
+      for (let i = 0; i < 4; i++)
+        VE(g, i % 2 ? vl : d, sg * S * (0.22 + i * 0.14), -S * 0.2 + i * S * 0.1,
+          S * (0.24 - i * 0.02), S * 0.12, sg * -0.3);
+      g.restore();
+    }
+    g.save(); g.translate(S * 0.4, S * 0.34); g.rotate(-0.3 + Math.sin(t * 1.6) * 0.18);
+    LN(g, c, S * 0.1, [[0, 0], [S * 0.26, -S * 0.24], [S * 0.32, -S * 0.56]]);
+    g.restore();
+    for (const sg of [-1, 1]) VE(g, d, sg * S * 0.22, S * 0.8, S * 0.12, S * 0.11);
+    VE(g, c, 0, S * 0.34, S * 0.38, S * 0.34);
+    for (const sg of [-1, 1])
+      PG(g, c, [[sg * S * 0.12, -S * 0.4], [sg * S * 0.3, -S * 0.88], [sg * S * 0.38, -S * 0.34]]);
+    VE(g, c, 0, -S * 0.24, S * 0.32, S * 0.28);
+    ARC(g, '#ffe98a', 0, -S * 0.66, S * 0.18, 0, TAU, S * 0.045);   // halo
+    HEAD(0, -S * 0.26, S * 0.31, S * 0.27, { muzzle: 0.3 });
+    EYES(g, t, m, 289, { sep: 0.46, y: -0.12, r: 0.22, iris: '#c880c8' });
+    E(g, '#d8a0c0', 0, -S * 0.12, S * 0.045, S * 0.035);
+  },
+
   // ---- vuurbiggetje: drie vormen, eindvorm gaat vechten --------------------
   // De snuitschijf met twee neusgaten en het krulstaartje zijn de vaste
   // familiekenmerken; die blijven in alle drie de vormen even herkenbaar.
@@ -5817,6 +6210,31 @@ const SPECIES_W2 = [
   { hp: 3, draw: 'vlamrug',    type: 'fire',  pools: ['terraces'] },
   { hp: 4, draw: 'vlamnek',    type: 'fire',  pools: ['terraces'] },
   { hp: 5, draw: 'vlamkraag',  type: 'fire',  pools: ['terraces'] },
+  // Kristalkust
+  { hp: 3, draw: 'otterkiezel', type: 'water', pools: ['shore'] },
+  { hp: 3, draw: 'koraalkop',   type: 'water', pools: ['shore'] },
+  { hp: 4, draw: 'bolvis',      type: 'water', pools: ['shore'] },
+  { hp: 3, draw: 'heremiet',    type: 'water', pools: ['shore'] },
+  // Junglekloof
+  { hp: 4, draw: 'slingeraap',  type: 'normal', type2: 'fight', pools: ['ravine'] },
+  { hp: 3, draw: 'bladkikker',  type: 'grass', pools: ['ravine'] },
+  { hp: 3, draw: 'paddestoelpop', type: 'grass', type2: 'poison', pools: ['ravine'] },
+  { hp: 4, draw: 'kameleonblad', type: 'grass', pools: ['ravine'] },
+  // Grotten
+  { hp: 5, draw: 'rotsgolem',   type: 'rock',  pools: ['caverns'] },
+  { hp: 4, draw: 'lantaarnspook', type: 'ghost', type2: 'fire', pools: ['caverns'] },
+  { hp: 3, draw: 'gravelworm',  type: 'rock',  pools: ['caverns'] },
+  { hp: 3, draw: 'spinweb',     type: 'bug',   type2: 'dark', pools: ['caverns'] },
+  // Terrassen
+  { hp: 3, draw: 'vuursalamander', type: 'fire', pools: ['terraces'] },
+  { hp: 5, draw: 'magmaschild', type: 'fire',  type2: 'rock', pools: ['terraces'] },
+  { hp: 4, draw: 'sintelram',   type: 'fire',  type2: 'fight', pools: ['terraces'] },
+  { hp: 3, draw: 'rookpluim',   type: 'ghost', type2: 'fire', pools: ['terraces'] },
+  // Wolkentempel
+  { hp: 3, draw: 'windgeest',   type: 'wind',  pools: ['temple'], fly: true },
+  { hp: 5, draw: 'wolkdraak',   type: 'wind',  pools: ['temple'], fly: true },
+  { hp: 4, draw: 'klokkenspel', type: 'steel', type2: 'psychic', pools: ['temple'] },
+  { hp: 4, draw: 'veerkat',     type: 'fairy', pools: ['temple'], fly: true },
   // Kristalkust
   { hp: 3, draw: 'krabkristal', type: 'rock',  pools: ['shore'] },
   { hp: 2, draw: 'zeester',     type: 'water', pools: ['shore'] },
