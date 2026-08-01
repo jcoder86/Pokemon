@@ -632,8 +632,8 @@ function heartPath(g, x, y, s) {
   g.moveTo(x, y + s * 0.32);
   g.bezierCurveTo(x - s * 1.1, y - s * 0.55, x - s * 0.5, y - s * 1.15, x, y - s * 0.45);
   g.bezierCurveTo(x + s * 0.5, y - s * 1.15, x + s * 1.1, y - s * 0.55, x, y + s * 0.32);
-  g.bezierCurveTo(x, y + s * 0.55, x, y + s * 0.7, x, y + s * 0.95);
-  g.lineTo(x, y + s * 0.95);
+  // Hier zat een nul-breed staartje naar beneden. Bij vullen onzichtbaar, maar
+  // zodra het hart ook een contour kreeg werd het een lijntje onder het hart.
   g.closePath();
 }
 // twee standaard ogen op (±dx, y); met knipperen / blij / duizelig
@@ -4893,6 +4893,8 @@ const TYPECOL = { water: '#58b6ff', fire: '#ff7a1f', grass: '#6fc750', electric:
 const scr = document.createElement('canvas'); scr.width = 960; scr.height = 960;
 const sg = scr.getContext('2d');
 // tweede scratch: silhouet voor de zachte contourlijn rond elk wezen
+const scr3 = document.createElement('canvas'); scr3.width = 960; scr3.height = 960;
+const sg3 = scr3.getContext('2d');
 const scr2 = document.createElement('canvas'); scr2.width = 960; scr2.height = 960;
 const sg2 = scr2.getContext('2d');
 
@@ -4942,23 +4944,64 @@ function creatureFrame(id, mood, bucket, frame) {
   D[sp.draw](sg, S * sc, t, mood === 'faint' ? 'sleep' : mood);
   sg.setTransform(2, 0, 0, 2, 0, 0);
   sg.globalCompositeOperation = 'source-atop';
-  const shGrad = sg.createLinearGradient(0, 240 - S * 0.2, 0, 240 + S * 1.05);
-  shGrad.addColorStop(0, 'rgba(40,45,90,0)');
-  shGrad.addColorStop(1, 'rgba(40,45,90,0.22)');
-  sg.fillStyle = shGrad; sg.fillRect(0, 0, 480, 480);
-  const hiGrad = sg.createRadialGradient(240 - S * 0.35, 240 - S * 0.6, S * 0.05, 240 - S * 0.35, 240 - S * 0.6, S * 1.15);
-  hiGrad.addColorStop(0, 'rgba(255,255,250,0.22)');
-  hiGrad.addColorStop(1, 'rgba(255,255,250,0)');
-  sg.fillStyle = hiGrad; sg.fillRect(0, 0, 480, 480);
+  // ---- licht en schaduw uit een vaste bron linksboven -----------------------
+  // Kernschaduw aan de van het licht afgekeerde zijde, koeler en verzadigder in
+  // plaats van neutraal grijs; dat is het verschil tussen plat en levend.
+  const kern = sg.createLinearGradient(240 - S * 0.7, 240 - S * 0.7, 240 + S * 0.95, 240 + S * 1.0);
+  kern.addColorStop(0, 'rgba(46,52,110,0)');
+  kern.addColorStop(0.5, 'rgba(46,52,110,0.05)');
+  kern.addColorStop(1, 'rgba(34,40,100,0.40)');
+  sg.fillStyle = kern; sg.fillRect(0, 0, 480, 480);
+  // Contactschaduw net binnen de omtrek: laat vormen in elkaar zakken in plaats
+  // van als losse platte vlakken naast elkaar te liggen.
+  sg3.setTransform(1, 0, 0, 1, 0, 0);
+  sg3.clearRect(0, 0, 960, 960);
+  sg3.globalCompositeOperation = 'source-over';
+  sg3.filter = 'blur(' + Math.max(2, S * 0.16) + 'px)';
+  sg3.drawImage(scr, 0, 0);
+  sg3.filter = 'none';
+  sg3.globalCompositeOperation = 'destination-out';
+  sg3.drawImage(scr, 0, 0);
+  sg.setTransform(1, 0, 0, 1, 0, 0);
+  sg.globalAlpha = 0.55;
+  sg.drawImage(scr3, 0, 0);
+  sg.globalAlpha = 1;
+  sg.setTransform(2, 0, 0, 2, 0, 0);
+  // Gerichte hoogsel aan de lichtzijde, warmer dan de basiskleur.
+  const hi = sg.createRadialGradient(240 - S * 0.42, 240 - S * 0.66, S * 0.04, 240 - S * 0.42, 240 - S * 0.66, S * 1.2);
+  hi.addColorStop(0, 'rgba(255,246,214,0.26)');
+  hi.addColorStop(0.45, 'rgba(255,240,206,0.10)');
+  hi.addColorStop(1, 'rgba(255,238,200,0)');
+  sg.fillStyle = hi; sg.fillRect(0, 0, 480, 480);
   sg.restore();
   sg.globalCompositeOperation = 'source-over';
-  // zachte donkere contour: maakt elk wezen scherper tegen de achtergrond
+
+  // ---- randlicht aan de schaduwzijde ---------------------------------------
+  // Een dunne, koelblauwe sikkel rechtsonder tilt het wezen van de achtergrond.
+  const rd = Math.max(1, S * 0.035);
+  sg3.setTransform(1, 0, 0, 1, 0, 0);
+  sg3.clearRect(0, 0, 960, 960);
+  sg3.globalCompositeOperation = 'source-over';
+  sg3.drawImage(scr, rd * 2, rd * 2);
+  sg3.globalCompositeOperation = 'destination-out';
+  sg3.drawImage(scr, 0, 0);
+  sg3.globalCompositeOperation = 'source-in';
+  sg3.fillStyle = 'rgba(200,232,255,0.42)';
+  sg3.fillRect(0, 0, 960, 960);
+  sg3.globalCompositeOperation = 'source-over';
+
+  // ---- contour in een donkere variant van de eigen kleur --------------------
+  // Geen zwart: de omtrek wordt een vermenigvuldigde versie van het wezen zelf,
+  // dus elk lichaamsdeel krijgt de donkere variant van zijn eigen kleur.
   sg2.setTransform(1, 0, 0, 1, 0, 0);
   sg2.clearRect(0, 0, 960, 960);
+  sg2.globalCompositeOperation = 'source-over';
   sg2.drawImage(scr, 0, 0);
-  sg2.globalCompositeOperation = 'source-atop';
-  sg2.fillStyle = 'rgba(26,42,24,0.5)';
+  sg2.globalCompositeOperation = 'multiply';
+  sg2.fillStyle = '#4a5568';
   sg2.fillRect(0, 0, 960, 960);
+  sg2.globalCompositeOperation = 'destination-in';
+  sg2.drawImage(scr, 0, 0);
   sg2.globalCompositeOperation = 'source-over';
 
   // alles samenvoegen op de maat waarop dit wezen getekend wordt
@@ -4971,6 +5014,7 @@ function creatureFrame(id, mood, bucket, frame) {
   for (const [ox, oy] of [[-ow, 0], [ow, 0], [0, -ow], [0, ow]])
     cg.drawImage(scr2, sx * 2, sy * 2, sz * 2, sz * 2, ox, oy, sz, sz);
   cg.drawImage(scr, sx * 2, sy * 2, sz * 2, sz * 2, 0, 0, sz, sz);
+  cg.drawImage(scr3, sx * 2, sy * 2, sz * 2, sz * 2, 0, 0, sz, sz);   // randlicht bovenop
 
   const e = { c: c, half: half };
   CCACHE.set(key, e);
