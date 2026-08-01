@@ -4701,7 +4701,7 @@ const D = {
       E(g, '#e8cc98', hx - S * 0.09, hy - S * 0.1, S * 0.11, S * 0.09);
       g.save(); g.translate(hx, 0);
       HEAD(0, hy, S * 0.29, S * 0.29, { muzzle: 0.30 });
-      EYES(g, t, m, sd, { sep: 0.36, y: -0.10, r: 0.23, iris: '#2c2c2c' });
+      EYES(g, t, m, sd, { sep: 0.32, y: -0.09, r: 0.21, iris: '#2c2c2c' });
       smileM(g, 0, hy + S * 0.13, S * 0.09, m);
       g.restore();
     }
@@ -5044,12 +5044,8 @@ const D = {
         LN(g, '#6a727e', S * 0.025 * ms, [[sx - S * 0.045 * ms, sy], [sx + S * 0.045 * ms, sy]]);
       }
       HEAD(0, 0, S * 0.3 * ms, S * 0.3 * ms, { muzzle: 0.34, profile: 1 });
-      if (m === 'dizzy' || m === 'sleep') EYES(g, t, m, sd, { sep: 0.0, y: 0, r: 0.28, iris: '#fff' });
-      else {
-        E(g, '#ffffff', 0, 0, S * 0.2 * ms, S * 0.2 * ms);
-        E(g, '#2c3440', 0, S * 0.02 * ms, S * 0.11 * ms, S * 0.12 * ms);
-        E(g, '#ffffff', S * 0.05 * ms, -S * 0.05 * ms, S * 0.05 * ms, S * 0.05 * ms);
-      }
+      EYES(g, t, m, sd, { sep: 0.0, y: 0.02, r: 0.24, iris: '#2c3440' });
+      E(g, 'rgba(255,255,255,0.7)', S * 0.05 * ms, -S * 0.08 * ms, S * 0.05 * ms, S * 0.04 * ms);
       g.restore();
     }
   },
@@ -7449,8 +7445,8 @@ function validateEyes(verbose) {
     const oog = EYE_LOG;
     if (!oog.length) probleem.push('geen kop/ogen geregistreerd (nog niet omgezet)');
     else {
-      const h = oog[0].h;
       for (const o of oog) {
+        const h = o.h;                       // elk oog hoort bij zijn eigen kop
         // 1. middelpunt binnen het silhouet van de kop, met marge
         const nx = (o.x - h.cx) / h.rx, ny = (o.y - h.cy) / h.ry;
         const d = Math.hypot(nx, ny);
@@ -7462,17 +7458,19 @@ function validateEyes(verbose) {
         // 6. ogen horen boven de aanzet van een snuit
         if (ny > h.muzzle - 0.12) probleem.push('oog zit op de snuit in plaats van erboven');
       }
-      if (!oog[0].single && oog.length === 2 && !h.asym) {
+      const h0 = oog[0].h;
+      const eenKop = oog.every(o => o.h === h0);
+      if (eenKop && !oog[0].single && oog.length === 2 && !h0.asym) {
         // 2. gelijke afstand tot de middenas
-        const a = Math.abs(oog[0].x - h.cx), b = Math.abs(oog[1].x - h.cx);
-        if (Math.abs(a - b) > h.rx * 0.02) probleem.push('ogen niet symmetrisch om de middenas');
+        const a = Math.abs(oog[0].x - h0.cx), b = Math.abs(oog[1].x - h0.cx);
+        if (Math.abs(a - b) > h0.rx * 0.02) probleem.push('ogen niet symmetrisch om de middenas');
         // 3. gelijke hoogte
-        if (Math.abs(oog[0].y - oog[1].y) > h.ry * 0.02) probleem.push('ogen niet op gelijke hoogte');
+        if (Math.abs(oog[0].y - oog[1].y) > h0.ry * 0.02) probleem.push('ogen niet op gelijke hoogte');
         // 5. ogen mogen elkaar niet overlappen (dan zit er een verkeerd)
         if (Math.abs(oog[0].x - oog[1].x) < (oog[0].r + oog[1].r) * 0.9)
           probleem.push('ogen overlappen elkaar');
       }
-      if (h.profile && oog.length === 2 && !oog[0].single)
+      if (eenKop && h0.profile && oog.length === 2 && !oog[0].single)
         probleem.push('twee frontale ogen op een kop in profiel');
     }
     if (probleem.length) meld.push({ wezen: sp.draw, nr: i + 1, fouten: probleem });

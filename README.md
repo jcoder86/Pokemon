@@ -28,8 +28,25 @@ Een vrolijk, tekstloos Pokémon-achtig verzamelspel voor Julian (5 jaar): twee w
 - **Flauwvallen:** raken de hartjes van je maatje op, dan gaat het slapen en opent het boek zodat Julian meteen een ander wezentje kiest. Na het gevecht is de slaper weer helemaal fit. Elk wezentje vecht met het aantal hartjes dat het zelf heeft.
 - **Boek in het gevecht:** de 📖-knop werkt ook tijdens een gevecht.
 - **Knoppen rechtsboven:** 📖 het boek (groot), daaronder 🏠 terug naar het startscherm (lichtrood, klein — bewaart eerst de voortgang) en 🔊 het geluid (even klein).
+- **Het boek:** twee kolommen naast elkaar met een eigen teller en een eigen scrollgebied — links wereld 1 (groen), rechts wereld 2 (blauw). Evolutielijnen staan bij elkaar. De volgorde en de tellers volgen de data, dus nieuwe wezens belanden vanzelf op de goede plek.
 - **Controles tijdens ontwikkelen:** Shift+R draait drie tests achter elkaar — route (kom je van elk startpunt bij elke doorgang), samenhang (bestaat elk gebied uit één stuk) en leefgebied (wonen alle wezens waar ze horen). Shift+S is de squint-test op de kaarten, Shift+O controleert de oogplaatsing en Shift+K toont het vergrote koppenraster.
 - **De hoofdpersonen:** alle vier de aanzichten (voor, achter, beide zijkanten) zijn opgebouwd naar het startscherm-artwork, met verlopen in plaats van vlakke kleurvlakken, weefsel- en leertextuur, haarslierten en tapse contourlijnen. LivEa deelt dezelfde bouw en maatvoering en verschilt in palet, blond lang haar met een staart en een strikje. Van achteren valt haar haar over nek en bovenrug, dus die zie je niet en de rugzak zit eronder.
+
+## Gemeten
+Laatste volledige testronde (250 wezens, elf gebieden):
+
+| | resultaat |
+|---|---|
+| routes (start → elke doorgang) | geen fouten |
+| samenhang per gebied | alles bereikbaar, op drie hoekjes van 1 tot 5 tegels in wereld 1 na |
+| leefgebieden | geen fouten, 27000 trekkingen |
+| oogplaatsing | geen fouten over alle 250 |
+| squint-test | alle elf gebieden geslaagd |
+| beeldsnelheid | 2,4 tot 5,2 ms per beeld per gebied (190–420 fps), gevecht 3,7 ms |
+| geheugen | 18 MB |
+| savegames | oude opslag laadt intact, onbekende namen worden overgeslagen |
+
+De squint-test, de routecontrole, de samenhangcontrole en de leefgebiedcontrole draaien op Shift+R en Shift+S; ze zijn er om regressies te vangen, niet als eenmalige controle.
 
 ## Lokaal openen
 
