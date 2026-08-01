@@ -837,45 +837,61 @@ const D = {
     if (kern) E(g, 'rgba(255,240,180,0.55)', x, y - S * 0.3 * sc, S * 0.24 * sc, S * 0.3 * sc);
   },
   biggie(g, S, t, m) {
-    const c = '#f0a8b8', d = '#d88a9c';
-    D.bigKrul(g, S, -S * 0.5, S * 0.3, S * 0.15, t);
-    VE(g, d, -S * 0.26, S * 0.8, S * 0.15, S * 0.13);
-    VE(g, d, S * 0.26, S * 0.8, S * 0.15, S * 0.13);
-    VE(g, c, 0, S * 0.36, S * 0.5, S * 0.4);
-    for (const sg of [-1, 1])                                       // flaporen
-      PG(g, d, [[sg * S * 0.24, -S * 0.42], [sg * S * 0.52, -S * 0.72], [sg * S * 0.46, -S * 0.24]]);
-    VE(g, c, 0, -S * 0.22, S * 0.44, S * 0.38);
-    D.vlamPluk(g, S, 0, -S * 0.5, 0.7, t, false);                   // vlampluk op de kop
-    HEAD(0, -S * 0.24, S * 0.42, S * 0.36, { muzzle: 0.3 });
-    EYES(g, t, m, 220, { sep: 0.44, y: -0.16, r: 0.22, iris: '#6b3a2a' });
-    D.bigSnuit(g, S, 0, -S * 0.06, S * 0.15);
+    const c = '#e8763a', d = '#c85a28', don = '#4a2e26', hoef = '#2e1c18';
+    D.bigKrul(g, S, -S * 0.62, S * 0.28, S * 0.16, t);
+    D.vlamPluk(g, S, -S * 0.72, S * 0.16, 0.4, t, false);       // vlammetje aan de staart
+    for (const sg of [-1, 1]) {                                  // vier korte pootjes
+      VE(g, don, sg * S * 0.44, S * 0.7, S * 0.13, S * 0.24);
+      VE(g, hoef, sg * S * 0.44, S * 0.88, S * 0.13, S * 0.09);
+      VE(g, d, sg * S * 0.19, S * 0.72, S * 0.11, S * 0.2);
+      VE(g, hoef, sg * S * 0.19, S * 0.88, S * 0.11, S * 0.08);
+    }
+    VE(g, don, 0, S * 0.5, S * 0.62, S * 0.3);                   // donkere achterband
+    VE(g, c, 0, S * 0.3, S * 0.64, S * 0.36);                    // gedrongen lijf
+    for (const sg of [-1, 1])                                    // lange donkere oren
+      PG(g, don, [[sg * S * 0.2, -S * 0.46], [sg * S * 0.36, -S * 1.06], [sg * S * 0.52, -S * 0.4]]);
+    D.vlamPluk(g, S, 0, -S * 0.52, 0.6, t, false);               // vlam achter de kop
+    VE(g, c, 0, -S * 0.2, S * 0.46, S * 0.36);                   // kop
+    HEAD(0, -S * 0.22, S * 0.44, S * 0.34, { muzzle: 0.46 });
+    EYES(g, t, m, 220, { sep: 0.52, y: -0.3, r: 0.2, iris: '#3a2018' });
+    D.bigSnuit(g, S, 0, -S * 0.06, S * 0.21);                    // grote snuit in het gezicht
   },
   bigvlam(g, S, t, m) {
-    const c = '#e88a70', d = '#c86a54';
-    D.bigKrul(g, S, -S * 0.56, S * 0.24, S * 0.17, t);
-    VE(g, d, -S * 0.28, S * 0.84, S * 0.16, S * 0.14);
-    VE(g, d, S * 0.28, S * 0.84, S * 0.16, S * 0.14);
-    for (let i = 0; i < 4; i++)                                     // vlammanen over de rug
-      D.vlamPluk(g, S, -S * 0.3 + i * S * 0.2, -S * 0.12 - Math.abs(i - 1.5) * S * 0.06, 0.7, t + i, false);
-    VE(g, c, 0, S * 0.34, S * 0.52, S * 0.44);
+    const c = '#e25f2a', d = '#bf461c', don = '#3e2620', hoef = '#241612';
+    D.bigKrul(g, S, -S * 0.7, S * 0.2, S * 0.18, t);
+    D.vlamPluk(g, S, -S * 0.82, S * 0.06, 0.55, t, false);
+    for (const sg of [-1, 1]) {
+      VE(g, don, sg * S * 0.48, S * 0.66, S * 0.14, S * 0.28);
+      VE(g, hoef, sg * S * 0.48, S * 0.88, S * 0.14, S * 0.1);
+      VE(g, d, sg * S * 0.2, S * 0.7, S * 0.12, S * 0.22);
+      VE(g, hoef, sg * S * 0.2, S * 0.88, S * 0.12, S * 0.09);
+    }
+    for (let i = 0; i < 4; i++)                                  // vlammen over de rug
+      D.vlamPluk(g, S, -S * 0.36 + i * S * 0.24, -S * 0.1 - Math.abs(i - 1.5) * S * 0.04, 0.66, t + i, false);
+    VE(g, don, 0, S * 0.46, S * 0.68, S * 0.34);
+    VE(g, c, 0, S * 0.26, S * 0.68, S * 0.38);
+    VE(g, '#f4a05c', 0, S * 0.3, S * 0.3, S * 0.22);             // lichte buikvlek
     for (const sg of [-1, 1])
-      PG(g, d, [[sg * S * 0.26, -S * 0.44], [sg * S * 0.56, -S * 0.8], [sg * S * 0.48, -S * 0.26]]);
-    VE(g, c, 0, -S * 0.24, S * 0.44, S * 0.38);
-    D.vlamPluk(g, S, 0, -S * 0.52, 0.95, t, true);
-    HEAD(0, -S * 0.26, S * 0.42, S * 0.36, { muzzle: 0.3 });
-    EYES(g, t, m, 221, { sep: 0.44, y: -0.16, r: 0.2, iris: '#7a3220' });
-    D.bigSnuit(g, S, 0, -S * 0.08, S * 0.16);
+      PG(g, don, [[sg * S * 0.22, -S * 0.5], [sg * S * 0.4, -S * 1.16], [sg * S * 0.56, -S * 0.42]]);
+    D.vlamPluk(g, S, 0, -S * 0.56, 0.78, t, true);               // vlam achter de kop
+    VE(g, c, 0, -S * 0.22, S * 0.48, S * 0.38);
+    HEAD(0, -S * 0.24, S * 0.46, S * 0.36, { muzzle: 0.46 });
+    EYES(g, t, m, 221, { sep: 0.52, y: -0.3, r: 0.19, iris: '#2e1810' });
+    D.bigSnuit(g, S, 0, -S * 0.06, S * 0.22);
   },
   bigkamp(g, S, t, m) {
-    const c = '#d0705a', d = '#a85240', band = '#f0e4d4';
+    const c = '#d64f22', d = '#a83a16', band = '#f0e4d4', don = '#33201a', hoef = '#1e1210';
     // rechtop, breder in de schouders: dit wezen vecht ook
-    VE(g, d, -S * 0.26, S * 0.88, S * 0.19, S * 0.14);
-    VE(g, d, S * 0.26, S * 0.88, S * 0.19, S * 0.14);
+    for (const sg of [-1, 1]) {
+      VE(g, don, sg * S * 0.26, S * 0.76, S * 0.17, S * 0.2);
+      VE(g, hoef, sg * S * 0.26, S * 0.92, S * 0.18, S * 0.1);
+    }
     D.bigKrul(g, S, -S * 0.6, S * 0.4, S * 0.16, t);
     for (let i = 0; i < 5; i++)                                     // vlammanen als kraag
       D.vlamPluk(g, S, -S * 0.46 + i * S * 0.23, -S * 0.16, 0.8, t + i * 0.7, false);
-    VE(g, c, 0, S * 0.4, S * 0.56, S * 0.42);                       // borst
-    VE(g, '#e8a48c', 0, S * 0.44, S * 0.3, S * 0.28);
+    VE(g, don, 0, S * 0.56, S * 0.58, S * 0.3);                     // donkere onderkant
+    VE(g, c, 0, S * 0.36, S * 0.58, S * 0.44);                      // brede borst
+    VE(g, '#f6a468', 0, S * 0.4, S * 0.3, S * 0.28);
     for (const sg of [-1, 1]) {                                     // armen met windsels
       g.save(); g.translate(sg * S * 0.52, S * 0.3); g.rotate(sg * (0.3 + Math.sin(t * 3) * 0.12));
       VE(g, c, 0, S * 0.14, S * 0.13, S * 0.3);
@@ -883,16 +899,15 @@ const D = {
       LN(g, 'rgba(190,170,150,0.7)', S * 0.02, [[-S * 0.14, S * 0.3], [S * 0.14, S * 0.34]]);
       g.restore();
     }
-    VE(g, c, 0, -S * 0.3, S * 0.42, S * 0.36);
     for (const sg of [-1, 1])
-      PG(g, d, [[sg * S * 0.24, -S * 0.48], [sg * S * 0.5, -S * 0.84], [sg * S * 0.44, -S * 0.32]]);
-    VE(g, c, 0, -S * 0.3, S * 0.4, S * 0.34);
-    D.vlamPluk(g, S, 0, -S * 0.58, 1.15, t, true);
-    HEAD(0, -S * 0.32, S * 0.38, S * 0.34, { muzzle: 0.3 });
-    EYES(g, t, m, 222, { sep: 0.46, y: -0.16, r: 0.19, iris: '#8a2a18' });
+      PG(g, don, [[sg * S * 0.24, -S * 0.52], [sg * S * 0.44, -S * 1.2], [sg * S * 0.56, -S * 0.44]]);
+    D.vlamPluk(g, S, 0, -S * 0.58, 1.05, t, true);                  // vlammanen achter de kop
+    VE(g, c, 0, -S * 0.28, S * 0.46, S * 0.38);
+    HEAD(0, -S * 0.3, S * 0.44, S * 0.36, { muzzle: 0.46 });
+    EYES(g, t, m, 222, { sep: 0.52, y: -0.3, r: 0.18, iris: '#f0d040' });
     for (const sg of [-1, 1])                                       // vastberaden wenkbrauwen
-      LN(g, '#7a3020', S * 0.045, [[sg * S * 0.06, -S * 0.44], [sg * S * 0.24, -S * 0.38]]);
-    D.bigSnuit(g, S, 0, -S * 0.14, S * 0.16);
+      LN(g, '#1e1210', S * 0.05, [[sg * S * 0.08, -S * 0.5], [sg * S * 0.28, -S * 0.43]]);
+    D.bigSnuit(g, S, 0, -S * 0.14, S * 0.21);
   },
 
   // ---- graskat: drie vormen, eindvorm is een illusionist -------------------
@@ -999,33 +1014,39 @@ const D = {
   // verschillen, zodat je meteen ziet dat het familie is.
   vosBasis(g, S, t, m, kl, seed, accent) {
     const c = kl.c, d = kl.d, kraag = kl.kraag;
-    g.save(); g.translate(S * 0.58, S * 0.42); g.rotate(Math.sin(t * 2) * 0.1);
-    VE(g, kraag, S * 0.34, -S * 0.16, S * 0.42, S * 0.3, -0.4);     // pluimstaart
-    VE(g, c, S * 0.16, -S * 0.04, S * 0.24, S * 0.2, -0.3);
+    // langere, sierlijke sleepstaart die achter het lijf vandaan komt
+    g.save(); g.translate(S * 0.52, S * 0.3); g.rotate(-0.25 + Math.sin(t * 1.6) * 0.12);
+    VE(g, kraag, S * 0.42, -S * 0.3, S * 0.44, S * 0.24, -0.6);
+    VE(g, c, S * 0.2, -S * 0.12, S * 0.28, S * 0.17, -0.45);
     g.restore();
-    VE(g, d, -S * 0.36, S * 0.82, S * 0.18, S * 0.15);              // pootjes
-    VE(g, d, S * 0.36, S * 0.82, S * 0.18, S * 0.15);
-    VE(g, c, 0, S * 0.36, S * 0.6, S * 0.44);                       // lijf
-    for (let i = 0; i < 9; i++) {                                   // dikke kraag
+    for (const sg of [-1, 1]) {                                     // lange slanke poten
+      VE(g, d, sg * S * 0.34, S * 0.62, S * 0.1, S * 0.3);
+      VE(g, d, sg * S * 0.34, S * 0.9, S * 0.12, S * 0.09);
+      VE(g, d, sg * S * 0.13, S * 0.66, S * 0.085, S * 0.26);
+      VE(g, d, sg * S * 0.13, S * 0.9, S * 0.1, S * 0.08);
+    }
+    VE(g, c, 0, S * 0.34, S * 0.44, S * 0.36);                      // slanker lijf
+    VE(g, c, 0, S * 0.02, S * 0.2, S * 0.26);                       // hals
+    for (let i = 0; i < 9; i++) {                                   // dezelfde kraag als foxy
       const a = -1.5 + i * 0.36;
-      VE(g, kraag, Math.cos(a) * S * 0.5, S * 0.06 + Math.sin(a) * S * 0.2, S * 0.14, S * 0.11, a);
+      VE(g, kraag, Math.cos(a) * S * 0.34, S * 0.1 + Math.sin(a) * S * 0.16, S * 0.12, S * 0.095, a);
     }
     for (const sg of [-1, 1]) {                                     // spitse oren
-      PG(g, c, [[sg * S * 0.2, -S * 0.4], [sg * S * 0.44, -S * 0.94], [sg * S * 0.52, -S * 0.34]]);
-      PG(g, kl.oor, [[sg * S * 0.26, -S * 0.42], [sg * S * 0.42, -S * 0.8], [sg * S * 0.46, -S * 0.38]]);
+      PG(g, c, [[sg * S * 0.16, -S * 0.5], [sg * S * 0.36, -S * 1.0], [sg * S * 0.42, -S * 0.44]]);
+      PG(g, kl.oor, [[sg * S * 0.21, -S * 0.5], [sg * S * 0.34, -S * 0.88], [sg * S * 0.37, -S * 0.47]]);
     }
-    VE(g, c, 0, -S * 0.24, S * 0.46, S * 0.4);                      // kop
-    VE(g, kraag, 0, -S * 0.08, S * 0.2, S * 0.13);                  // snuitje
-    HEAD(0, -S * 0.26, S * 0.44, S * 0.38, { muzzle: 0.32 });
-    EYES(g, t, m, seed, { sep: 0.44, y: -0.14, r: 0.23, iris: kl.iris });
-    E(g, '#2c2420', 0, -S * 0.12, S * 0.05, S * 0.04);              // neusje
+    VE(g, c, 0, -S * 0.38, S * 0.36, S * 0.31);                     // kleinere kop, hoger
+    VE(g, kraag, 0, -S * 0.24, S * 0.16, S * 0.1);                  // snuitje
+    HEAD(0, -S * 0.4, S * 0.34, S * 0.29, { muzzle: 0.32 });
+    EYES(g, t, m, seed, { sep: 0.44, y: -0.14, r: 0.21, iris: kl.iris });
+    E(g, '#2c2420', 0, -S * 0.27, S * 0.042, S * 0.034);            // neusje
     if (accent) accent(g, S, t);
   },
   vosblad(g, S, t, m) {
     D.vosBasis(g, S, t, m, { c: '#8fd8a8', d: '#6cbc88', kraag: '#c8f0d0', oor: '#5faa78',
       iris: '#3f7a3a' }, 210, function (g2, S2, t2) {
       for (const sg of [-1, 1]) {                                   // blaadjes aan de oren
-        g2.save(); g2.translate(sg * S2 * 0.5, -S2 * 0.66); g2.rotate(sg * 1.15 + Math.sin(t2 * 2) * 0.05);
+        g2.save(); g2.translate(sg * S2 * 0.4, -S2 * 0.74); g2.rotate(sg * 1.15 + Math.sin(t2 * 2) * 0.05);
         VE(g2, '#5fbe70', 0, -S2 * 0.09, S2 * 0.08, S2 * 0.17);
         LN(g2, 'rgba(50,110,44,0.6)', S2 * 0.02, [[0, -S2 * 0.25], [0, S2 * 0.05]]);
         g2.restore();
@@ -1036,8 +1057,8 @@ const D = {
     D.vosBasis(g, S, t, m, { c: '#a8dcf0', d: '#7fbcd8', kraag: '#e8f8ff', oor: '#7fbcd8',
       iris: '#3f7fb0' }, 211, function (g2, S2, t2) {
       for (const sg of [-1, 1]) {                                   // ijspunten
-        PG(g2, '#dff4ff', [[sg * S2 * 0.3, -S2 * 0.62], [sg * S2 * 0.44, -S2 * 1.1], [sg * S2 * 0.5, -S2 * 0.56]]);
-        PG(g2, 'rgba(255,255,255,0.8)', [[sg * S2 * 0.34, -S2 * 0.62], [sg * S2 * 0.43, -S2 * 0.98], [sg * S2 * 0.44, -S2 * 0.6]]);
+        PG(g2, '#dff4ff', [[sg * S2 * 0.24, -S2 * 0.7], [sg * S2 * 0.37, -S2 * 1.2], [sg * S2 * 0.43, -S2 * 0.64]]);
+        PG(g2, 'rgba(255,255,255,0.8)', [[sg * S2 * 0.28, -S2 * 0.7], [sg * S2 * 0.36, -S2 * 1.08], [sg * S2 * 0.37, -S2 * 0.68]]);
       }
       for (let i = 0; i < 3; i++) {                                 // glinstering
         const a = t2 * 1.4 + i * 2.1;
@@ -1051,9 +1072,9 @@ const D = {
       iris: '#7a3fa0' }, 212, function (g2, S2, t2) {
       // edelsteen op het voorhoofd
       const pul = 0.6 + 0.4 * Math.sin(t2 * 2.4);
-      E(g2, 'rgba(240,120,200,' + (0.35 * pul) + ')', 0, -S2 * 0.5, S2 * 0.2, S2 * 0.2);
-      PG(g2, '#e8508c', [[0, -S2 * 0.62], [S2 * 0.1, -S2 * 0.5], [0, -S2 * 0.38], [-S2 * 0.1, -S2 * 0.5]]);
-      PG(g2, 'rgba(255,255,255,0.7)', [[0, -S2 * 0.62], [S2 * 0.1, -S2 * 0.5], [0, -S2 * 0.5]]);
+      E(g2, 'rgba(240,120,200,' + (0.35 * pul) + ')', 0, -S2 * 0.62, S2 * 0.18, S2 * 0.18);
+      PG(g2, '#e8508c', [[0, -S2 * 0.72], [S2 * 0.09, -S2 * 0.62], [0, -S2 * 0.52], [-S2 * 0.09, -S2 * 0.62]]);
+      PG(g2, 'rgba(255,255,255,0.7)', [[0, -S2 * 0.72], [S2 * 0.09, -S2 * 0.62], [0, -S2 * 0.62]]);
     });
   },
   vosnacht(g, S, t, m) {
@@ -1065,10 +1086,10 @@ const D = {
         E(g2, 'rgba(240,208,64,' + (0.3 * pul) + ')', x, y, r * 2.2, r * 2.2);
         ARC(g2, 'rgba(250,220,90,' + (0.7 + 0.3 * pul) + ')', x, y, r, 0, TAU, S2 * 0.05);
       };
-      ring(0, -S2 * 0.48, S2 * 0.11);
-      ring(-S2 * 0.36, S2 * 0.72, S2 * 0.08);
-      ring(S2 * 0.36, S2 * 0.72, S2 * 0.08);
-      ring(S2 * 0.86, S2 * 0.24, S2 * 0.1);
+      ring(0, -S2 * 0.6, S2 * 0.1);
+      ring(-S2 * 0.34, S2 * 0.66, S2 * 0.07);
+      ring(S2 * 0.34, S2 * 0.66, S2 * 0.07);
+      ring(S2 * 0.82, S2 * 0.06, S2 * 0.09);
     });
   },
   vosfee(g, S, t, m) {
@@ -1076,7 +1097,7 @@ const D = {
       iris: '#d0508c' }, 214, function (g2, S2, t2) {
       // strikjes aan de oren en een lint om de nek
       for (const sg of [-1, 1]) {
-        g2.save(); g2.translate(sg * S2 * 0.52, -S2 * 0.44); g2.rotate(sg * 0.9);
+        g2.save(); g2.translate(sg * S2 * 0.42, -S2 * 0.56); g2.rotate(sg * 0.9);
         g2.scale(0.8, 0.8);
         for (const q of [-1, 1]) {
           g2.fillStyle = q < 0 ? '#ff9ec6' : '#e8709c';
@@ -1088,7 +1109,7 @@ const D = {
         E(g2, '#e8709c', 0, 0, S2 * 0.07, S2 * 0.065);
         g2.restore();
       }
-      LN(g2, '#ff9ec6', S2 * 0.06, [[-S2 * 0.3, S2 * 0.16], [S2 * 0.3, S2 * 0.16]]);
+      LN(g2, '#ff9ec6', S2 * 0.06, [[-S2 * 0.22, S2 * 0.2], [S2 * 0.22, S2 * 0.2]]);
       for (let i = 0; i < 3; i++) {                                 // zwevende glittertjes
         const a = t2 * 1.1 + i * 2.1;
         E(g2, 'rgba(255,190,220,0.8)', Math.cos(a) * S2 * 0.78, -S2 * 0.1 + Math.sin(a) * S2 * 0.4,
