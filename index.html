@@ -6988,8 +6988,7 @@ const SPECIAL_EXTRA = { sparky: 1, bulby: 1, flamlet: 1, splashy: 1, ratty: 1, r
                         bonekid: 1, licktongue: 1, eggnurse: 1, vineball: 1, seahorsebig: 1,
                         goldbig: 1, mimeclown: 1, splashking: 1, blobpink: 1, foxy: 1,
                         polyblock: 1, snek: 1, serpurple: 1, birdmid: 1 };
-const SPECIAL = {};
-SPECIES.forEach(s => { if (s.hp >= 4 || SPECIAL_EXTRA[s.draw]) SPECIAL[s.draw] = 1; });
+
 
 // ==========================================================================
 // WEZENS WERELD 2 - GEGEVENS
@@ -7130,6 +7129,12 @@ const SPECIES_W2 = [
 SPECIES_W2.forEach(function (w, i) { w.world = 2; w.dex2 = i + 1; });
 SPECIES.push.apply(SPECIES, SPECIES_W2);
 
+// Deze tabel werd eerder opgebouwd voordat wereld 2 aan SPECIES was toegevoegd,
+// waardoor geen van die honderd wezens een krachtaanval had. Hij hoort hier, na
+// het samenvoegen, zodat elk wezen uit beide werelden meetelt.
+const SPECIAL = {};
+SPECIES.forEach(s => { if (s.hp >= 4 || SPECIAL_EXTRA[s.draw]) SPECIAL[s.draw] = 1; });
+
 const NSPECIES = SPECIES.length;
 const STARTER = SPECIES.findIndex(s => s.draw === 'sparky');
 const IDX_BY_NAME = {};
@@ -7166,6 +7171,13 @@ const WATER_NAAR_LAND = {
 const KUSTDIEREN = ['pinchy', 'kingcrab', 'shellteen', 'shelltank', 'shellclam', 'heremiet',
                     'krabkristal', 'zeester', 'schelphoorn', 'parelmossel', 'zeeslak'];
 const KUSTLAND = { bwater: 'beach', shwater: 'shore', water: 'meadow', swater: 'snow' };
+// Op het strand van de Kristalkust liep je steeds dezelfde handvol soorten tegen
+// het lijf: bijna alles daar is watervolk en zwemt dus in de baai. De krabben en
+// schelpen van wereld 1 wonen ook op dit strand - hetzelfde soort kust - en twee
+// wezens die er thuishoren komen erbij: zoutkristal op een zoute kust, en de
+// windveer als zeevogel. Zelfde gedachte als de vossen die in beide werelden zijn.
+const KUST_W1_OOK_OP_HEMELEILAND = ['pinchy', 'kingcrab', 'shellteen', 'shelltank', 'shellclam'];
+const EXTRA_OP_KRISTALKUST = ['zoutkristal', 'windveer'];
 
 const WATERBEWONERS = {
   jwater:   ['taddy', 'tadmid', 'tadbig', 'goldfish', 'jellyfloat'],
@@ -7205,6 +7217,15 @@ const WATERBEWONERS = {
       const water = LAND_NAAR_KUSTWATER[poel];           // loopt hier, mag ook het water in
       if (water && sp.pools.indexOf(water) < 0) sp.pools.push(water);
     });
+  });
+  KUST_W1_OOK_OP_HEMELEILAND.forEach(function (naam) {
+    const sp = SPECIES[IDX_BY_NAME[naam]];
+    if (!sp) return;
+    ['shore', 'shwater'].forEach(function (q) { if (sp.pools.indexOf(q) < 0) sp.pools.push(q); });
+  });
+  EXTRA_OP_KRISTALKUST.forEach(function (naam) {
+    const sp = SPECIES[IDX_BY_NAME[naam]];
+    if (sp && sp.pools.indexOf('shore') < 0) sp.pools.push('shore');
   });
   // de lege waterpoelen bevolken
   for (const poel in WATERBEWONERS) {
@@ -8775,19 +8796,83 @@ function drawAirship(g, x, y, t, dir, deel) {
   // slagschaduw ver eronder: laat zien dat je echt in de lucht hangt
   g.fillStyle = 'rgba(70,110,150,0.16)';
   g.beginPath(); g.ellipse(6, 60, 44, 11, 0, 0, TAU); g.fill();
-  // ballon
-  const bal = g.createLinearGradient(-52, -78, 40, -18);
-  bal.addColorStop(0, '#ffe0b4'); bal.addColorStop(0.5, '#ec8f5f'); bal.addColorStop(1, '#a8503a');
-  g.fillStyle = bal;
-  g.beginPath(); g.ellipse(0, -44, 52, 30, 0, 0, TAU); g.fill();
-  g.fillStyle = 'rgba(255,244,216,0.55)';
-  g.beginPath(); g.ellipse(-18, -56, 20, 7, -0.25, 0, TAU); g.fill();
-  g.strokeStyle = 'rgba(120,60,40,0.5)'; g.lineWidth = 2.2;
-  for (let i = -2; i <= 2; i++) {
-    g.beginPath(); g.ellipse(0, -44, 52, 30, 0, Math.PI * 0.5 + i * 0.3, Math.PI * 1.5 - i * 0.3); g.stroke();
+  // ---- de ballon: een echte zeppelin in plaats van een kale ovaal ----------
+  const BX = 0, BY = -46, BRX = 56, BRY = 29;
+  // staartvinnen, achter de romp langs zodat ze erachter vandaan steken
+  const staart = -kant;
+  const ax = BX + staart * BRX * 0.62;                  // waar de vinnen aan de romp zitten
+  const vin = function (kleur, kant2) {                // kant2: -1 boven, +1 onder
+    g.fillStyle = kleur;
+    g.beginPath();
+    g.moveTo(ax, BY + kant2 * BRY * 0.2);
+    g.quadraticCurveTo(ax + staart * BRX * 0.2, BY + kant2 * BRY * 1.15,
+                       ax + staart * BRX * 0.44, BY + kant2 * BRY * 1.2);
+    g.lineTo(ax + staart * BRX * 0.5, BY + kant2 * BRY * 0.5);
+    g.quadraticCurveTo(ax + staart * BRX * 0.3, BY + kant2 * BRY * 0.42,
+                       ax + staart * BRX * 0.16, BY + kant2 * BRY * 0.12);
+    g.closePath(); g.fill();
+  };
+  vin('#a8503a', -1);                                  // vin naar boven
+  vin('#8f4130', 1);                                   // vin naar beneden
+  g.fillStyle = '#c06a48';                             // platte zijvin
+  g.beginPath();
+  g.moveTo(ax, BY);
+  g.quadraticCurveTo(ax + staart * BRX * 0.26, BY - BRY * 0.1,
+                     ax + staart * BRX * 0.56, BY - BRY * 0.06);
+  g.lineTo(ax + staart * BRX * 0.56, BY + BRY * 0.14);
+  g.quadraticCurveTo(ax + staart * BRX * 0.26, BY + BRY * 0.18, ax, BY + BRY * 0.1);
+  g.closePath(); g.fill();
+  // de romp zelf, met banen in twee kleuren zoals een echte luchtballon
+  g.save();
+  g.beginPath(); g.ellipse(BX, BY, BRX, BRY, 0, 0, TAU); g.clip();
+  const bal = g.createLinearGradient(0, BY - BRY, 0, BY + BRY);
+  bal.addColorStop(0, '#ffe6c0'); bal.addColorStop(0.45, '#f0a06a');
+  bal.addColorStop(1, '#9c4632');
+  g.fillStyle = bal; g.fillRect(BX - BRX, BY - BRY, BRX * 2, BRY * 2);
+  for (let i = -5; i <= 5; i++) {                       // gekleurde banen
+    if (i % 2) continue;
+    g.fillStyle = 'rgba(190,72,50,0.42)';
+    g.beginPath();
+    g.moveTo(BX + i * BRX * 0.2, BY - BRY);
+    g.quadraticCurveTo(BX + i * BRX * 0.235, BY, BX + i * BRX * 0.2, BY + BRY);
+    g.lineTo(BX + (i + 0.9) * BRX * 0.2, BY + BRY);
+    g.quadraticCurveTo(BX + (i + 0.9) * BRX * 0.235, BY, BX + (i + 0.9) * BRX * 0.2, BY - BRY);
+    g.closePath(); g.fill();
   }
-  g.strokeStyle = '#6f5432'; g.lineWidth = 2;           // touwen
-  for (const sx of [-30, -13, 13, 30]) { g.beginPath(); g.moveTo(sx, -22); g.lineTo(sx * 0.72, -4); g.stroke(); }
+  g.strokeStyle = 'rgba(110,52,36,0.5)'; g.lineWidth = 1.6;   // naden over de lengte
+  for (let i = -4; i <= 4; i++) {
+    g.beginPath();
+    g.moveTo(BX + i * BRX * 0.22, BY - BRY);
+    g.quadraticCurveTo(BX + i * BRX * 0.26, BY, BX + i * BRX * 0.22, BY + BRY);
+    g.stroke();
+  }
+  g.strokeStyle = 'rgba(110,52,36,0.32)';                     // ringen om de romp
+  for (const f of [-0.62, -0.2, 0.2, 0.62]) {
+    g.beginPath(); g.ellipse(BX + f * BRX, BY, BRX * 0.2, BRY, 0, 0, TAU); g.stroke();
+  }
+  // licht van boven en een zachte schaduw onderlangs
+  const gl = g.createLinearGradient(0, BY - BRY, 0, BY - BRY * 0.1);
+  gl.addColorStop(0, 'rgba(255,248,225,0.75)'); gl.addColorStop(1, 'rgba(255,248,225,0)');
+  g.fillStyle = gl; g.fillRect(BX - BRX, BY - BRY, BRX * 2, BRY);
+  g.fillStyle = 'rgba(90,40,28,0.28)';
+  g.beginPath(); g.ellipse(BX, BY + BRY * 0.95, BRX * 0.95, BRY * 0.4, 0, 0, TAU); g.fill();
+  g.restore();
+  // neuskegel met een dopje vooraan
+  g.fillStyle = '#c86a42';
+  g.beginPath();
+  g.ellipse(BX + kant * BRX * 0.82, BY, BRX * 0.2, BRY * 0.72, 0, 0, TAU); g.fill();
+  g.fillStyle = '#e8c88a';
+  g.beginPath();
+  g.ellipse(BX + kant * BRX * 0.97, BY, BRX * 0.07, BRY * 0.3, 0, 0, TAU); g.fill();
+  g.strokeStyle = 'rgba(255,255,255,0.5)'; g.lineWidth = 2;
+  g.beginPath(); g.ellipse(BX, BY, BRX, BRY, 0, Math.PI * 1.08, Math.PI * 1.75); g.stroke();
+  // tuigage naar het kuipje
+  g.strokeStyle = '#6f5432'; g.lineWidth = 2;
+  for (const sx of [-30, -13, 13, 30]) {
+    g.beginPath(); g.moveTo(sx, BY + BRY * 0.86); g.lineTo(sx * 0.72, -4); g.stroke();
+  }
+  g.fillStyle = '#6f5432';
+  g.fillRect(-34, BY + BRY * 0.82, 68, 3);
   g.restore();
 }
 
