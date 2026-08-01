@@ -796,6 +796,111 @@ const D = {
   // onderaan bij WEZENS WERELD 2 - GEGEVENS een regel met zijn gegevens.
   // ==========================================================================
 
+
+  // ---- vossenfamilie: vijf nieuwe richtingen -------------------------------
+  // Allemaal op dezelfde bouw als foxy: gedrongen lijf, dikke kraag om de nek,
+  // spitse oren en een volle pluimstaart. Alleen de kleur en de accenten
+  // verschillen, zodat je meteen ziet dat het familie is.
+  vosBasis(g, S, t, m, kl, seed, accent) {
+    const c = kl.c, d = kl.d, kraag = kl.kraag;
+    g.save(); g.translate(S * 0.58, S * 0.42); g.rotate(Math.sin(t * 2) * 0.1);
+    VE(g, kraag, S * 0.34, -S * 0.16, S * 0.42, S * 0.3, -0.4);     // pluimstaart
+    VE(g, c, S * 0.16, -S * 0.04, S * 0.24, S * 0.2, -0.3);
+    g.restore();
+    VE(g, d, -S * 0.36, S * 0.82, S * 0.18, S * 0.15);              // pootjes
+    VE(g, d, S * 0.36, S * 0.82, S * 0.18, S * 0.15);
+    VE(g, c, 0, S * 0.36, S * 0.6, S * 0.44);                       // lijf
+    for (let i = 0; i < 9; i++) {                                   // dikke kraag
+      const a = -1.5 + i * 0.36;
+      VE(g, kraag, Math.cos(a) * S * 0.5, S * 0.06 + Math.sin(a) * S * 0.2, S * 0.14, S * 0.11, a);
+    }
+    for (const sg of [-1, 1]) {                                     // spitse oren
+      PG(g, c, [[sg * S * 0.2, -S * 0.4], [sg * S * 0.44, -S * 0.94], [sg * S * 0.52, -S * 0.34]]);
+      PG(g, kl.oor, [[sg * S * 0.26, -S * 0.42], [sg * S * 0.42, -S * 0.8], [sg * S * 0.46, -S * 0.38]]);
+    }
+    VE(g, c, 0, -S * 0.24, S * 0.46, S * 0.4);                      // kop
+    VE(g, kraag, 0, -S * 0.08, S * 0.2, S * 0.13);                  // snuitje
+    HEAD(0, -S * 0.26, S * 0.44, S * 0.38, { muzzle: 0.32 });
+    EYES(g, t, m, seed, { sep: 0.44, y: -0.14, r: 0.23, iris: kl.iris });
+    E(g, '#2c2420', 0, -S * 0.12, S * 0.05, S * 0.04);              // neusje
+    if (accent) accent(g, S, t);
+  },
+  vosblad(g, S, t, m) {
+    D.vosBasis(g, S, t, m, { c: '#8fd8a8', d: '#6cbc88', kraag: '#c8f0d0', oor: '#5faa78',
+      iris: '#3f7a3a' }, 210, function (g2, S2, t2) {
+      for (const sg of [-1, 1]) {                                   // blaadjes aan de oren
+        g2.save(); g2.translate(sg * S2 * 0.5, -S2 * 0.66); g2.rotate(sg * 1.15 + Math.sin(t2 * 2) * 0.05);
+        VE(g2, '#5fbe70', 0, -S2 * 0.09, S2 * 0.08, S2 * 0.17);
+        LN(g2, 'rgba(50,110,44,0.6)', S2 * 0.02, [[0, -S2 * 0.25], [0, S2 * 0.05]]);
+        g2.restore();
+      }
+    });
+  },
+  vosijs(g, S, t, m) {
+    D.vosBasis(g, S, t, m, { c: '#a8dcf0', d: '#7fbcd8', kraag: '#e8f8ff', oor: '#7fbcd8',
+      iris: '#3f7fb0' }, 211, function (g2, S2, t2) {
+      for (const sg of [-1, 1]) {                                   // ijspunten
+        PG(g2, '#dff4ff', [[sg * S2 * 0.3, -S2 * 0.62], [sg * S2 * 0.44, -S2 * 1.1], [sg * S2 * 0.5, -S2 * 0.56]]);
+        PG(g2, 'rgba(255,255,255,0.8)', [[sg * S2 * 0.34, -S2 * 0.62], [sg * S2 * 0.43, -S2 * 0.98], [sg * S2 * 0.44, -S2 * 0.6]]);
+      }
+      for (let i = 0; i < 3; i++) {                                 // glinstering
+        const a = t2 * 1.4 + i * 2.1;
+        E(g2, 'rgba(255,255,255,' + (0.5 + Math.sin(t2 * 3 + i) * 0.3) + ')',
+          Math.cos(a) * S2 * 0.7, S2 * 0.1 + Math.sin(a) * S2 * 0.3, S2 * 0.04, S2 * 0.04);
+      }
+    });
+  },
+  vospsy(g, S, t, m) {
+    D.vosBasis(g, S, t, m, { c: '#d8b0e8', d: '#b88cd0', kraag: '#f0dcf8', oor: '#b88cd0',
+      iris: '#7a3fa0' }, 212, function (g2, S2, t2) {
+      // edelsteen op het voorhoofd
+      const pul = 0.6 + 0.4 * Math.sin(t2 * 2.4);
+      E(g2, 'rgba(240,120,200,' + (0.35 * pul) + ')', 0, -S2 * 0.5, S2 * 0.2, S2 * 0.2);
+      PG(g2, '#e8508c', [[0, -S2 * 0.62], [S2 * 0.1, -S2 * 0.5], [0, -S2 * 0.38], [-S2 * 0.1, -S2 * 0.5]]);
+      PG(g2, 'rgba(255,255,255,0.7)', [[0, -S2 * 0.62], [S2 * 0.1, -S2 * 0.5], [0, -S2 * 0.5]]);
+    });
+  },
+  vosnacht(g, S, t, m) {
+    D.vosBasis(g, S, t, m, { c: '#3f3450', d: '#2e2640', kraag: '#4e4266', oor: '#2e2640',
+      iris: '#f0d040' }, 213, function (g2, S2, t2) {
+      // gloeiende ringen op kop, poten en staart
+      const pul = 0.55 + 0.45 * Math.sin(t2 * 2.2);
+      const ring = function (x, y, r) {
+        E(g2, 'rgba(240,208,64,' + (0.3 * pul) + ')', x, y, r * 2.2, r * 2.2);
+        ARC(g2, 'rgba(250,220,90,' + (0.7 + 0.3 * pul) + ')', x, y, r, 0, TAU, S2 * 0.05);
+      };
+      ring(0, -S2 * 0.48, S2 * 0.11);
+      ring(-S2 * 0.36, S2 * 0.72, S2 * 0.08);
+      ring(S2 * 0.36, S2 * 0.72, S2 * 0.08);
+      ring(S2 * 0.86, S2 * 0.24, S2 * 0.1);
+    });
+  },
+  vosfee(g, S, t, m) {
+    D.vosBasis(g, S, t, m, { c: '#f2dfe8', d: '#d8bccc', kraag: '#ffc0d8', oor: '#e89ab8',
+      iris: '#d0508c' }, 214, function (g2, S2, t2) {
+      // strikjes aan de oren en een lint om de nek
+      for (const sg of [-1, 1]) {
+        g2.save(); g2.translate(sg * S2 * 0.52, -S2 * 0.44); g2.rotate(sg * 0.9);
+        g2.scale(0.8, 0.8);
+        for (const q of [-1, 1]) {
+          g2.fillStyle = q < 0 ? '#ff9ec6' : '#e8709c';
+          g2.beginPath(); g2.moveTo(0, 0);
+          g2.bezierCurveTo(q * S2 * 0.14, -S2 * 0.16, q * S2 * 0.28, -S2 * 0.12, q * S2 * 0.25, -S2 * 0.01);
+          g2.bezierCurveTo(q * S2 * 0.24, S2 * 0.1, q * S2 * 0.11, S2 * 0.11, 0, 0);
+          g2.closePath(); g2.fill();
+        }
+        E(g2, '#e8709c', 0, 0, S2 * 0.07, S2 * 0.065);
+        g2.restore();
+      }
+      LN(g2, '#ff9ec6', S2 * 0.06, [[-S2 * 0.3, S2 * 0.16], [S2 * 0.3, S2 * 0.16]]);
+      for (let i = 0; i < 3; i++) {                                 // zwevende glittertjes
+        const a = t2 * 1.1 + i * 2.1;
+        E(g2, 'rgba(255,190,220,0.8)', Math.cos(a) * S2 * 0.78, -S2 * 0.1 + Math.sin(a) * S2 * 0.4,
+          S2 * 0.045, S2 * 0.045);
+      }
+    });
+  },
+
   // ---- lijn 1: blad. Bleekgroene viervoeter met een groot blad op de kop ----
   bladknop(g, S, t, m) {
     const c = '#b8e08a', d = '#8fc45f';
@@ -5132,6 +5237,11 @@ const SPECIES_W2 = [
   { hp: 3, draw: 'vlamrug',    type: 'fire',  pools: ['terraces'] },
   { hp: 4, draw: 'vlamnek',    type: 'fire',  pools: ['terraces'] },
   { hp: 5, draw: 'vlamkraag',  type: 'fire',  pools: ['terraces'] },
+  { hp: 4, draw: 'vosblad',  type: 'grass',   pools: ['ravine'] },
+  { hp: 4, draw: 'vospsy',   type: 'psychic', pools: ['caverns'] },
+  { hp: 4, draw: 'vosnacht', type: 'dark',    pools: ['caverns'] },
+  { hp: 4, draw: 'vosijs',   type: 'ice',     pools: ['temple'] },
+  { hp: 4, draw: 'vosfee',   type: 'fairy',   pools: ['temple'] },
   { hp: 3, draw: 'bijtkaak',   type: 'water', pools: ['shore'] },
   { hp: 4, draw: 'bijtklauw',  type: 'water', pools: ['shore'] },
   { hp: 5, draw: 'bijtkoning', type: 'water', pools: ['shore'] },
