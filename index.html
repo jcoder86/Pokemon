@@ -5128,6 +5128,43 @@ function validateEyes(verbose) {
   return meld;
 }
 
+
+// Controleert of je overal daadwerkelijk kunt staan en lopen. Deze test had de
+// vastloper in de luchtroute meteen gevangen: de speler landde op een plek waar
+// zijn hoofd in een geblokkeerde tegel zat, waardoor bewegen onmogelijk was.
+// Shift+R draait hem.
+function routeCheck(verbose) {
+  const meld = [];
+  const bewaar = cur;
+  for (const naam in AREAS) {
+    const a = AREAS[naam];
+    cur = a;
+    for (const po of a.portals) {
+      if (blocked(po.walk[0], po.walk[1]))
+        meld.push(naam + ' -> ' + po.dest + ': aanmeerpunt zit vast');
+      const d = AREAS[po.dest];
+      if (!d) { meld.push(naam + ' -> ' + po.dest + ': bestemming bestaat niet'); continue; }
+      cur = d;
+      if (blocked(po.spawn[0], po.spawn[1]))
+        meld.push(naam + ' -> ' + po.dest + ': LANDINGSPLEK ZIT VAST');
+      // vanaf de landingsplek moet elke poort in dat gebied bereikbaar zijn
+      for (const dp of d.portals) {
+        const pad = findPath(po.spawn[0], po.spawn[1], dp.walk[0], dp.walk[1]);
+        const eind = pad[pad.length - 1];
+        if (!eind || Math.hypot(eind[0] - dp.walk[0], eind[1] - dp.walk[1]) > TILE)
+          meld.push(naam + ' -> ' + po.dest + ': vanaf de landingsplek is ' + dp.dest + ' onbereikbaar');
+      }
+      cur = a;
+    }
+  }
+  cur = bewaar;
+  if (verbose !== false) {
+    if (!meld.length) console.log('[route] alle doorgangen en landingsplekken in orde');
+    else meld.forEach(m => console.warn('[route] ' + m));
+  }
+  return meld;
+}
+
 // ============================================================ debug-weergaven
 // Geen zichtbare knoppen: alleen via het toetsenbord, dus onbereikbaar op de
 // iPad van een kind. Shift+K = koppenraster, Shift+S = squint-test.
@@ -5226,6 +5263,8 @@ window.addEventListener('keydown', e => {
     e.preventDefault(); showSquint();
   } else if (e.key === 'O' || e.key === 'o') {
     e.preventDefault(); validateEyes(true);
+  } else if (e.key === 'R' || e.key === 'r') {
+    e.preventDefault(); routeCheck(true);
   }
 });
 
@@ -6515,7 +6554,7 @@ function buildVillage() {
         walk: [16 * TILE, 22.9 * TILE], spawn: [16 * TILE, 2.6 * TILE] },
       { dest: 'skyway', icon: 'airship', side: 'top',
         zone: [14.4 * TILE, 3.3 * TILE, 17.6 * TILE, 4.9 * TILE], tap: [13 * TILE, 0, 19 * TILE, 5.4 * TILE],
-        walk: [15.5 * TILE, 4.2 * TILE], spawn: [16 * TILE, 21.3 * TILE] },
+        walk: [15.5 * TILE, 4.2 * TILE], spawn: [15.5 * TILE, 22.4 * TILE] },
     ],
     style: {
       g1: '#a3d465', g2: '#99cb5d', path: '#d8b878', sand: '#ecd9a0', water: '#4aa8e0',
@@ -6640,6 +6679,8 @@ function isWalkTile(t) { return !T_BLOCK[t] && t !== T_WATER; }
 
 // welke kleur krijgt de rand van tegel t, kijkend naar buur n?
 function edgeTint(t, n) {
+  if (n === T_SKY && isWalkTile(t)) return 'rgba(90,140,190,0.34)';  // wolkenrand naar de lucht
+  if (t === T_SKY && isWalkTile(n)) return 'rgba(255,255,255,0.26)';
   if (T_BLOCK[n] && isWalkTile(t)) return 'rgba(22,32,16,0.42)';   // harde grens: donkere zoom
   if (n === T_WATER && isWalkTile(t)) return 'rgba(30,60,80,0.30)'; // vochtige oever
   if (t === T_WATER && isWalkTile(n)) return 'rgba(235,250,255,0.42)'; // schuimrand
@@ -6647,7 +6688,7 @@ function edgeTint(t, n) {
   return null;
 }
 
-function terrainPasses(wg, m) {
+function terrainPasses(wg, m, sky) {
   const at = (x, y) => (x < 0 || y < 0 || x >= MW || y >= MH)
     ? m[clamp(y, 0, MH - 1)][clamp(x, 0, MW - 1)] : m[y][x];
 
@@ -6674,7 +6715,8 @@ function terrainPasses(wg, m) {
   // --- 2. waarde-scheiding: begaanbaar lichter, blokkerend donkerder ---
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     const t = m[y][x], px = x * TILE, py = y * TILE;
-    if (isWalkTile(t)) wg.fillStyle = 'rgba(255,250,214,0.11)';
+    if (isWalkTile(t)) wg.fillStyle = sky ? 'rgba(255,255,255,0.16)' : 'rgba(255,250,214,0.11)';
+    else if (t === T_SKY) wg.fillStyle = 'rgba(52,92,140,0.16)';   // lucht: alleen een zachte waas
     else if (T_BLOCK[t]) wg.fillStyle = 'rgba(16,24,12,0.30)';
     else wg.fillStyle = 'rgba(14,30,48,0.14)';
     wg.fillRect(px, py, TILE, TILE);
@@ -6682,6 +6724,7 @@ function terrainPasses(wg, m) {
 
   // --- contactschaduw onder elk blokkerend vak: het signaal "hier niet door" ---
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+    if (sky) break;                                    // lucht werpt geen schaduw op zichzelf
     if (!T_BLOCK[m[y][x]]) continue;
     if (T_BLOCK[at(x, y + 1)]) continue;              // alleen aan de onderrand van een cluster
     const px = x * TILE + TILE / 2, py = y * TILE + TILE;
@@ -6733,11 +6776,20 @@ function renderArea(area) {
   grass.width = VW * dpr; grass.height = VH * dpr;
   const gg = grass.getContext('2d'); gg.scale(dpr, dpr);
 
+  if (area.sky) {                       // een doorlopende lucht, geen tegelbanden
+    const hemel = wg.createLinearGradient(0, 0, 0, VH);
+    hemel.addColorStop(0, '#8fc4ee');
+    hemel.addColorStop(0.45, '#a8d6f4');
+    hemel.addColorStop(1, '#c8e6f8');
+    wg.fillStyle = hemel; wg.fillRect(0, 0, VW, VH);
+  }
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     const t = m[y][x], px = x * TILE, py = y * TILE;
     const h = hash2(x, y);
-    wg.fillStyle = (x + y) % 2 === 0 ? st.g1 : st.g2;
-    wg.fillRect(px, py, TILE, TILE);
+    if (!(area.sky && t === T_SKY)) {
+      wg.fillStyle = (x + y) % 2 === 0 ? st.g1 : st.g2;
+      wg.fillRect(px, py, TILE, TILE);
+    }
     if (t === T_PATH) {
       wg.fillStyle = st.path; wg.fillRect(px, py, TILE, TILE);
       if (st.cobble) {
@@ -6801,15 +6853,10 @@ function renderArea(area) {
       wg.fillRect(px + 3 + h * 8, py + 6 + h * 10, 9, 6);
       wg.fillRect(px + 16 - h * 6, py + 18, 8, 5);
     } else if (t === T_SKY) {
-      // open lucht: donkerder dan de wolkenvloer, zodat meteen te zien is waar
-      // je niet kunt lopen. Zachte kleurbanden voor diepte.
-      const lucht = wg.createLinearGradient(px, py, px, py + TILE);
-      const k = py / VH;
-      lucht.addColorStop(0, 'rgb(' + (96 + k * 34) + ',' + (150 + k * 40) + ',' + (206 + k * 30) + ')');
-      lucht.addColorStop(1, 'rgb(' + (104 + k * 34) + ',' + (158 + k * 40) + ',' + (212 + k * 30) + ')');
-      wg.fillStyle = lucht; wg.fillRect(px, py, TILE, TILE);
-      if (h > 0.86) { wg.fillStyle = 'rgba(255,255,255,0.10)';
-        wg.beginPath(); wg.ellipse(px + 8 + h * 14, py + 10 + h * 10, 11, 5, 0, 0, TAU); wg.fill(); }
+      // De lucht zelf is als doorlopend verloop over de hele kaart gezet, voor
+      // de tegellus. Hier alleen nog wat diepte-nevel, laag van contrast.
+      if (h > 0.88) { wg.fillStyle = 'rgba(255,255,255,0.07)';
+        wg.beginPath(); wg.ellipse(px + 8 + h * 14, py + 10 + h * 10, 13, 5, 0, 0, TAU); wg.fill(); }
     } else if (t === T_CLOUD) {
       // wolkenvloer: licht, zacht en duidelijk begaanbaar
       const wolk = wg.createLinearGradient(px, py, px, py + TILE);
@@ -6906,7 +6953,7 @@ function renderArea(area) {
     wg.fillRect(px + 4, py + 8, 5, 20); wg.fillRect(px + 23, py + 8, 5, 20);
     wg.fillStyle = '#b08a58'; wg.fillRect(px + 4, py + 8, 5, 3); wg.fillRect(px + 23, py + 8, 5, 3);
   }
-  terrainPasses(wg, m, st);
+  terrainPasses(wg, m, area.sky);
 
   // rotsen
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (m[y][x] === T_ROCK) {
@@ -7036,7 +7083,7 @@ function renderArea(area) {
       // Het luchtschip aan de steiger boven het dorp: houten romp, ballon,
       // loopplank naar het pad. De gloed en de stoom komen er per frame
       // overheen, zodat het duidelijk iets is waar je op kunt tikken.
-      const gx = 15.5 * TILE, gy = 2.7 * TILE;
+      const gx = 15.5 * TILE, gy = 3.05 * TILE;
       wg.fillStyle = 'rgba(30,40,20,0.20)';                       // slagschaduw
       wg.beginPath(); wg.ellipse(gx, gy + 1.25 * TILE, 2.2 * TILE, 0.34 * TILE, 0, 0, TAU); wg.fill();
       wg.fillStyle = '#8a6a42';                                   // steiger
@@ -7049,13 +7096,13 @@ function renderArea(area) {
       const bal = wg.createLinearGradient(gx - 1.9 * TILE, gy - 1.9 * TILE, gx + 1.6 * TILE, gy - 0.2 * TILE);
       bal.addColorStop(0, '#ffd9a8'); bal.addColorStop(0.5, '#e88a5a'); bal.addColorStop(1, '#a8503a');
       wg.fillStyle = bal;
-      wg.beginPath(); wg.ellipse(gx, gy - 0.95 * TILE, 1.85 * TILE, 0.82 * TILE, 0, 0, TAU); wg.fill();
+      wg.beginPath(); wg.ellipse(gx, gy - 0.9 * TILE, 1.8 * TILE, 0.74 * TILE, 0, 0, TAU); wg.fill();
       wg.fillStyle = 'rgba(255,240,210,0.5)';
-      wg.beginPath(); wg.ellipse(gx - 0.62 * TILE, gy - 1.28 * TILE, 0.62 * TILE, 0.2 * TILE, -0.25, 0, TAU); wg.fill();
+      wg.beginPath(); wg.ellipse(gx - 0.6 * TILE, gy - 1.2 * TILE, 0.58 * TILE, 0.18 * TILE, -0.25, 0, TAU); wg.fill();
       wg.strokeStyle = 'rgba(120,60,40,0.55)'; wg.lineWidth = 3;
       for (let i = -2; i <= 2; i++) {
         wg.beginPath();
-        wg.ellipse(gx, gy - 0.95 * TILE, 1.85 * TILE, 0.82 * TILE, 0, Math.PI * 0.5 + i * 0.28, Math.PI * 1.5 - i * 0.28);
+        wg.ellipse(gx, gy - 0.9 * TILE, 1.8 * TILE, 0.74 * TILE, 0, Math.PI * 0.5 + i * 0.28, Math.PI * 1.5 - i * 0.28);
         wg.stroke();
       }
       wg.strokeStyle = '#6f5432'; wg.lineWidth = 3;               // touwen naar de romp
@@ -7314,7 +7361,7 @@ function renderArea(area) {
       gg.beginPath(); gg.arc(px + 8 + h * 14, py + 14 + (h * 13 % 1) * 10, 2, 0, TAU); gg.fill();
     }
   }
-  obstacleDarkenPass(wg, m);
+  if (!area.sky) obstacleDarkenPass(wg, m);
   area.world = base;
   area.grass = grass;
 }
@@ -7349,25 +7396,28 @@ function obstacleDarkenPass(wg, m) {
 function buildSkyway() {
   const m = [];
   for (let y = 0; y < MH; y++) { m[y] = []; for (let x = 0; x < MW; x++) m[y][x] = T_SKY; }
-  const leg = (y, x1, x2) => { for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) { m[y][x] = T_CLOUD; m[y + 1][x] = T_CLOUD; } };
-  const stijg = (x, y1, y2) => { for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) { m[y][x] = T_CLOUD; m[y][x + 1] = T_CLOUD; } };
-  leg(21, 13, 27); stijg(26, 17, 22);
-  leg(17, 5, 27);  stijg(5, 13, 18);
-  leg(13, 5, 27);  stijg(26, 9, 14);
-  leg(9, 5, 27);   stijg(5, 5, 10);
-  leg(5, 5, 16);   stijg(15, 1, 6);
-  for (let y = 22; y <= 23; y++) { m[y][15] = T_CLOUD; m[y][16] = T_CLOUD; }
-  for (let y = 0; y <= 1; y++) { m[y][15] = T_CLOUD; m[y][16] = T_CLOUD; }
+  // Banden zijn drie tegels hoog. De botsingsbox van de speler meet ook elf
+  // pixels boven zijn voeten; met twee rijen zat dat meetpunt in de lucht
+  // erboven en kon hij geen kant op.
+  const leg = (y, x1, x2) => { for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) for (let d = 0; d < 3; d++) m[y + d][x] = T_CLOUD; };
+  const stijg = (x, y1, y2) => { for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) for (let d = 0; d < 3; d++) m[y][x + d] = T_CLOUD; };
+  leg(20, 13, 28); stijg(26, 16, 22);
+  leg(16, 3, 28);  stijg(3, 12, 18);
+  leg(12, 3, 28);  stijg(26, 8, 14);
+  leg(8, 3, 28);   stijg(3, 4, 10);
+  leg(4, 3, 16);   stijg(14, 1, 6);
+  for (let y = 20; y <= 23; y++) for (let x = 14; x <= 16; x++) m[y][x] = T_CLOUD;
+  for (let y = 0; y <= 4; y++) for (let x = 14; x <= 16; x++) m[y][x] = T_CLOUD;
   return {
     name: 'skyway', map: m, patches: [], waterPool: null, pond: null, mill: null, houses: [],
     sky: true,
     portals: [
       { dest: 'village', icon: 'airdock', side: 'bottom',
-        zone: [14.6 * TILE, 22.6 * TILE, 17.4 * TILE, 24 * TILE], tap: [13.6 * TILE, 21.4 * TILE, 18.4 * TILE, 24 * TILE],
-        walk: [16 * TILE, 23 * TILE], spawn: [15.5 * TILE, 2.4 * TILE] },
+        zone: [13.9 * TILE, 23.0 * TILE, 17.1 * TILE, 24 * TILE], tap: [13 * TILE, 21.6 * TILE, 18 * TILE, 24 * TILE],
+        walk: [15.5 * TILE, 22.6 * TILE], spawn: [15.5 * TILE, 5.7 * TILE] },
       { dest: 'shore', icon: 'airdock', side: 'top',
-        zone: [14.6 * TILE, 0, 17.4 * TILE, 1.4 * TILE], tap: [13.6 * TILE, 0, 18.4 * TILE, 2.6 * TILE],
-        walk: [16 * TILE, 0.9 * TILE], spawn: [16 * TILE, 21.4 * TILE] },
+        zone: [13.9 * TILE, 0, 17.1 * TILE, 1.2 * TILE], tap: [13 * TILE, 0, 18 * TILE, 2.4 * TILE],
+        walk: [15.5 * TILE, 1.6 * TILE], spawn: [16 * TILE, 21.4 * TILE] },
     ],
     style: {
       g1: '#eaf4ff', g2: '#e2eeff', path: '#f6fbff', sand: '#eaf4ff', water: '#bfe0ff',
@@ -7399,7 +7449,7 @@ function buildShore() {
     portals: [
       { dest: 'skyway', icon: 'airdock', side: 'bottom',
         zone: [14.6 * TILE, 22.4 * TILE, 17.4 * TILE, 24 * TILE], tap: [13.6 * TILE, 21 * TILE, 18.4 * TILE, 24 * TILE],
-        walk: [16 * TILE, 22.9 * TILE], spawn: [16 * TILE, 2.8 * TILE] },
+        walk: [16 * TILE, 22.9 * TILE], spawn: [15.5 * TILE, 3.4 * TILE] },
     ],
     style: {
       g1: '#bfe8cf', g2: '#b4e2c6', path: '#f0e6cf', sand: '#f6efdc', water: '#5fd8d0',
@@ -8679,9 +8729,9 @@ const SKYL = [];
   let z = 20250131;
   const rnd = () => { z = (z * 1103515245 + 12345) % 2147483648; return z / 2147483648; };
   const lagen = [
-    { n: 14, sp: 0.18, sc: 1.7, a: 0.30 },   // ver weg, traag en groot
-    { n: 12, sp: 0.42, sc: 1.1, a: 0.42 },
-    { n: 9,  sp: 0.85, sc: 0.72, a: 0.55 },  // dichtbij, snel en klein
+    { n: 10, sp: 0.18, sc: 0.9, a: 0.16 },   // ver weg, traag en groot
+    { n: 9,  sp: 0.42, sc: 0.62, a: 0.22 },
+    { n: 7,  sp: 0.85, sc: 0.44, a: 0.30 },  // dichtbij, snel en klein
   ];
   for (const L of lagen) {
     const puf = [];
@@ -8703,7 +8753,7 @@ function tekenWolkenlaag(g, laag, off, voor) {
     g.ellipse(x - p.r * 0.7, y + p.r * 0.16, p.r * 0.66, p.r * 0.44, 0, 0, TAU);
     g.ellipse(x + p.r * 0.75, y + p.r * 0.2, p.r * 0.58, p.r * 0.4, 0, 0, TAU);
     g.fill();
-    g.fillStyle = 'rgba(150,180,215,0.22)';
+    g.fillStyle = 'rgba(160,190,220,0.10)';
     g.beginPath(); g.ellipse(x + p.r * 0.2, y + p.r * 0.42, p.r * 1.1, p.r * 0.2, 0, 0, TAU); g.fill();
   }
   g.restore();
@@ -8713,8 +8763,8 @@ function tekenLuchtAchter(g) {
   const hoogte = 1 - clamp(G.player.y / VH, 0, 1);      // 0 onderaan, 1 bovenaan
   const off = G.player.y * 1.1;
   g.save();                                              // zonnestralen linksboven
-  g.globalAlpha = 0.16;
-  for (let i = 0; i < 7; i++) {
+  g.globalAlpha = 0.05;
+  for (let i = 0; i < 5; i++) {
     g.fillStyle = '#fff6c8';
     g.beginPath(); g.moveTo(-40, -40);
     const a = 0.35 + i * 0.16;
