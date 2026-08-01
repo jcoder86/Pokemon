@@ -100,6 +100,10 @@
   .btn[disabled]::after { display:none; }
   /* maten — het zichtbare vlak; het aanraakgebied is altijd ruimer */
   .btn-round { border-radius:var(--r-pill); }
+  /* iconen: overal dezelfde optische grootte, ongeacht de knopmaat */
+  .btn .ico { width:52%; height:52%; display:block; pointer-events:none;
+      filter:drop-shadow(0 2px 2px rgba(0,0,0,.28)); }
+  #btnBall .ico { display:none; }
   /* kleurvarianten */
   .btn-go    { --b1:var(--c-go-1);    --b2:var(--c-go-2); }
   .btn-book  { --b1:var(--c-book-1);  --b2:var(--c-book-2); }
@@ -488,6 +492,7 @@ const SFX = {
   hit()        { tone(620, 0.1, 'square', 0.09); tone(330, 0.12, 'triangle', 0.09, 0.04, 180); },
   hitSoft()    { tone(500, 0.09, 'triangle', 0.07); tone(300, 0.1, 'triangle', 0.06, 0.04, 200); },
   heartPop()   { tone(880, 0.1, 'sine', 0.1, 0, 1300); },
+  heartBreak() { tone(420, 0.12, 'triangle', 0.14, 0, 180); tone(210, 0.22, 'sine', 0.1, 0.05, 90); },
   charge()     { tone(300, 0.35, 'triangle', 0.09, 0, 900); tone(450, 0.3, 'sine', 0.06, 0.1, 1200); },
   bigHit()     { tone(90, 0.3, 'sawtooth', 0.12, 0, 55); tone(700, 0.18, 'square', 0.09, 0.02, 200);
                  [523, 659, 880].forEach((f, i) => tone(f, 0.16, 'triangle', 0.08, 0.06 + i * 0.05)); },
@@ -7473,6 +7478,41 @@ function startEncounter(pool) {
   SFX.rustle(); SFX.battleStart();
 }
 
+// ============================================================ iconenset
+// Een enkele visuele taal: alles op een raster van 24, massieve silhouetten met
+// dezelfde afronding en dezelfde optische grootte. Massief omdat een silhouet
+// dat volledig zwart ingevuld nog herkenbaar is, ook voor een kind van vijf
+// leesbaar blijft. Geen symbool dat lezen of cultuurkennis vraagt: steeds de
+// handeling zelf in beeld.
+const ICONS = {
+  boek:  'M11 5.9C9.1 4.5 6.4 4.1 3.7 4.5a1.1 1.1 0 0 0-.9 1.1v11.9a1.1 1.1 0 0 0 1.3 1.1c2.1-.4 4.3-.1 5.9.9a1.1 1.1 0 0 0 1 0zM13 5.9c1.9-1.4 4.6-1.8 7.3-1.4a1.1 1.1 0 0 1 .9 1.1v11.9a1.1 1.1 0 0 1-1.3 1.1c-2.1-.4-4.3-.1-5.9.9a1.1 1.1 0 0 1-1 0z',
+  huis:  'M12 3.2 2.6 11a1.1 1.1 0 0 0 .7 2H5v7.2c0 .6.5 1 1.1 1h3.4v-5.5c0-.6.5-1.1 1.1-1.1h2.8c.6 0 1.1.5 1.1 1.1v5.5h3.4c.6 0 1.1-.4 1.1-1V13h1.7a1.1 1.1 0 0 0 .7-2z',
+  geluid:'M4 9.2h3.4L12.6 4c.7-.7 1.9-.2 1.9.8v14.4c0 1-1.2 1.5-1.9.8L7.4 14.8H4c-.6 0-1.1-.5-1.1-1.1v-3.4c0-.6.5-1.1 1.1-1.1zM17.2 8.1a1 1 0 0 1 1.5.1 6.2 6.2 0 0 1 0 7.6 1 1 0 1 1-1.6-1.3 4.1 4.1 0 0 0 0-5zM19.8 5a1 1 0 0 1 1.5.1 10.3 10.3 0 0 1 0 13.8 1 1 0 1 1-1.5-1.4 8.2 8.2 0 0 0 0-11.1z',
+  stil:  'M4 9.2h3.4L12.6 4c.7-.7 1.9-.2 1.9.8v14.4c0 1-1.2 1.5-1.9.8L7.4 14.8H4c-.6 0-1.1-.5-1.1-1.1v-3.4c0-.6.5-1.1 1.1-1.1zM17.3 9.3a1 1 0 0 1 1.4 0l1.4 1.4 1.4-1.4a1 1 0 1 1 1.4 1.4L21.5 12l1.4 1.4a1 1 0 1 1-1.4 1.4l-1.4-1.4-1.4 1.4a1 1 0 1 1-1.4-1.4l1.4-1.4-1.4-1.4a1 1 0 0 1 0-1.4z',
+  weg:   'M14.4 2.6a2.3 2.3 0 1 1 0 4.6 2.3 2.3 0 0 1 0-4.6zM11.8 8.2c1-.5 2.2-.3 3 .5l2 2 2.6.9a1.2 1.2 0 0 1-.8 2.3l-3-1a1.2 1.2 0 0 1-.5-.3l-.8-.8-.9 3.2 2.4 2.3c.3.3.4.6.4 1l.3 3a1.2 1.2 0 1 1-2.4.3l-.3-2.6-3.3-3.2a1.2 1.2 0 0 1-.3-1.2l.7-2.7-1.4 1-1.5 2.6a1.2 1.2 0 1 1-2-1.2l1.6-2.9c.1-.2.3-.4.5-.5z',
+  klap:  'M12.0 1.4L13.6 7.7L18.8 3.9L16.0 9.7L22.4 10.2L16.5 12.8L21.2 17.3L15.0 15.5L15.6 22.0L12.0 16.6L8.4 22.0L9.0 15.5L2.8 17.3L7.5 12.8L1.6 10.2L8.0 9.7L5.2 3.9L10.4 7.7Z',
+  ster:  'M12 2.2l2.3 4.9 5.4.7-4 3.7 1 5.3L12 14.2 7.3 16.8l1-5.3-4-3.7 5.4-.7z',
+  kruis: 'M6.2 4.6a1.6 1.6 0 0 1 2.3 0L12 8.1l3.5-3.5a1.6 1.6 0 1 1 2.3 2.3L14.3 10.4l3.5 3.5a1.6 1.6 0 1 1-2.3 2.3L12 12.7l-3.5 3.5a1.6 1.6 0 1 1-2.3-2.3l3.5-3.5-3.5-3.5a1.6 1.6 0 0 1 0-2.3z',
+  speel: 'M8 4.9c0-1 1.1-1.6 1.9-1L19 11a1.2 1.2 0 0 1 0 2l-9.1 7.1c-.8.6-1.9 0-1.9-1z',
+  terug: 'M11.4 4.3c.8-.6 1.9 0 1.9 1v3.2h5.3c1.4 0 2.5 1.1 2.5 2.5v2.6c0 1.4-1.1 2.5-2.5 2.5h-5.3v3.2c0 1-1.1 1.6-1.9 1L3.1 13a1.2 1.2 0 0 1 0-2z',
+};
+// Zet een icoon in een element. De 24-ruimte wordt geschaald naar de knop, dus
+// alle iconen krijgen dezelfde optische grootte ongeacht de knopmaat.
+function setIcon(el, naam) {
+  if (!el || !ICONS[naam]) return;
+  el.querySelectorAll('.ico').forEach(o => o.remove());
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('class', 'ico');
+  svg.setAttribute('aria-hidden', 'true');
+  const p = document.createElementNS(ns, 'path');
+  p.setAttribute('d', ICONS[naam]);
+  p.setAttribute('fill', 'currentColor');
+  svg.appendChild(p);
+  el.appendChild(svg);
+}
+
 // ============================================================ input
 const battleBtns = document.getElementById('battleBtns');
 const atkBtns = document.getElementById('atkBtns');
@@ -7605,6 +7645,8 @@ function updateBattle(dt) {
     if (!B.didImpact && B.pt >= 0.6) {
       B.didImpact = true;
       if (B.dmg > 0) {
+        for (let q = 0; q < B.dmg && B.hearts - q > 0; q++)
+          heartBreak(WILD.x - (B.max - 1) * 24 * 1.4 + (B.hearts - 1 - q) * 24 * 2.8, 130, 24);
         B.hearts = Math.max(0, B.hearts - B.dmg);
         B.wFlash = 1;
         SFX.hit(); SFX.heartPop();
@@ -7633,7 +7675,10 @@ function updateBattle(dt) {
     B.wLunge = B.pt < 0.5 ? Math.sin(Math.min(B.pt / 0.5, 1) * Math.PI) : 0;
     if (!B.didImpact && B.pt >= 0.6) {
       B.didImpact = true;
-      B.pHearts = Math.max(0, B.pHearts - (B.eBig ? 2 : 1));
+      const verlies = B.eBig ? 2 : 1;
+      for (let q = 0; q < verlies && B.pHearts - q > 0; q++)
+        heartBreak(PC.x - (B.pMax - 1) * 13 * 1.4 + (B.pHearts - 1 - q) * 13 * 2.8, PC.y - 125, 13);
+      B.pHearts = Math.max(0, B.pHearts - verlies);
       B.pFlash = 1;
       SFX.hitSoft();
       if (B.eBig) { SFX.bigHit(); B.shake = 1; }
@@ -7899,15 +7944,73 @@ function drawFxBig(g, type, sx, sy, txx, tyy, prog, t) {
   E(g, 'rgba(255,255,255,' + (0.16 * Math.sin(clamp(prog, 0, 1) * Math.PI)).toFixed(3) + ')', txx, tyy, 130, 105);
 }
 
+// Harten krijgen dezelfde behandeling als de rest: vorm, verloop, hoogsel en
+// contour. En verlies is een gebeurtenis: het hart breekt in twee helften die
+// wegvallen, met geluid. Geen stille verdwijning meer.
+const HEARTFX = [];      // lopende breuk-animaties
+function heartBreak(cx, cy, size) {
+  HEARTFX.push({ x: cx, y: cy, s: size, t: 0 });
+  if (AC) SFX.heartBreak();
+}
+function updateHeartFx(dt) {
+  for (let i = HEARTFX.length - 1; i >= 0; i--) {
+    HEARTFX[i].t += dt;
+    if (HEARTFX[i].t > 0.75) HEARTFX.splice(i, 1);
+  }
+}
+// een enkel hart met volume: verloop van licht boven naar donker onder, een
+// hoogsel aan de lichtzijde linksboven en een donkere contour van de eigen kleur
+function drawHeart(g, x, y, s, vol) {
+  if (vol) {
+    const gr = g.createLinearGradient(x, y - s * 1.1, x, y + s * 1.2);
+    gr.addColorStop(0, '#ff8ea4'); gr.addColorStop(0.5, '#f2465f'); gr.addColorStop(1, '#c22742');
+    g.fillStyle = gr;
+  } else {
+    g.fillStyle = 'rgba(112,108,104,0.32)';
+  }
+  heartPath(g, x, y, s); g.fill();
+  g.save();
+  heartPath(g, x, y, s); g.clip();
+  if (vol) {
+    E(g, 'rgba(255,255,255,0.55)', x - s * 0.34, y - s * 0.42, s * 0.26, s * 0.2, -0.5);
+    E(g, 'rgba(255,255,255,0.28)', x - s * 0.16, y - s * 0.3, s * 0.12, s * 0.1, -0.5);
+    E(g, 'rgba(120,20,40,0.28)', x + s * 0.4, y + s * 0.55, s * 0.5, s * 0.4);
+  }
+  g.restore();
+  g.strokeStyle = vol ? 'rgba(140,26,52,0.75)' : 'rgba(80,78,74,0.3)';
+  g.lineWidth = Math.max(1, s * 0.11);
+  heartPath(g, x, y, s); g.stroke();
+}
 function drawHeartsRow(g, cx, cy, n, max, size, t) {
   for (let i = 0; i < max; i++) {
     const hx = cx - (max - 1) * size * 1.4 + i * size * 2.8, full = i < n;
-    g.fillStyle = full ? '#ff5a78' : 'rgba(120,120,120,0.35)';
-    const pulse = full ? 1 + Math.sin(t * 4 + i) * 0.06 : 1;
-    heartPath(g, hx, cy, size * pulse); g.fill();
-    if (full) { E(g, 'rgba(255,255,255,0.5)', hx - size * 0.3, cy - size * 0.38, size * 0.2, size * 0.16); }
+    const pulse = full ? 1 + Math.sin(t * 4 + i) * 0.05 : 1;
+    drawHeart(g, hx, cy, size * pulse, full);
   }
 }
+// de brekende harten, over de rij heen
+function drawHeartFx(g) {
+  for (const f of HEARTFX) {
+    const k = f.t / 0.75, ease = 1 - (1 - k) * (1 - k);
+    g.save();
+    g.globalAlpha = 1 - ease;
+    for (const s of [-1, 1]) {
+      g.save();
+      g.translate(f.x + s * ease * f.s * 1.5, f.y + ease * ease * f.s * 2.2 - ease * f.s * 0.8);
+      g.rotate(s * ease * 1.1);
+      g.beginPath();                                   // halve hartvorm
+      heartPath(g, 0, 0, f.s);
+      g.clip();
+      g.beginPath();
+      g.rect(s < 0 ? -f.s * 1.6 : 0, -f.s * 1.6, f.s * 1.6, f.s * 3.2);
+      g.clip();
+      drawHeart(g, 0, 0, f.s, true);
+      g.restore();
+    }
+    g.restore();
+  }
+}
+
 
 // ============================================================ gevecht tekenen
 function drawBattle(g) {
@@ -8448,6 +8551,7 @@ function drawWorld(g) {
     g.restore();
   }
   drawParticles(g);
+  drawHeartFx(g);
 }
 
 // ============================================================ overgangen
@@ -8570,7 +8674,7 @@ btnMute.addEventListener('pointerdown', e => {
   e.stopPropagation();
   muted = !muted;
   if (masterG) masterG.gain.value = muted ? 0 : 0.55;
-  btnMute.innerHTML = muted ? '&#128263;' : '&#128266;';
+  setIcon(btnMute, muted ? 'stil' : 'geluid');
 });
 
 // ============================================================ startscherm met twee profielen
@@ -8740,6 +8844,15 @@ saveName.addEventListener('focus', () => { btnNewGo.disabled = !saveName.value.t
 btnNewGo.addEventListener('pointerdown', e => { e.stopPropagation(); createSave(); });
 btnNewGo.disabled = true;
 paintAvatarChoices();
+// Alle knoppen krijgen hun icoon uit de gedeelde set, zodat lijndikte,
+// afronding en optische grootte overal gelijk zijn.
+[['btnBook','boek'],['btnHome','huis'],['btnMute','geluid'],['btnFlee','weg'],
+ ['btnAttack','klap'],['btnSpecial','ster'],['btnCloseBook','kruis'],
+ ['btnNewGo','speel'],['btnSaveBack','terug']].forEach(function (p) {
+  const el = document.getElementById(p[0]);
+  if (el) { el.childNodes.forEach && [...el.childNodes].forEach(function (n) {
+    if (n.nodeType === 3) n.textContent = ''; }); setIcon(el, p[1]); }
+});
 // Elk profiel krijgt een eigen kleur en een eigen portret op de knop, zodat
 // Julian zonder te lezen ziet welke knop van hem is.
 (function tekenProfielIconen() {
@@ -8767,7 +8880,7 @@ function frame(now) {
 
   if (G.bookOpen) { /* boek open: de wereld en het gevecht wachten even */ }
   else if (G.state === 'world') { updateWorld(dt); updateParticles(dt); }
-  else if (G.state === 'battle') { updateBattle(dt); updateParticles(dt); }
+  else if (G.state === 'battle') { updateBattle(dt); updateParticles(dt); updateHeartFx(dt); }
   else if (G.state === 'toBattle') {
     G.transT += dt; updateParticles(dt);
     if (G.transT >= 0.55) { G.state = 'battle'; G.particles.length = 0; }
