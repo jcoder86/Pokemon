@@ -1,6 +1,6 @@
 # Julian's Pokemon
 
-Een vrolijk, tekstloos Pokémon-achtig verzamelspel voor Julian (5 jaar): vijf gebieden (weide-hub, jungle met lantaarntjes, dorp/boerderij, strand met palmen en zee, besneeuwde bergen), 150 in code getekende wezentjes (compleet, net als generatie 1), beurtgevechten met type-aanvallen, een mik-vangspel, een bootje en een verzamelboek waarin je je actieve metgezel kiest. Alles zit in één bestand (`index.html`) met `start.png` (startscherm) en `icon.png` (app-icoon) als enige afbeeldingen. Volledig offline speelbaar in Safari op iPad, landscape.
+Een vrolijk, tekstloos Pokémon-achtig verzamelspel voor Julian (5 jaar): twee werelden met samen elf gebieden, 250 in code getekende wezentjes, beurtgevechten met type-aanvallen, een mik-vangspel, een bootje, een luchtschip en een verzamelboek waarin je je actieve metgezel kiest. Alles zit in één bestand (`index.html`) met `start.png` (startscherm) en `icon.png` (app-icoon) als enige afbeeldingen. Volledig offline speelbaar in Safari op iPad, landscape.
 
 - **Starten:** `Julian` (groen) = Julians vaste profiel. `GUEST` (erboven, even groot) opent één tussenscherm met links de lopende spellen als langwerpige tegeltjes (avatar, naam en aantal gevangen wezentjes) en rechts het aanmaken van een nieuw spel: kies daar een hoofdpersoon en vul een naam in. Een nieuw spel begint altijd vers. Elk spel bewaart onder zijn eigen sleutel, dus meerdere kinderen kunnen op hetzelfde apparaat spelen zonder elkaars voortgang te raken. Een bestaand gast-spel van vroeger komt automatisch in de lijst als "Gast".
 - **Lopen/varen:** tik ergens — Julian loopt erheen en stapt aan de waterlijn vanzelf in/uit het bootje.
@@ -19,12 +19,16 @@ Een vrolijk, tekstloos Pokémon-achtig verzamelspel voor Julian (5 jaar): vijf g
   | zeldzame wezens | normaal | schaarser | het schaarst |
 
   Raken de ballen op, dan huppelt het wezentje weg en ga je zonder vangst naar buiten. Zijn alle maatjes op, dan trekt Julian zich terug. Geen van beide is een game over: je loopt gewoon weer verder. Het spel zorgt er altijd voor dat er minstens één maatje wakker is.
-- **Wie woont waar:** de 150 wezentjes zijn over de vijf gebieden verdeeld op thema, en verschijnen op zeldzaamheid — kleine wezentjes vaak, imposante zelden en de legendes bijna nooit.
+- **Wereld 1 (het eiland):** weide-hub, jungle met lantaarntjes, dorp/boerderij, strand met palmen en zee, besneeuwde bergen. 150 wezentjes.
+- **Wereld 2 (Hemel-eiland):** stap in het luchtschip bovenaan het dorp en vlieg hoog boven de wolken naar de Kristalkust. Daarvandaan ligt een plusvormige archipel van vijf losse gebieden: Kristalkust, Junglekloof, Grotten, Terrassen en de Wolkentempel. Nog eens 100 wezentjes, met eigen types (ijs, staal, duister, vecht) en veel tweede types.
+- **Wie woont waar:** de 250 wezentjes zijn over de gebieden verdeeld op thema en verschijnen op zeldzaamheid — kleine wezentjes vaak, imposante zelden en de legendes bijna nooit. Drie regels worden automatisch bewaakt: in het water zwemt uitsluitend watervolk, watervolk komt niet op het land voor, en tijdens de vlucht kom je alleen vliegers tegen.
+- **Het mythische katje:** te vinden op één vaste geheime plek, het bovenste plein van de Wolkentempel. Er glinstert iets op die tegel; ga erop staan en je maakt per stap een kleine kans. Je kunt het er maar één keer per profiel vangen, daarna dooft de glinstering.
 - **Vechten:** het actieve wezentje (kies in het boek, groene gloed = actief) valt aan met de 💥-knop. Mik met de ring: klein = raak, allerkleinst (goud) = dubbele klap.
-- **Krachtaanval:** de meeste wezentjes (alles met vier of meer hartjes, plus een reeks bekende kleintjes — 117 van de 150) hebben een tweede aanval op de paarse 🌟-knop. Dat is dezelfde aanval als de gewone, maar dan in bulk en van boven naar beneden: een regen van elf projectielen die op de tegenstander inslaat. Altijd twee hartjes, maar de mikring raast twee keer zo snel — moeilijker te raken, en zonder dubbele-klap-bonus. De twee aanvalsknoppen staan naast elkaar onder Julians eigen wezentje. Vangen gaat met hetzelfde mik-spelletje zodra de hartjes leeg zijn; vluchten kan altijd met 🏃.
+- **Krachtaanval:** de meeste wezentjes (alles met vier of meer hartjes, plus een reeks bekende kleintjes) hebben een tweede aanval op de paarse 🌟-knop. Dat is dezelfde aanval als de gewone, maar dan in bulk en van boven naar beneden: een regen van elf projectielen die op de tegenstander inslaat. Altijd twee hartjes, maar de mikring raast twee keer zo snel — moeilijker te raken, en zonder dubbele-klap-bonus. De twee aanvalsknoppen staan naast elkaar onder Julians eigen wezentje. Vangen gaat met hetzelfde mik-spelletje zodra de hartjes leeg zijn; vluchten kan altijd met 🏃.
 - **Flauwvallen:** raken de hartjes van je maatje op, dan gaat het slapen en opent het boek zodat Julian meteen een ander wezentje kiest. Na het gevecht is de slaper weer helemaal fit. Elk wezentje vecht met het aantal hartjes dat het zelf heeft.
 - **Boek in het gevecht:** de 📖-knop werkt ook tijdens een gevecht.
 - **Knoppen rechtsboven:** 📖 het boek (groot), daaronder 🏠 terug naar het startscherm (lichtrood, klein — bewaart eerst de voortgang) en 🔊 het geluid (even klein).
+- **Controles tijdens ontwikkelen:** Shift+R draait drie tests achter elkaar — route (kom je van elk startpunt bij elke doorgang), samenhang (bestaat elk gebied uit één stuk) en leefgebied (wonen alle wezens waar ze horen). Shift+S is de squint-test op de kaarten, Shift+O controleert de oogplaatsing en Shift+K toont het vergrote koppenraster.
 - **De hoofdpersonen:** alle vier de aanzichten (voor, achter, beide zijkanten) zijn opgebouwd naar het startscherm-artwork, met verlopen in plaats van vlakke kleurvlakken, weefsel- en leertextuur, haarslierten en tapse contourlijnen. LivEa deelt dezelfde bouw en maatvoering en verschilt in palet, blond lang haar met een staart en een strikje. Van achteren valt haar haar over nek en bovenrug, dus die zie je niet en de rugzak zit eronder.
 
 ## Lokaal openen
@@ -43,7 +47,7 @@ Productie draait via **Dokploy** op de VPS: koppel deze GitHub-repo als service,
 
 ## Bestanden
 
-- `index.html` — het volledige spel (alle code inline)
+- `index.html` — het volledige spel (alle code inline). Een wezen toevoegen is twee dingen: een tekenfunctie in de `D`-tabel en een regel in `SPECIES_W2`. Let op dat je bij bewerkingen een uniek anker gebruikt; ankers die meerdere keren voorkomen hebben eerder tot dubbele functies geleid.
 - `herstel.html` — controle- en herstelpagina: toont per opgeslagen spel hoeveel wezentjes erin zitten, kan voortgang van het ene blok naar het andere kopiëren en alles veiligstellen als tekst. Open haar op hetzelfde adres als het spel, anders leest ze een andere opslag.
 - `start.png` — startscherm-artwork
 - `icon.png`, `icon-512.png`, `apple-touch-icon.png`, `manifest.json` — app-icoon en web-app-manifest
