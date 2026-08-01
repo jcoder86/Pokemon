@@ -797,6 +797,202 @@ const D = {
   // ==========================================================================
 
 
+
+  // ---- vuurbiggetje: drie vormen, eindvorm gaat vechten --------------------
+  // De snuitschijf met twee neusgaten en het krulstaartje zijn de vaste
+  // familiekenmerken; die blijven in alle drie de vormen even herkenbaar.
+  bigSnuit(g, S, x, y, r) {
+    VE(g, '#e88fa8', x, y, r, r * 0.78);
+    VE(g, 'rgba(255,255,255,0.35)', x, y - r * 0.25, r * 0.6, r * 0.28);
+    E(g, '#8f4a60', x - r * 0.35, y, r * 0.16, r * 0.2);
+    E(g, '#8f4a60', x + r * 0.35, y, r * 0.16, r * 0.2);
+  },
+  bigKrul(g, S, x, y, r, t) {
+    g.save(); g.translate(x, y); g.rotate(Math.sin(t * 2) * 0.15);
+    g.strokeStyle = '#e88fa8'; g.lineWidth = r * 0.3; g.lineCap = 'round';
+    g.beginPath();
+    for (let i = 0; i <= 22; i++) {
+      const a = i / 22 * 5.6, rr = r * (1 - i / 34);
+      const px = Math.cos(a) * rr, py = Math.sin(a) * rr * 0.9;
+      if (i === 0) g.moveTo(px, py); else g.lineTo(px, py);
+    }
+    g.stroke(); g.restore();
+  },
+  vlamPluk(g, S, x, y, sc, t, kern) {
+    const tong = [[-0.17, 0.62, 0.13], [0.16, 0.55, 0.12], [0.0, 0.92, 0.16]];
+    for (let i = 0; i < tong.length; i++) {
+      const dx = x + S * tong[i][0] * sc, h = S * tong[i][1] * sc, b = S * tong[i][2] * sc;
+      const w = Math.sin(t * 4.5 + i * 2.1) * S * 0.06 * sc;
+      // buitenvlam
+      g.fillStyle = '#ff6a1f'; g.beginPath(); g.moveTo(dx - b, y);
+      g.quadraticCurveTo(dx - b * 0.9, y - h * 0.55, dx + w, y - h);
+      g.quadraticCurveTo(dx + b * 0.9, y - h * 0.55, dx + b, y);
+      g.closePath(); g.fill();
+      // hete kern
+      g.fillStyle = i === 2 ? '#ffdd66' : '#ffa42a'; g.beginPath(); g.moveTo(dx - b * 0.5, y);
+      g.quadraticCurveTo(dx - b * 0.45, y - h * 0.5, dx + w * 0.8, y - h * 0.62);
+      g.quadraticCurveTo(dx + b * 0.45, y - h * 0.5, dx + b * 0.5, y);
+      g.closePath(); g.fill();
+    }
+    if (kern) E(g, 'rgba(255,240,180,0.55)', x, y - S * 0.3 * sc, S * 0.24 * sc, S * 0.3 * sc);
+  },
+  biggie(g, S, t, m) {
+    const c = '#f0a8b8', d = '#d88a9c';
+    D.bigKrul(g, S, -S * 0.5, S * 0.3, S * 0.15, t);
+    VE(g, d, -S * 0.26, S * 0.8, S * 0.15, S * 0.13);
+    VE(g, d, S * 0.26, S * 0.8, S * 0.15, S * 0.13);
+    VE(g, c, 0, S * 0.36, S * 0.5, S * 0.4);
+    for (const sg of [-1, 1])                                       // flaporen
+      PG(g, d, [[sg * S * 0.24, -S * 0.42], [sg * S * 0.52, -S * 0.72], [sg * S * 0.46, -S * 0.24]]);
+    VE(g, c, 0, -S * 0.22, S * 0.44, S * 0.38);
+    D.vlamPluk(g, S, 0, -S * 0.5, 0.7, t, false);                   // vlampluk op de kop
+    HEAD(0, -S * 0.24, S * 0.42, S * 0.36, { muzzle: 0.3 });
+    EYES(g, t, m, 220, { sep: 0.44, y: -0.16, r: 0.22, iris: '#6b3a2a' });
+    D.bigSnuit(g, S, 0, -S * 0.06, S * 0.15);
+  },
+  bigvlam(g, S, t, m) {
+    const c = '#e88a70', d = '#c86a54';
+    D.bigKrul(g, S, -S * 0.56, S * 0.24, S * 0.17, t);
+    VE(g, d, -S * 0.28, S * 0.84, S * 0.16, S * 0.14);
+    VE(g, d, S * 0.28, S * 0.84, S * 0.16, S * 0.14);
+    for (let i = 0; i < 4; i++)                                     // vlammanen over de rug
+      D.vlamPluk(g, S, -S * 0.3 + i * S * 0.2, -S * 0.12 - Math.abs(i - 1.5) * S * 0.06, 0.7, t + i, false);
+    VE(g, c, 0, S * 0.34, S * 0.52, S * 0.44);
+    for (const sg of [-1, 1])
+      PG(g, d, [[sg * S * 0.26, -S * 0.44], [sg * S * 0.56, -S * 0.8], [sg * S * 0.48, -S * 0.26]]);
+    VE(g, c, 0, -S * 0.24, S * 0.44, S * 0.38);
+    D.vlamPluk(g, S, 0, -S * 0.52, 0.95, t, true);
+    HEAD(0, -S * 0.26, S * 0.42, S * 0.36, { muzzle: 0.3 });
+    EYES(g, t, m, 221, { sep: 0.44, y: -0.16, r: 0.2, iris: '#7a3220' });
+    D.bigSnuit(g, S, 0, -S * 0.08, S * 0.16);
+  },
+  bigkamp(g, S, t, m) {
+    const c = '#d0705a', d = '#a85240', band = '#f0e4d4';
+    // rechtop, breder in de schouders: dit wezen vecht ook
+    VE(g, d, -S * 0.26, S * 0.88, S * 0.19, S * 0.14);
+    VE(g, d, S * 0.26, S * 0.88, S * 0.19, S * 0.14);
+    D.bigKrul(g, S, -S * 0.6, S * 0.4, S * 0.16, t);
+    for (let i = 0; i < 5; i++)                                     // vlammanen als kraag
+      D.vlamPluk(g, S, -S * 0.46 + i * S * 0.23, -S * 0.16, 0.8, t + i * 0.7, false);
+    VE(g, c, 0, S * 0.4, S * 0.56, S * 0.42);                       // borst
+    VE(g, '#e8a48c', 0, S * 0.44, S * 0.3, S * 0.28);
+    for (const sg of [-1, 1]) {                                     // armen met windsels
+      g.save(); g.translate(sg * S * 0.52, S * 0.3); g.rotate(sg * (0.3 + Math.sin(t * 3) * 0.12));
+      VE(g, c, 0, S * 0.14, S * 0.13, S * 0.3);
+      VE(g, band, 0, S * 0.34, S * 0.15, S * 0.12);
+      LN(g, 'rgba(190,170,150,0.7)', S * 0.02, [[-S * 0.14, S * 0.3], [S * 0.14, S * 0.34]]);
+      g.restore();
+    }
+    VE(g, c, 0, -S * 0.3, S * 0.42, S * 0.36);
+    for (const sg of [-1, 1])
+      PG(g, d, [[sg * S * 0.24, -S * 0.48], [sg * S * 0.5, -S * 0.84], [sg * S * 0.44, -S * 0.32]]);
+    VE(g, c, 0, -S * 0.3, S * 0.4, S * 0.34);
+    D.vlamPluk(g, S, 0, -S * 0.58, 1.15, t, true);
+    HEAD(0, -S * 0.32, S * 0.38, S * 0.34, { muzzle: 0.3 });
+    EYES(g, t, m, 222, { sep: 0.46, y: -0.16, r: 0.19, iris: '#8a2a18' });
+    for (const sg of [-1, 1])                                       // vastberaden wenkbrauwen
+      LN(g, '#7a3020', S * 0.045, [[sg * S * 0.06, -S * 0.44], [sg * S * 0.24, -S * 0.38]]);
+    D.bigSnuit(g, S, 0, -S * 0.14, S * 0.16);
+  },
+
+  // ---- graskat: drie vormen, eindvorm is een illusionist -------------------
+  // Bladpunt aan de staart en de bladkraag lopen door de hele lijn.
+  katBlaadje(g, S, x, y, sc, rot, kl) {
+    g.save(); g.translate(x, y); g.rotate(rot);
+    VE(g, kl || '#7fc85a', 0, 0, S * 0.1 * sc, S * 0.22 * sc);
+    LN(g, 'rgba(52,104,40,0.55)', S * 0.018 * sc, [[0, -S * 0.2 * sc], [0, S * 0.2 * sc]]);
+    g.restore();
+  },
+  katblad(g, S, t, m) {
+    const c = '#a8d878', d = '#88b85c';
+    g.save(); g.translate(S * 0.5, S * 0.3); g.rotate(Math.sin(t * 2) * 0.2);
+    LN(g, c, S * 0.13, [[0, 0], [S * 0.26, -S * 0.2], [S * 0.4, -S * 0.42]]);
+    D.katBlaadje(g, S, S * 0.44, -S * 0.54, 1.1, 0.5);
+    g.restore();
+    VE(g, d, -S * 0.28, S * 0.82, S * 0.15, S * 0.13);
+    VE(g, d, S * 0.28, S * 0.82, S * 0.15, S * 0.13);
+    VE(g, c, 0, S * 0.38, S * 0.46, S * 0.4);
+    for (let i = 0; i < 5; i++)                                     // bladkraag
+      D.katBlaadje(g, S, -S * 0.3 + i * S * 0.15, S * 0.06, 0.55, -0.7 + i * 0.35);
+    for (const sg of [-1, 1])
+      PG(g, c, [[sg * S * 0.16, -S * 0.4], [sg * S * 0.4, -S * 0.88], [sg * S * 0.46, -S * 0.34]]);
+    VE(g, c, 0, -S * 0.24, S * 0.4, S * 0.36);
+    HEAD(0, -S * 0.26, S * 0.38, S * 0.34, { muzzle: 0.3 });
+    EYES(g, t, m, 230, { sep: 0.44, y: -0.14, r: 0.24, iris: '#3f8a3a' });
+    E(g, '#4a7a3a', 0, -S * 0.12, S * 0.045, S * 0.035);
+  },
+  katsluip(g, S, t, m) {
+    const c = '#8fc860', d = '#6fa848';
+    // langer en lager: dit wezen sluipt
+    g.save(); g.translate(S * 0.56, S * 0.4); g.rotate(Math.sin(t * 2) * 0.22);
+    LN(g, c, S * 0.14, [[0, 0], [S * 0.3, -S * 0.16], [S * 0.5, -S * 0.44]]);
+    D.katBlaadje(g, S, S * 0.56, -S * 0.58, 1.3, 0.55);
+    g.restore();
+    VE(g, d, -S * 0.34, S * 0.84, S * 0.16, S * 0.13);
+    VE(g, d, S * 0.3, S * 0.84, S * 0.16, S * 0.13);
+    VE(g, c, 0, S * 0.44, S * 0.58, S * 0.34);
+    for (let i = 0; i < 7; i++)
+      D.katBlaadje(g, S, -S * 0.44 + i * S * 0.15, S * 0.14, 0.6, -0.9 + i * 0.3);
+    for (const sg of [-1, 1])
+      PG(g, c, [[sg * S * 0.16, -S * 0.36], [sg * S * 0.42, -S * 0.92], [sg * S * 0.48, -S * 0.3]]);
+    VE(g, c, 0, -S * 0.2, S * 0.4, S * 0.34);
+    HEAD(0, -S * 0.22, S * 0.38, S * 0.32, { muzzle: 0.3 });
+    EYES(g, t, m, 231, { sep: 0.44, y: -0.12, r: 0.21, iris: '#2f7a34' });
+    E(g, '#3f6a2e', 0, -S * 0.08, S * 0.045, S * 0.035);
+  },
+  katgoochel(g, S, t, m) {
+    const c = '#6fa858', d = '#4a7a3e', cape = '#3a5a44';
+    // rechtop illusionist: bladmantel, loensende blik en zwevende bladkaarten
+    VE(g, d, -S * 0.24, S * 0.88, S * 0.17, S * 0.13);
+    VE(g, d, S * 0.24, S * 0.88, S * 0.17, S * 0.13);
+    g.save(); g.translate(S * 0.5, S * 0.34); g.rotate(-0.3 + Math.sin(t * 1.6) * 0.18);
+    LN(g, c, S * 0.13, [[0, 0], [S * 0.24, -S * 0.3], [S * 0.3, -S * 0.62]]);
+    D.katBlaadje(g, S, S * 0.32, -S * 0.76, 1.4, 0.2);
+    g.restore();
+    // mantel van grote bladeren achter het lijf
+    for (let i = 0; i < 5; i++)
+      D.katBlaadje(g, S, -S * 0.5 + i * S * 0.25, S * 0.34, 1.5, -0.5 + i * 0.25, cape);
+    VE(g, c, 0, S * 0.38, S * 0.44, S * 0.42);
+    VE(g, '#c8e8a8', 0, S * 0.42, S * 0.22, S * 0.26);
+    for (let i = 0; i < 5; i++)
+      D.katBlaadje(g, S, -S * 0.28 + i * S * 0.14, S * 0.02, 0.6, -0.7 + i * 0.35);
+    for (const sg of [-1, 1])
+      PG(g, c, [[sg * S * 0.16, -S * 0.42], [sg * S * 0.4, -S * 0.98], [sg * S * 0.46, -S * 0.36]]);
+    VE(g, c, 0, -S * 0.28, S * 0.4, S * 0.34);
+    HEAD(0, -S * 0.3, S * 0.38, S * 0.32, { muzzle: 0.3 });
+    EYES(g, t, m, 232, { sep: 0.44, y: -0.14, r: 0.2, iris: '#d8c840' });
+    // half neergeslagen oogleden: geeft de sluwe blik
+    for (const sg of [-1, 1])
+      VE(g, c, sg * S * 0.17, -S * 0.38, S * 0.11, S * 0.06);
+    E(g, '#3f6a2e', 0, -S * 0.16, S * 0.045, S * 0.035);
+    for (let i = 0; i < 3; i++) {                                   // zwevende bladkaarten
+      const a = t * 1.2 + i * 2.1;
+      D.katBlaadje(g, S, Math.cos(a) * S * 0.78, -S * 0.2 + Math.sin(a) * S * 0.34, 0.5, a, '#9ad868');
+    }
+  },
+
+  // ---- pinguin ------------------------------------------------------------
+  pingduik(g, S, t, m) {
+    const c = '#3f5a78', d = '#2e4460', buik = '#f4f0e4', bek = '#ffa32a';
+    for (const sg of [-1, 1])                                       // zwemvliesvoetjes
+      PG(g, bek, [[sg * S * 0.1, S * 0.82], [sg * S * 0.42, S * 0.94], [sg * S * 0.08, S * 0.96]]);
+    for (const sg of [-1, 1]) {                                     // vleugeltjes
+      g.save(); g.translate(sg * S * 0.44, S * 0.3);
+      g.rotate(sg * (0.2 + Math.sin(t * 3.4) * 0.3));
+      VE(g, d, 0, S * 0.16, S * 0.11, S * 0.3);
+      g.restore();
+    }
+    VE(g, c, 0, S * 0.3, S * 0.5, S * 0.52);                        // lijf
+    VE(g, buik, 0, S * 0.36, S * 0.32, S * 0.42);                   // witte buik
+    VE(g, c, 0, -S * 0.3, S * 0.4, S * 0.36);                       // kop
+    VE(g, buik, 0, -S * 0.2, S * 0.28, S * 0.24);                   // wit gezichtje
+    PG(g, '#7fd8f0', [[-S * 0.06, -S * 0.6], [S * 0.02, -S * 0.86], [S * 0.12, -S * 0.58]]);  // kuifje
+    HEAD(0, -S * 0.3, S * 0.38, S * 0.34, { muzzle: 0.34 });
+    EYES(g, t, m, 240, { sep: 0.46, y: -0.18, r: 0.2, iris: '#2a3a52' });
+    PG(g, bek, [[-S * 0.13, -S * 0.16], [S * 0.13, -S * 0.16], [0, S * 0.04]]);               // snavel
+    LN(g, 'rgba(150,90,20,0.6)', S * 0.02, [[-S * 0.1, -S * 0.11], [S * 0.1, -S * 0.11]]);
+  },
+
   // ---- vossenfamilie: vijf nieuwe richtingen -------------------------------
   // Allemaal op dezelfde bouw als foxy: gedrongen lijf, dikke kraag om de nek,
   // spitse oren en een volle pluimstaart. Alleen de kleur en de accenten
@@ -5237,6 +5433,15 @@ const SPECIES_W2 = [
   { hp: 3, draw: 'vlamrug',    type: 'fire',  pools: ['terraces'] },
   { hp: 4, draw: 'vlamnek',    type: 'fire',  pools: ['terraces'] },
   { hp: 5, draw: 'vlamkraag',  type: 'fire',  pools: ['terraces'] },
+  { hp: 3, draw: 'biggie',    type: 'fire',  pools: ['terraces'], fam: 'big', trap: 1 },
+  { hp: 4, draw: 'bigvlam',   type: 'fire',  pools: ['terraces'], fam: 'big', trap: 2 },
+  { hp: 5, draw: 'bigkamp',   type: 'fire',  type2: 'fight', pools: ['terraces'], fam: 'big', trap: 3 },
+  { hp: 3, draw: 'katblad',   type: 'grass', pools: ['ravine'], fam: 'kat', trap: 1 },
+  { hp: 4, draw: 'katsluip',  type: 'grass', pools: ['ravine'], fam: 'kat', trap: 2 },
+  { hp: 5, draw: 'katgoochel', type: 'grass', type2: 'dark', pools: ['ravine'], fam: 'kat', trap: 3 },
+  // De pinguin staat bewust alleen in zijn familie: komen er later twee vormen
+  // bij, dan krijgen die dezelfde fam met trap 2 en 3 en hoeft er niets om.
+  { hp: 3, draw: 'pingduik',  type: 'water', pools: ['shore'], fam: 'ping', trap: 1 },
   { hp: 4, draw: 'vosblad',  type: 'grass',   pools: ['ravine'] },
   { hp: 4, draw: 'vospsy',   type: 'psychic', pools: ['caverns'] },
   { hp: 4, draw: 'vosnacht', type: 'dark',    pools: ['caverns'] },
