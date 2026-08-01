@@ -6350,6 +6350,56 @@ function drawJulian(g, x, y, dir, mode, t, sc, avatar) {
   g.restore();
 }
 
+
+// Het luchtschip waarin je de overgangsmap doorvliegt. Zelfde rol als het
+// bootje op het water: je stapt er vanzelf in en stuurt met point-and-click.
+// Groter dan het bootje, want het draagt de speler en zijn maatje.
+function drawAirship(g, x, y, t, dir) {
+  const dei = Math.sin(t * 1.5) * 3.2;                 // rustig deinen
+  const kant = dir === 2 ? -1 : 1;
+  g.save(); g.translate(x, y + dei); g.rotate(Math.sin(t * 0.9) * 0.025);
+  // slagschaduw ver eronder: laat zien dat je echt in de lucht hangt
+  g.fillStyle = 'rgba(70,110,150,0.16)';
+  g.beginPath(); g.ellipse(6, 60, 44, 11, 0, 0, TAU); g.fill();
+  // ballon
+  const bal = g.createLinearGradient(-52, -78, 40, -18);
+  bal.addColorStop(0, '#ffe0b4'); bal.addColorStop(0.5, '#ec8f5f'); bal.addColorStop(1, '#a8503a');
+  g.fillStyle = bal;
+  g.beginPath(); g.ellipse(0, -44, 52, 30, 0, 0, TAU); g.fill();
+  g.fillStyle = 'rgba(255,244,216,0.55)';
+  g.beginPath(); g.ellipse(-18, -56, 20, 7, -0.25, 0, TAU); g.fill();
+  g.strokeStyle = 'rgba(120,60,40,0.5)'; g.lineWidth = 2.2;
+  for (let i = -2; i <= 2; i++) {
+    g.beginPath(); g.ellipse(0, -44, 52, 30, 0, Math.PI * 0.5 + i * 0.3, Math.PI * 1.5 - i * 0.3); g.stroke();
+  }
+  g.strokeStyle = '#6f5432'; g.lineWidth = 2;           // touwen
+  for (const sx of [-30, -13, 13, 30]) { g.beginPath(); g.moveTo(sx, -22); g.lineTo(sx * 0.72, -4); g.stroke(); }
+  // romp
+  const romp = g.createLinearGradient(0, -6, 0, 26);
+  romp.addColorStop(0, '#c99f68'); romp.addColorStop(1, '#7a5a34');
+  g.fillStyle = romp;
+  g.beginPath();
+  g.moveTo(-38, -4); g.lineTo(38, -4);
+  g.quadraticCurveTo(30, 26, 0, 28); g.quadraticCurveTo(-30, 26, -38, -4);
+  g.closePath(); g.fill();
+  g.fillStyle = '#e6bf82'; g.fillRect(-38, -6, 76, 5);
+  g.fillStyle = 'rgba(60,40,20,0.32)';
+  for (let i = 0; i < 5; i++) { g.beginPath(); g.arc(-25 + i * 12, 9, 3, 0, TAU); g.fill(); }
+  // zeil dat meebeweegt met de richting
+  g.strokeStyle = '#6f5432'; g.lineWidth = 3;
+  g.beginPath(); g.moveTo(kant * 28, -4); g.lineTo(kant * 28, -30); g.stroke();
+  g.fillStyle = '#f4e8ce';
+  g.beginPath(); g.moveTo(kant * 29, -29);
+  g.quadraticCurveTo(kant * (50 + Math.sin(t * 2) * 4), -17, kant * 29, -5);
+  g.closePath(); g.fill();
+  // wimpel
+  g.strokeStyle = '#c0563e'; g.lineWidth = 2.4;
+  g.beginPath(); g.moveTo(kant * 28, -30);
+  g.quadraticCurveTo(kant * 40, -34 + Math.sin(t * 4) * 3, kant * 50, -30 + Math.sin(t * 4 + 1) * 3);
+  g.stroke();
+  g.restore();
+}
+
 // bootje: x,y = midden van de romp
 function drawBoat(g, x, y, t) {
   const bob = Math.sin(t * 2) * 1.5;
@@ -6776,17 +6826,12 @@ function renderArea(area) {
   grass.width = VW * dpr; grass.height = VH * dpr;
   const gg = grass.getContext('2d'); gg.scale(dpr, dpr);
 
-  if (area.sky) {                       // een doorlopende lucht, geen tegelbanden
-    const hemel = wg.createLinearGradient(0, 0, 0, VH);
-    hemel.addColorStop(0, '#8fc4ee');
-    hemel.addColorStop(0.45, '#a8d6f4');
-    hemel.addColorStop(1, '#c8e6f8');
-    wg.fillStyle = hemel; wg.fillRect(0, 0, VW, VH);
-  }
+  // Een luchtkaart heeft geen gebakken ondergrond: de zee, het wolkendek en de
+  // eilandjes worden elke frame met parallax getekend, want die moeten meebewegen.
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     const t = m[y][x], px = x * TILE, py = y * TILE;
     const h = hash2(x, y);
-    if (!(area.sky && t === T_SKY)) {
+    if (!area.sky) {                    // luchtkaart blijft doorzichtig voor de parallax
       wg.fillStyle = (x + y) % 2 === 0 ? st.g1 : st.g2;
       wg.fillRect(px, py, TILE, TILE);
     }
@@ -6853,20 +6898,13 @@ function renderArea(area) {
       wg.fillRect(px + 3 + h * 8, py + 6 + h * 10, 9, 6);
       wg.fillRect(px + 16 - h * 6, py + 18, 8, 5);
     } else if (t === T_SKY) {
-      // De lucht zelf is als doorlopend verloop over de hele kaart gezet, voor
-      // de tegellus. Hier alleen nog wat diepte-nevel, laag van contrast.
-      if (h > 0.88) { wg.fillStyle = 'rgba(255,255,255,0.07)';
-        wg.beginPath(); wg.ellipse(px + 8 + h * 14, py + 10 + h * 10, 13, 5, 0, 0, TAU); wg.fill(); }
+      // rand van het gebied: alleen wat dichtere nevel, geen muur
+      wg.fillStyle = 'rgba(238,247,255,0.30)';
+      wg.fillRect(px, py, TILE, TILE);
+      wg.fillStyle = 'rgba(255,255,255,0.42)';
+      wg.beginPath(); wg.ellipse(px + 8 + h * 12, py + 12 + h * 8, 15, 8, 0, 0, TAU); wg.fill();
     } else if (t === T_CLOUD) {
-      // wolkenvloer: licht, zacht en duidelijk begaanbaar
-      const wolk = wg.createLinearGradient(px, py, px, py + TILE);
-      wolk.addColorStop(0, '#fdfeff'); wolk.addColorStop(1, '#e6eefb');
-      wg.fillStyle = wolk; wg.fillRect(px, py, TILE, TILE);
-      wg.fillStyle = 'rgba(255,255,255,0.85)';
-      wg.beginPath(); wg.ellipse(px + 6 + h * 8, py + 9 + h * 6, 9, 6, 0, 0, TAU); wg.fill();
-      wg.beginPath(); wg.ellipse(px + 22 - h * 6, py + 22 - h * 6, 8, 5, 0, 0, TAU); wg.fill();
-      wg.fillStyle = 'rgba(176,198,228,0.28)';
-      wg.beginPath(); wg.ellipse(px + 16, py + 27, 12, 4, 0, 0, TAU); wg.fill();
+      // open lucht waar je doorheen vliegt: het doorlopende verloop blijft staan
     } else if (t === T_FIELD) {
       wg.fillStyle = '#b08a58'; wg.fillRect(px, py, TILE, TILE);
       wg.fillStyle = '#9a7444';
@@ -7395,29 +7433,24 @@ function obstacleDarkenPass(wg, m) {
 // ontmoetingen, alleen sfeer.
 function buildSkyway() {
   const m = [];
-  for (let y = 0; y < MH; y++) { m[y] = []; for (let x = 0; x < MW; x++) m[y][x] = T_SKY; }
-  // Banden zijn drie tegels hoog. De botsingsbox van de speler meet ook elf
-  // pixels boven zijn voeten; met twee rijen zat dat meetpunt in de lucht
-  // erboven en kon hij geen kant op.
-  const leg = (y, x1, x2) => { for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) for (let d = 0; d < 3; d++) m[y + d][x] = T_CLOUD; };
-  const stijg = (x, y1, y2) => { for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) for (let d = 0; d < 3; d++) m[y][x + d] = T_CLOUD; };
-  leg(20, 13, 28); stijg(26, 16, 22);
-  leg(16, 3, 28);  stijg(3, 12, 18);
-  leg(12, 3, 28);  stijg(26, 8, 14);
-  leg(8, 3, 28);   stijg(3, 4, 10);
-  leg(4, 3, 16);   stijg(14, 1, 6);
-  for (let y = 20; y <= 23; y++) for (let x = 14; x <= 16; x++) m[y][x] = T_CLOUD;
-  for (let y = 0; y <= 4; y++) for (let x = 14; x <= 16; x++) m[y][x] = T_CLOUD;
+  // Alles is open lucht waar je doorheen vliegt, net zoals water overal
+  // bevaarbaar is. Alleen langs de randen staat een dichte wolkenbank die je
+  // tegenhoudt, zodat je niet van de kaart af raakt.
+  for (let y = 0; y < MH; y++) { m[y] = []; for (let x = 0; x < MW; x++) m[y][x] = T_CLOUD; }
+  for (let x = 0; x < MW; x++) { m[0][x] = T_SKY; m[1][x] = T_SKY; m[MH - 1][x] = T_SKY; m[MH - 2][x] = T_SKY; }
+  for (let y = 0; y < MH; y++) { m[y][0] = T_SKY; m[y][1] = T_SKY; m[y][MW - 1] = T_SKY; m[y][MW - 2] = T_SKY; }
+  // openingen onder en boven, waar je aanmeert
+  for (let x = 14; x <= 17; x++) { m[MH - 1][x] = T_CLOUD; m[MH - 2][x] = T_CLOUD; m[0][x] = T_CLOUD; m[1][x] = T_CLOUD; }
   return {
     name: 'skyway', map: m, patches: [], waterPool: null, pond: null, mill: null, houses: [],
-    sky: true,
+    sky: true, fly: true,
     portals: [
       { dest: 'village', icon: 'airdock', side: 'bottom',
-        zone: [13.9 * TILE, 23.0 * TILE, 17.1 * TILE, 24 * TILE], tap: [13 * TILE, 21.6 * TILE, 18 * TILE, 24 * TILE],
-        walk: [15.5 * TILE, 22.6 * TILE], spawn: [15.5 * TILE, 5.7 * TILE] },
+        zone: [13.8 * TILE, 22.9 * TILE, 17.2 * TILE, 24 * TILE], tap: [12.8 * TILE, 21.4 * TILE, 18.2 * TILE, 24 * TILE],
+        walk: [15.5 * TILE, 23.2 * TILE], spawn: [15.5 * TILE, 5.7 * TILE] },
       { dest: 'shore', icon: 'airdock', side: 'top',
-        zone: [13.9 * TILE, 0, 17.1 * TILE, 1.2 * TILE], tap: [13 * TILE, 0, 18 * TILE, 2.4 * TILE],
-        walk: [15.5 * TILE, 1.6 * TILE], spawn: [16 * TILE, 21.4 * TILE] },
+        zone: [13.8 * TILE, 0, 17.2 * TILE, 1.1 * TILE], tap: [12.8 * TILE, 0, 18.2 * TILE, 2.6 * TILE],
+        walk: [15.5 * TILE, 0.8 * TILE], spawn: [16 * TILE, 21.4 * TILE] },
     ],
     style: {
       g1: '#eaf4ff', g2: '#e2eeff', path: '#f6fbff', sand: '#eaf4ff', water: '#bfe0ff',
@@ -8596,7 +8629,7 @@ function updateWorld(dt) {
   const pl = G.player;
   G.encounterCooldown = Math.max(0, G.encounterCooldown - dt);
   if (pl.moving && pl.path && pl.path.length) {
-    let budget = (G.onBoat ? 195 : 175) * dt, moved = false;
+    let budget = (cur.fly ? 52 : G.onBoat ? 195 : 175) * dt, moved = false;
     while (budget > 0 && pl.path.length) {
       const wp = pl.path[0];
       const dx = wp[0] - pl.x, dy = wp[1] - pl.y, d = Math.hypot(dx, dy);
@@ -8614,13 +8647,15 @@ function updateWorld(dt) {
       pl.stepT += dt;
       if (pl.stepT > 0.22) {
         pl.stepT = 0; pl.stepN++;
-        if (G.onBoat) { SFX.paddle(pl.stepN); spawnParticles(pl.x, pl.y + 6, 1, 'dot', ['rgba(255,255,255,0.8)', '#cfe8f8']); }
+        if (cur.fly) { spawnParticles(pl.x - 6, pl.y + 16, 1, 'dot', ['rgba(255,255,255,0.85)', '#e8f2ff']); }
+        else if (G.onBoat) { SFX.paddle(pl.stepN); spawnParticles(pl.x, pl.y + 6, 1, 'dot', ['rgba(255,255,255,0.8)', '#cfe8f8']); }
         else SFX.step(pl.stepN);
       }
       const tileKey = Math.floor(pl.x / TILE) + ',' + Math.floor(pl.y / TILE);
       if (tileKey !== pl.lastTile) {
         pl.lastTile = tileKey;
-        if (!G.onBoat && tileAt(pl.x, pl.y) === T_TALL) {
+        if (cur.fly) { /* in de lucht geen ontmoetingen: puur sfeer */ }
+        else if (!G.onBoat && tileAt(pl.x, pl.y) === T_TALL) {
           pl.grassSteps++;
           const force = G.caughtCount <= 1 && pl.grassSteps >= 3;
           if (G.encounterCooldown <= 0 && (force || Math.random() < 0.16)) {
@@ -8721,110 +8756,97 @@ function drawDusk(g) {
 
 
 // ============================================================ luchtroute
-// Drie parallaxlagen wolken plus wat sfeer onderweg. De lagen verschuiven met
-// de hoogte van de speler: voorgrond snel, achtergrond traag. Alles wordt een
-// keer deterministisch opgezet, zodat het beeld niet flikkert tussen frames.
-const SKYL = [];
-(function bouwLuchtlagen() {
+// Hoog boven de zee en de wolkendekens. De wereld onder je schuift mee met je
+// eigen beweging: hoe lager de laag, hoe trager hij loopt. Dat geeft het gevoel
+// dat je echt afstand aflegt in plaats van op een plek te hangen.
+const SKY_ISLES = [], SKY_PUFF = [], SKY_WISP = [];
+(function bouwLucht() {
   let z = 20250131;
   const rnd = () => { z = (z * 1103515245 + 12345) % 2147483648; return z / 2147483648; };
-  const lagen = [
-    { n: 10, sp: 0.18, sc: 0.9, a: 0.16 },   // ver weg, traag en groot
-    { n: 9,  sp: 0.42, sc: 0.62, a: 0.22 },
-    { n: 7,  sp: 0.85, sc: 0.44, a: 0.30 },  // dichtbij, snel en klein
-  ];
-  for (const L of lagen) {
-    const puf = [];
-    for (let i = 0; i < L.n; i++)
-      puf.push({ x: rnd() * VW, y: rnd() * VH * 2.2, r: (34 + rnd() * 46) * L.sc, w: 1.5 + rnd() * 0.9 });
-    SKYL.push({ puf: puf, sp: L.sp, a: L.a });
-  }
+  for (let i = 0; i < 7; i++)                              // eilandjes diep beneden
+    SKY_ISLES.push({ x: rnd() * VW * 1.6, y: rnd() * VH * 1.6, r: 26 + rnd() * 40, k: rnd() });
+  for (let i = 0; i < 16; i++)                             // wolkendek onder je
+    SKY_PUFF.push({ x: rnd() * VW * 1.6, y: rnd() * VH * 1.6, r: 60 + rnd() * 90, w: 1.5 + rnd() * 0.8 });
+  for (let i = 0; i < 10; i++)                             // slierten op jouw hoogte
+    SKY_WISP.push({ x: rnd() * VW * 1.6, y: rnd() * VH * 1.6, r: 30 + rnd() * 50, w: 2.1 + rnd() * 1.1 });
 })();
-function tekenWolkenlaag(g, laag, off, voor) {
-  g.save();
-  g.globalAlpha = laag.a * (voor ? 0.7 : 1);
-  for (const p of laag.puf) {
-    const y = ((p.y + off * laag.sp) % (VH * 2.2)) - VH * 0.6;
-    if (y < -160 || y > VH + 160) continue;
-    const x = p.x + Math.sin(G.t * 0.11 + p.y) * 14;
-    g.fillStyle = voor ? 'rgba(255,255,255,0.9)' : '#ffffff';
-    g.beginPath();
-    g.ellipse(x, y, p.r * p.w, p.r * 0.62, 0, 0, TAU);
-    g.ellipse(x - p.r * 0.7, y + p.r * 0.16, p.r * 0.66, p.r * 0.44, 0, 0, TAU);
-    g.ellipse(x + p.r * 0.75, y + p.r * 0.2, p.r * 0.58, p.r * 0.4, 0, 0, TAU);
-    g.fill();
-    g.fillStyle = 'rgba(160,190,220,0.10)';
-    g.beginPath(); g.ellipse(x + p.r * 0.2, y + p.r * 0.42, p.r * 1.1, p.r * 0.2, 0, 0, TAU); g.fill();
-  }
-  g.restore();
-}
-// achtergrond: zonnestralen, regenboog, het eiland dat bovenaan opdoemt
+// herhalende plaatsing: alles rolt door zodat je nooit de rand van een laag ziet
+function wikkel(v, m) { const r = v % m; return r < 0 ? r + m : r; }
+
 function tekenLuchtAchter(g) {
-  const hoogte = 1 - clamp(G.player.y / VH, 0, 1);      // 0 onderaan, 1 bovenaan
-  const off = G.player.y * 1.1;
-  g.save();                                              // zonnestralen linksboven
-  g.globalAlpha = 0.05;
-  for (let i = 0; i < 5; i++) {
-    g.fillStyle = '#fff6c8';
-    g.beginPath(); g.moveTo(-40, -40);
-    const a = 0.35 + i * 0.16;
-    g.lineTo(-40 + Math.cos(a) * 1500, -40 + Math.sin(a) * 1500);
-    g.lineTo(-40 + Math.cos(a + 0.07) * 1500, -40 + Math.sin(a + 0.07) * 1500);
-    g.closePath(); g.fill();
+  const px = G.player.x, py = G.player.y;
+  const W = VW * 1.6, H = VH * 1.6;
+
+  // --- de zee, heel diep beneden -----------------------------------------
+  const zee = g.createLinearGradient(0, 0, 0, VH);
+  zee.addColorStop(0, '#4d7fb0'); zee.addColorStop(0.55, '#5b93c4'); zee.addColorStop(1, '#6ea9d6');
+  g.fillStyle = zee; g.fillRect(0, 0, VW, VH);
+  g.save(); g.globalAlpha = 0.5;                           // trage glinsterbanen
+  for (let i = 0; i < 9; i++) {
+    const y = wikkel(i * 96 - py * 0.05 + G.t * 3, VH + 120) - 60;
+    g.fillStyle = 'rgba(226,242,255,0.16)';
+    g.beginPath(); g.ellipse(wikkel(i * 271 - px * 0.05, VW + 300) - 150, y, 190, 9, 0, 0, TAU); g.fill();
   }
   g.restore();
-  // regenboog, halverwege de klim
-  const rb = clamp((hoogte - 0.25) * 2.6, 0, 1) * clamp((0.85 - hoogte) * 3.5, 0, 1);
-  if (rb > 0.02) {
-    g.save(); g.globalAlpha = rb * 0.45; g.lineWidth = 13; g.lineCap = 'butt';
-    const kl = ['#ff8f8f', '#ffc46b', '#fff08a', '#8fe0a0', '#8fc8ff', '#c6a6ff'];
-    kl.forEach((c, i) => {
-      g.strokeStyle = c;
-      g.beginPath(); g.arc(VW * 0.72, VH * 1.05, 300 + i * 13, Math.PI * 1.12, Math.PI * 1.88); g.stroke();
-    });
+
+  // --- eilandjes en riffen op de zee -------------------------------------
+  for (const o of SKY_ISLES) {
+    const x = wikkel(o.x - px * 0.09, W) - (W - VW) / 2;
+    const y = wikkel(o.y - py * 0.09, H) - (H - VH) / 2;
+    if (x < -140 || x > VW + 140 || y < -140 || y > VH + 140) continue;
+    g.save(); g.globalAlpha = 0.55;
+    g.fillStyle = '#7fd8b8';
+    g.beginPath(); g.ellipse(x, y, o.r, o.r * 0.55, 0, 0, TAU); g.fill();
+    g.fillStyle = '#f2e8c8';
+    g.beginPath(); g.ellipse(x, y + o.r * 0.2, o.r * 1.12, o.r * 0.4, 0, 0, TAU); g.fill();
+    g.fillStyle = 'rgba(120,200,220,0.5)';
+    g.beginPath(); g.ellipse(x, y + o.r * 0.34, o.r * 1.4, o.r * 0.5, 0, 0, TAU); g.fill();
     g.restore();
   }
-  tekenWolkenlaag(g, SKYL[0], off, false);
-  // zwevende rotsen met een boompje erop
-  for (let i = 0; i < 5; i++) {
-    const y = ((i * 430 + off * 0.42) % (VH * 2.2)) - VH * 0.6;
-    if (y < -120 || y > VH + 120) continue;
-    const x = 90 + ((i * 271) % 840);
-    const r = 26 + (i % 3) * 9;
-    g.fillStyle = 'rgba(40,60,80,0.18)';
-    g.beginPath(); g.ellipse(x, y + r * 0.9, r * 1.15, r * 0.3, 0, 0, TAU); g.fill();
-    PG(g, '#8d99a8', [[x - r, y], [x - r * 0.5, y - r * 0.55], [x + r * 0.6, y - r * 0.4], [x + r, y + r * 0.1], [x + r * 0.3, y + r * 0.85], [x - r * 0.6, y + r * 0.6]]);
-    PG(g, '#aab6c4', [[x - r, y], [x - r * 0.5, y - r * 0.55], [x + r * 0.6, y - r * 0.4], [x, y + r * 0.1]]);
-    E(g, '#6fc750', x + r * 0.05, y - r * 0.62, r * 0.42, r * 0.3);
-    E(g, '#57b56a', x + r * 0.2, y - r * 0.72, r * 0.26, r * 0.2);
-  }
-  tekenWolkenlaag(g, SKYL[1], off, false);
-  // vogelzwerm
-  for (let i = 0; i < 9; i++) {
-    const fase = (G.t * 34 + i * 130) % (VW + 300) - 150;
-    const y = 90 + ((i * 97) % 420) + Math.sin(G.t * 1.6 + i) * 9;
-    const w = 7 + (i % 3);
-    g.strokeStyle = 'rgba(58,74,96,0.55)'; g.lineWidth = 2.2; g.lineCap = 'round';
-    const fl = Math.sin(G.t * 7 + i) * 0.5;
+
+  // --- wolkendek onder je: het dikste gevoel van hoogte -------------------
+  for (const o of SKY_PUFF) {
+    const x = wikkel(o.x - px * 0.22, W) - (W - VW) / 2;
+    const y = wikkel(o.y - py * 0.22, H) - (H - VH) / 2;
+    if (x < -260 || x > VW + 260 || y < -200 || y > VH + 200) continue;
+    g.save(); g.globalAlpha = 0.5;
+    g.fillStyle = 'rgba(214,232,248,0.9)';                 // schaduwzijde onderop
+    g.beginPath(); g.ellipse(x, y + o.r * 0.22, o.r * o.w, o.r * 0.5, 0, 0, TAU); g.fill();
+    g.fillStyle = '#ffffff';
     g.beginPath();
-    g.moveTo(fase - w, y + fl * w * 0.5); g.quadraticCurveTo(fase, y - w * 0.35, fase + w, y + fl * w * 0.5);
-    g.stroke();
+    g.ellipse(x, y, o.r * o.w * 0.92, o.r * 0.44, 0, 0, TAU);
+    g.ellipse(x - o.r * 0.7, y + o.r * 0.1, o.r * 0.6, o.r * 0.32, 0, 0, TAU);
+    g.ellipse(x + o.r * 0.75, y + o.r * 0.12, o.r * 0.55, o.r * 0.3, 0, 0, TAU);
+    g.fill();
+    g.restore();
   }
-  // het eiland doemt bovenaan op: eerst silhouet, dan groeiend
-  const isl = clamp((hoogte - 0.45) * 1.9, 0, 1);
+
+  // --- vogels tussen jou en het wolkendek ---------------------------------
+  for (let i = 0; i < 7; i++) {
+    const x = wikkel(i * 190 + G.t * 26 - px * 0.4, VW + 260) - 130;
+    const y = wikkel(i * 137 + 120 - py * 0.4, VH + 200) - 100;
+    const w = 6 + (i % 3), fl = Math.sin(G.t * 7 + i) * 0.5;
+    g.strokeStyle = 'rgba(52,74,100,0.45)'; g.lineWidth = 2; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(x - w, y + fl * w * 0.5);
+    g.quadraticCurveTo(x, y - w * 0.35, x + w, y + fl * w * 0.5); g.stroke();
+  }
+
+  // --- het eiland doemt op naarmate je stijgt ------------------------------
+  const hoogte = 1 - clamp(py / VH, 0, 1);
+  const isl = clamp((hoogte - 0.35) * 1.7, 0, 1);
   if (isl > 0.01) {
-    const cx = VW * 0.5, cy = -170 + isl * 300, sc = 0.55 + isl * 0.65;
-    g.save(); g.globalAlpha = 0.35 + isl * 0.65;
-    g.fillStyle = '#6f8ba8';                                  // onderkant, de punt
+    const cx = VW * 0.5, cy = -190 + isl * 320, sc = 0.6 + isl * 0.7;
+    g.save(); g.globalAlpha = 0.4 + isl * 0.6;
+    g.fillStyle = '#6f8ba8';
     g.beginPath();
     g.moveTo(cx - 250 * sc, cy); g.lineTo(cx + 250 * sc, cy);
     g.lineTo(cx + 60 * sc, cy + 190 * sc); g.lineTo(cx - 40 * sc, cy + 210 * sc);
     g.closePath(); g.fill();
     g.fillStyle = '#8fa8c0';
     g.beginPath(); g.moveTo(cx - 250 * sc, cy); g.lineTo(cx + 40 * sc, cy); g.lineTo(cx - 40 * sc, cy + 210 * sc); g.closePath(); g.fill();
-    g.fillStyle = '#7fd8b0';                                  // groene bovenkant
+    g.fillStyle = '#7fd8b0';
     g.beginPath(); g.ellipse(cx, cy - 6 * sc, 252 * sc, 44 * sc, 0, 0, TAU); g.fill();
-    g.fillStyle = '#f6efdc';                                  // wit strand aan de rand
+    g.fillStyle = '#f6efdc';
     g.beginPath(); g.ellipse(cx, cy + 4 * sc, 236 * sc, 30 * sc, 0, 0, TAU); g.fill();
     g.fillStyle = '#5fd8d0';
     g.beginPath(); g.ellipse(cx + 60 * sc, cy - 12 * sc, 74 * sc, 17 * sc, 0, 0, TAU); g.fill();
@@ -8832,14 +8854,37 @@ function tekenLuchtAchter(g) {
   }
 }
 
+// slierten op jouw eigen hoogte, die over het schip heen schuiven
+function tekenLuchtVoor(g) {
+  const px = G.player.x, py = G.player.y;
+  const W = VW * 1.6, H = VH * 1.6;
+  for (const o of SKY_WISP) {
+    const x = wikkel(o.x - px * 0.85, W) - (W - VW) / 2;
+    const y = wikkel(o.y - py * 0.85, H) - (H - VH) / 2;
+    if (x < -220 || x > VW + 220 || y < -160 || y > VH + 160) continue;
+    g.save(); g.globalAlpha = 0.34;
+    g.fillStyle = '#ffffff';
+    g.beginPath();
+    g.ellipse(x, y, o.r * o.w, o.r * 0.36, 0, 0, TAU);
+    g.ellipse(x - o.r * 0.8, y + o.r * 0.08, o.r * 0.6, o.r * 0.26, 0, 0, TAU);
+    g.fill();
+    g.restore();
+  }
+  // zachte nevel langs de randen: je voelt waar het gebied ophoudt zonder muur
+  const vig = g.createRadialGradient(VW / 2, VH / 2, VH * 0.34, VW / 2, VH / 2, VH * 0.78);
+  vig.addColorStop(0, 'rgba(255,255,255,0)');
+  vig.addColorStop(1, 'rgba(226,240,252,0.30)');
+  g.fillStyle = vig; g.fillRect(0, 0, VW, VH);
+}
+
 function drawWorld(g) {
+  if (cur.sky) tekenLuchtAchter(g);                     // zee, wolkendek en eilandjes eerst
   g.drawImage(cur.world, 0, 0, VW, VH);
   // bosjes-laag wiegt zachtjes mee in de wind
   const sw = Math.sin(G.t * 1.3) * 0.007 + Math.sin(G.t * 2.7) * 0.003;
   g.save(); g.transform(1, 0, sw, 1, -sw * VH * 0.55, 0);
   g.drawImage(cur.grass, 0, 0, VW, VH);
   g.restore();
-  if (cur.sky) tekenLuchtAchter(g);
   // Doorgangen zijn het luidste op het scherm: een zachte pulserende gloed plus
   // een oplichtende ring, zodat geen enkele mooie boom meer aandacht trekt.
   for (const po of cur.portals) {
@@ -8879,7 +8924,15 @@ function drawWorld(g) {
     g.restore();
   }
   const pl = G.player;
-  if (!G.onBoat) {
+  if (cur.fly) {
+    // in de lucht: het maatje zweeft naast het schip mee
+    if (G.trail.length) {
+      const f = G.trail[0];
+      drawCreature(g, G.active, f.x - 4, f.y - 26 + Math.sin(G.t * 2.2) * 4, 13, G.t, 'happy', 0);
+    }
+    drawAirship(g, pl.x, pl.y - 6, G.t, pl.dir);
+    drawJulian(g, pl.x + 6, pl.y + 10, pl.dir === 1 ? 1 : 0, 'idle', G.t, 0.92);
+  } else if (!G.onBoat) {
     if (G.trail.length) {
       const f = G.trail[0];
       drawCreature(g, G.active, f.x, f.y - 8, 13, G.t, pl.moving ? 'happy' : 'idle', 0);
@@ -8925,7 +8978,7 @@ function drawWorld(g) {
     g.fillStyle = '#3b3b3b'; ell(g, 0, 0, 1.6, 3.4);
     g.restore();
   }
-  if (cur.sky) tekenWolkenlaag(g, SKYL[2], G.player.y * 1.1, true);   // voorgrond over alles heen
+  if (cur.sky) tekenLuchtVoor(g);                       // slierten over het schip heen
   drawParticles(g);
   drawHeartFx(g);
 }
