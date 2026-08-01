@@ -8923,11 +8923,12 @@ function addBorder(m) {
   for (let x = 0; x < MW; x++) { if (m[0][x] !== T_WATER) m[0][x] = T_TREE; if (m[MH-1][x] !== T_WATER) m[MH-1][x] = T_TREE; }
   for (let y = 0; y < MH; y++) { if (m[y][0] !== T_WATER) m[y][0] = T_TREE; if (m[y][MW-1] !== T_WATER) m[y][MW-1] = T_TREE; }
 }
-function addPatches(m, patches) {
+function addPatches(m, patches, ondergrond) {
+  const mag = ondergrond === undefined ? T_GRASS : ondergrond;
   for (const p of patches)
     for (let y = p.y; y < p.y + p.h; y++)
       for (let x = p.x; x < p.x + p.w; x++)
-        if (m[y][x] === T_GRASS) m[y][x] = T_TALL;
+        if (m[y] && m[y][x] === mag) m[y][x] = T_TALL;
 }
 
 function buildHub() {
@@ -10127,7 +10128,7 @@ function buildRavine() {
       tufts: ['#2c7a46', '#379256', '#43a866'], canopy: ['#2f8a52', '#37985c'],
       canopyDk: ['#26703f', '#2c7c48'], trunk: '#7a5a34', trunkDk: '#5c4426',
       vines: true, flowers: false, shrooms: true,
-    }, { map: m, waterPool: null, pond: [3, 8, 29, 16] });
+    }, { map: m, waterPool: 'jwater', pond: [3, 8, 29, 16] });
 }
 
 // 3. Bioluminescente Grotten: donker, met gloeiende paddenstoelen en kristallen
@@ -10218,14 +10219,14 @@ function buildTemple() {
     { x: 4, y: 13, w: 5, h: 3, pool: 'temple' },
     { x: 22, y: 13, w: 5, h: 3, pool: 'temple' },
   ];
-  addPatches(m, patches);
+  addPatches(m, patches, T_PATH);          // wolkenplukken op de vloer zelf
   return spokeBase('temple', 'gate', 'bottom',
     [14 * TILE, 22.4 * TILE, 18 * TILE, 24 * TILE], [13 * TILE, 21 * TILE, 19 * TILE, 24 * TILE],
     [15.5 * TILE, 22.9 * TILE], [15.5 * TILE, 2.6 * TILE], patches, {
-      g1: '#efe8d8', g2: '#e8e0cd', path: '#f8f3e6', sand: '#f0e6cc', water: '#bfe4f0',
-      tallBase: '#d4cba8', bush: '#c7bd96', bushTop: '#ded5b6',
-      tufts: ['#cec5a0', '#dbd2ae', '#e6debe'], canopy: ['#c6bd94', '#d2c9a2'],
-      canopyDk: ['#b2a77e', '#bdb289'], trunk: '#c0b48e', trunkDk: '#9c9070',
+      g1: '#eef0fa', g2: '#e4e8f6', path: '#f8fafe', sand: '#e8ecfa', water: '#bfe4f0',
+      tallBase: '#c4cbe8', bush: '#b0b9de', bushTop: '#d2d8f0',
+      tufts: ['#c8cfec', '#d8def4', '#eaeefb'], canopy: ['#b8c0e4', '#c6cdec'],
+      canopyDk: ['#9aa4d0', '#a8b1d8'], trunk: '#cfd4e8', trunkDk: '#a9b0cc',
       flowers: false, shrooms: false, voidBelow: true,
     }, { map: m, waterPool: null, pond: null, sky: true, temple: true });
 }
