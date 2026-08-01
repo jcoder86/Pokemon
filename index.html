@@ -6354,10 +6354,33 @@ function drawJulian(g, x, y, dir, mode, t, sc, avatar) {
 // Het luchtschip waarin je de overgangsmap doorvliegt. Zelfde rol als het
 // bootje op het water: je stapt er vanzelf in en stuurt met point-and-click.
 // Groter dan het bootje, want het draagt de speler en zijn maatje.
-function drawAirship(g, x, y, t, dir) {
+function drawAirship(g, x, y, t, dir, deel) {
   const dei = Math.sin(t * 1.5) * 3.2;                 // rustig deinen
   const kant = dir === 2 ? -1 : 1;
   g.save(); g.translate(x, y + dei); g.rotate(Math.sin(t * 0.9) * 0.025);
+  if (deel === 'voor') {                                // alleen de romp, over Julian heen
+    const rompV = g.createLinearGradient(0, -6, 0, 26);
+    rompV.addColorStop(0, '#c99f68'); rompV.addColorStop(1, '#7a5a34');
+    g.fillStyle = rompV;
+    g.beginPath();
+    g.moveTo(-38, -4); g.lineTo(38, -4);
+    g.quadraticCurveTo(30, 26, 0, 28); g.quadraticCurveTo(-30, 26, -38, -4);
+    g.closePath(); g.fill();
+    g.fillStyle = '#e6bf82'; g.fillRect(-38, -6, 76, 5);
+    g.fillStyle = 'rgba(60,40,20,0.32)';
+    for (let i = 0; i < 5; i++) { g.beginPath(); g.arc(-25 + i * 12, 9, 3, 0, TAU); g.fill(); }
+    g.strokeStyle = '#6f5432'; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(kant * 28, -4); g.lineTo(kant * 28, -30); g.stroke();
+    g.fillStyle = '#f4e8ce';
+    g.beginPath(); g.moveTo(kant * 29, -29);
+    g.quadraticCurveTo(kant * (50 + Math.sin(t * 2) * 4), -17, kant * 29, -5);
+    g.closePath(); g.fill();
+    g.strokeStyle = '#c0563e'; g.lineWidth = 2.4;
+    g.beginPath(); g.moveTo(kant * 28, -30);
+    g.quadraticCurveTo(kant * 40, -34 + Math.sin(t * 4) * 3, kant * 50, -30 + Math.sin(t * 4 + 1) * 3);
+    g.stroke();
+    g.restore(); return;
+  }
   // slagschaduw ver eronder: laat zien dat je echt in de lucht hangt
   g.fillStyle = 'rgba(70,110,150,0.16)';
   g.beginPath(); g.ellipse(6, 60, 44, 11, 0, 0, TAU); g.fill();
@@ -6374,29 +6397,6 @@ function drawAirship(g, x, y, t, dir) {
   }
   g.strokeStyle = '#6f5432'; g.lineWidth = 2;           // touwen
   for (const sx of [-30, -13, 13, 30]) { g.beginPath(); g.moveTo(sx, -22); g.lineTo(sx * 0.72, -4); g.stroke(); }
-  // romp
-  const romp = g.createLinearGradient(0, -6, 0, 26);
-  romp.addColorStop(0, '#c99f68'); romp.addColorStop(1, '#7a5a34');
-  g.fillStyle = romp;
-  g.beginPath();
-  g.moveTo(-38, -4); g.lineTo(38, -4);
-  g.quadraticCurveTo(30, 26, 0, 28); g.quadraticCurveTo(-30, 26, -38, -4);
-  g.closePath(); g.fill();
-  g.fillStyle = '#e6bf82'; g.fillRect(-38, -6, 76, 5);
-  g.fillStyle = 'rgba(60,40,20,0.32)';
-  for (let i = 0; i < 5; i++) { g.beginPath(); g.arc(-25 + i * 12, 9, 3, 0, TAU); g.fill(); }
-  // zeil dat meebeweegt met de richting
-  g.strokeStyle = '#6f5432'; g.lineWidth = 3;
-  g.beginPath(); g.moveTo(kant * 28, -4); g.lineTo(kant * 28, -30); g.stroke();
-  g.fillStyle = '#f4e8ce';
-  g.beginPath(); g.moveTo(kant * 29, -29);
-  g.quadraticCurveTo(kant * (50 + Math.sin(t * 2) * 4), -17, kant * 29, -5);
-  g.closePath(); g.fill();
-  // wimpel
-  g.strokeStyle = '#c0563e'; g.lineWidth = 2.4;
-  g.beginPath(); g.moveTo(kant * 28, -30);
-  g.quadraticCurveTo(kant * 40, -34 + Math.sin(t * 4) * 3, kant * 50, -30 + Math.sin(t * 4 + 1) * 3);
-  g.stroke();
   g.restore();
 }
 
@@ -8763,8 +8763,9 @@ const SKY_ISLES = [], SKY_PUFF = [], SKY_WISP = [];
 (function bouwLucht() {
   let z = 20250131;
   const rnd = () => { z = (z * 1103515245 + 12345) % 2147483648; return z / 2147483648; };
-  for (let i = 0; i < 7; i++)                              // eilandjes diep beneden
-    SKY_ISLES.push({ x: rnd() * VW * 1.6, y: rnd() * VH * 1.6, r: 26 + rnd() * 40, k: rnd() });
+  for (let i = 0; i < 18; i++)                             // eilanden diep beneden
+    SKY_ISLES.push({ x: rnd() * VW * 1.6, y: rnd() * VH * 1.6, r: 38 + rnd() * 78,
+                     w: 1.1 + rnd() * 1.5, k: rnd() });
   for (let i = 0; i < 16; i++)                             // wolkendek onder je
     SKY_PUFF.push({ x: rnd() * VW * 1.6, y: rnd() * VH * 1.6, r: 60 + rnd() * 90, w: 1.5 + rnd() * 0.8 });
   for (let i = 0; i < 10; i++)                             // slierten op jouw hoogte
@@ -8793,14 +8794,25 @@ function tekenLuchtAchter(g) {
   for (const o of SKY_ISLES) {
     const x = wikkel(o.x - px * 0.09, W) - (W - VW) / 2;
     const y = wikkel(o.y - py * 0.09, H) - (H - VH) / 2;
-    if (x < -140 || x > VW + 140 || y < -140 || y > VH + 140) continue;
-    g.save(); g.globalAlpha = 0.55;
-    g.fillStyle = '#7fd8b8';
-    g.beginPath(); g.ellipse(x, y, o.r, o.r * 0.55, 0, 0, TAU); g.fill();
-    g.fillStyle = '#f2e8c8';
-    g.beginPath(); g.ellipse(x, y + o.r * 0.2, o.r * 1.12, o.r * 0.4, 0, 0, TAU); g.fill();
-    g.fillStyle = 'rgba(120,200,220,0.5)';
-    g.beginPath(); g.ellipse(x, y + o.r * 0.34, o.r * 1.4, o.r * 0.5, 0, 0, TAU); g.fill();
+    if (x < -260 || x > VW + 260 || y < -220 || y > VH + 220) continue;
+    const rx = o.r * o.w, ry = o.r * 0.5;
+    g.save(); g.globalAlpha = 0.82;
+    g.fillStyle = 'rgba(120,206,224,0.6)';                 // ondiep water eromheen
+    g.beginPath(); g.ellipse(x, y + ry * 0.55, rx * 1.5, ry * 1.35, 0, 0, TAU); g.fill();
+    g.fillStyle = '#f0e4c0';                               // zandrand
+    g.beginPath(); g.ellipse(x, y + ry * 0.2, rx * 1.16, ry * 1.02, 0, 0, TAU); g.fill();
+    g.fillStyle = '#74cca8';                               // land
+    g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, TAU); g.fill();
+    g.fillStyle = '#5fb891';                               // heuvelrug
+    g.beginPath(); g.ellipse(x - rx * 0.22, y - ry * 0.22, rx * 0.52, ry * 0.5, 0, 0, TAU); g.fill();
+    if (o.k > 0.55) {                                      // een meertje of een bosje
+      g.fillStyle = 'rgba(90,200,214,0.85)';
+      g.beginPath(); g.ellipse(x + rx * 0.3, y + ry * 0.1, rx * 0.24, ry * 0.26, 0, 0, TAU); g.fill();
+    } else {
+      g.fillStyle = '#4fa87e';
+      for (let b = 0; b < 3; b++)
+        { g.beginPath(); g.ellipse(x + (b - 1) * rx * 0.3, y - ry * 0.05, rx * 0.13, ry * 0.2, 0, 0, TAU); g.fill(); }
+    }
     g.restore();
   }
 
@@ -8930,8 +8942,9 @@ function drawWorld(g) {
       const f = G.trail[0];
       drawCreature(g, G.active, f.x - 4, f.y - 26 + Math.sin(G.t * 2.2) * 4, 13, G.t, 'happy', 0);
     }
-    drawAirship(g, pl.x, pl.y - 6, G.t, pl.dir);
-    drawJulian(g, pl.x + 6, pl.y + 10, pl.dir === 1 ? 1 : 0, 'idle', G.t, 0.92);
+    drawAirship(g, pl.x, pl.y - 6, G.t, pl.dir, 'achter');
+    drawJulian(g, pl.x + 2, pl.y + 12, pl.dir === 1 ? 1 : 0, 'idle', G.t, 0.62);
+    drawAirship(g, pl.x, pl.y - 6, G.t, pl.dir, 'voor');
   } else if (!G.onBoat) {
     if (G.trail.length) {
       const f = G.trail[0];
