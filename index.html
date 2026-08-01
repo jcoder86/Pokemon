@@ -788,6 +788,197 @@ function cheeks(g, dx, y, r, c) {
 // ============================================================ species (24 eigen ontwerpen, gen-1 geinspireerd)
 // elke draw: gecentreerd rond (0,0), voeten rond y = S. types sturen de aanval-animatie.
 const D = {
+
+  // ==========================================================================
+  // WEZENS WERELD 2 - TEKENINGEN
+  // Hier staan de tekenfuncties van de wezens van het hemel-eiland. Een nieuw
+  // wezen toevoegen doe je in twee stappen: hier een tekenfunctie erbij, en
+  // onderaan bij WEZENS WERELD 2 - GEGEVENS een regel met zijn gegevens.
+  // ==========================================================================
+
+  // ---- lijn 1: blad. Bleekgroene viervoeter met een groot blad op de kop ----
+  bladknop(g, S, t, m) {
+    const c = '#b8e08a', d = '#8fc45f';
+    VE(g, d, -S * 0.5, S * 0.78, S * 0.24, S * 0.2); VE(g, d, S * 0.5, S * 0.78, S * 0.24, S * 0.2);
+    g.save(); g.translate(-S * 0.05, -S * 0.62); g.rotate(-0.35 + Math.sin(t * 1.8) * 0.05);
+    VE(g, '#8fd06a', 0, -S * 0.42, S * 0.22, S * 0.62);          // het grote blad
+    LN(g, 'rgba(70,140,50,0.6)', S * 0.035, [[0, -S * 0.98], [0, S * 0.14]]);
+    for (let i = 1; i <= 4; i++) {
+      LN(g, 'rgba(70,140,50,0.35)', S * 0.022, [[0, -S * (0.2 + i * 0.16)], [S * 0.13, -S * (0.3 + i * 0.15)]]);
+      LN(g, 'rgba(70,140,50,0.35)', S * 0.022, [[0, -S * (0.2 + i * 0.16)], [-S * 0.13, -S * (0.3 + i * 0.15)]]);
+    }
+    RIM(g, 'rgba(220,255,180,0.5)', 0, -S * 0.42, S * 0.2, S * 0.58, S * 0.04, Math.PI * 1.1, Math.PI * 1.8);
+    g.restore();
+    VE(g, c, 0, S * 0.3, S * 0.66, S * 0.5);                     // lijfje
+    RIM(g, 'rgba(240,255,210,0.5)', 0, S * 0.3, S * 0.62, S * 0.46, S * 0.05, 0.5, Math.PI - 0.3);
+    VE(g, c, 0, -S * 0.24, S * 0.52, S * 0.46);                  // kop
+    for (let i = 0; i < 5; i++)                                  // kraagje van knopjes
+      VE(g, '#f4d86a', -S * 0.36 + i * S * 0.18, S * 0.02, S * 0.06, S * 0.06);
+    HEAD(0, -S * 0.24, S * 0.52, S * 0.46, { muzzle: 0.34 });
+    EYES(g, t, m, 200, { sep: 0.44, y: -0.12, r: 0.24, iris: '#c04a3a' });
+    smileM(g, 0, -S * 0.02, S * 0.16, m);
+    cheeks(g, S * 0.4, -S * 0.06, S * 0.09);
+  },
+  bladkraag(g, S, t, m) {
+    const c = '#a8d878', d = '#7fb84f';
+    VE(g, d, -S * 0.56, S * 0.8, S * 0.26, S * 0.22); VE(g, d, S * 0.56, S * 0.8, S * 0.26, S * 0.22);
+    g.save(); g.translate(-S * 0.04, -S * 0.66); g.rotate(-0.3 + Math.sin(t * 1.6) * 0.045);
+    VE(g, '#7fc95c', 0, -S * 0.5, S * 0.26, S * 0.72);
+    LN(g, 'rgba(60,125,42,0.6)', S * 0.04, [[0, -S * 1.14], [0, S * 0.16]]);
+    RIM(g, 'rgba(220,255,180,0.5)', 0, -S * 0.5, S * 0.24, S * 0.68, S * 0.045, Math.PI * 1.1, Math.PI * 1.8);
+    g.restore();
+    VE(g, c, 0, S * 0.32, S * 0.76, S * 0.54);
+    RIM(g, 'rgba(240,255,210,0.5)', 0, S * 0.32, S * 0.72, S * 0.5, S * 0.05, 0.5, Math.PI - 0.3);
+    VE(g, c, 0, -S * 0.26, S * 0.56, S * 0.5);
+    for (let i = 0; i < 7; i++) {                                // volle knoppenkraag
+      const a = -1.15 + i * 0.38;
+      VE(g, '#f4d05a', Math.cos(a) * S * 0.5, S * 0.06 + Math.sin(a) * S * 0.14, S * 0.075, S * 0.075);
+    }
+    HEAD(0, -S * 0.26, S * 0.56, S * 0.5, { muzzle: 0.34 });
+    EYES(g, t, m, 201, { sep: 0.44, y: -0.12, r: 0.23, iris: '#c04a3a' });
+    smileM(g, 0, -S * 0.04, S * 0.17, m);
+  },
+  bloemkraag(g, S, t, m) {
+    const c = '#98cc68', d = '#6faa44';
+    for (const sg of [-1, 1]) { VE(g, d, sg * S * 0.62, S * 0.82, S * 0.3, S * 0.24); }
+    g.save(); g.translate(-S * 0.02, -S * 0.72); g.rotate(-0.22 + Math.sin(t * 1.4) * 0.04);
+    VE(g, '#6fbe50', 0, -S * 0.56, S * 0.3, S * 0.8);
+    LN(g, 'rgba(52,112,36,0.6)', S * 0.045, [[0, -S * 1.3], [0, S * 0.18]]);
+    g.restore();
+    VE(g, c, 0, S * 0.34, S * 0.9, S * 0.6);
+    RIM(g, 'rgba(240,255,210,0.5)', 0, S * 0.34, S * 0.86, S * 0.56, S * 0.055, 0.5, Math.PI - 0.3);
+    VE(g, c, 0, -S * 0.28, S * 0.6, S * 0.54);
+    for (let i = 0; i < 9; i++) {                                // bloemenkrans om de nek
+      const a = -1.35 + i * 0.34;
+      const bx = Math.cos(a) * S * 0.56, by = S * 0.08 + Math.sin(a) * S * 0.16;
+      for (let k = 0; k < 5; k++) {
+        const ka = k / 5 * TAU;
+        VE(g, i % 2 ? '#ffd7e6' : '#fff0b0', bx + Math.cos(ka) * S * 0.05, by + Math.sin(ka) * S * 0.05, S * 0.036, S * 0.036);
+      }
+      VE(g, '#f0a840', bx, by, S * 0.032, S * 0.032);
+    }
+    HEAD(0, -S * 0.28, S * 0.6, S * 0.54, { muzzle: 0.34 });
+    EYES(g, t, m, 202, { sep: 0.44, y: -0.12, r: 0.22, iris: '#c04a3a' });
+    smileM(g, 0, -S * 0.06, S * 0.18, m);
+  },
+
+  // ---- lijn 2: vuur. Roomwit lijf met vlammen op de rug ---------------------
+  vlamrug(g, S, t, m) {
+    const c = '#f4e4c4', d = '#3f5a8a';
+    VE(g, d, -S * 0.44, S * 0.8, S * 0.22, S * 0.18); VE(g, d, S * 0.44, S * 0.8, S * 0.22, S * 0.18);
+    VE(g, d, 0, S * 0.16, S * 0.76, S * 0.52);                   // donkerblauwe rug
+    for (let i = 0; i < 5; i++) {                                // vlammetjes op de rug
+      const f = 1 + Math.sin(t * 7 + i) * 0.2;
+      const fx = -S * 0.44 + i * S * 0.22, fy = -S * 0.28;
+      E(g, 'rgba(255,122,31,0.35)', fx, fy, S * 0.11 * f, S * 0.2 * f);
+      E(g, '#ff7a1f', fx, fy, S * 0.075 * f, S * 0.15 * f);
+      E(g, '#ffd23d', fx, fy + S * 0.03, S * 0.04 * f, S * 0.09 * f);
+    }
+    VE(g, c, 0, S * 0.36, S * 0.62, S * 0.4);                    // romige buik
+    RIM(g, 'rgba(255,244,214,0.6)', 0, S * 0.36, S * 0.58, S * 0.36, S * 0.05, 0.5, Math.PI - 0.3);
+    VE(g, c, -S * 0.02, -S * 0.16, S * 0.46, S * 0.34);          // langgerekte snuit
+    VE(g, c, -S * 0.36, -S * 0.1, S * 0.2, S * 0.16);
+    HEAD(-S * 0.02, -S * 0.2, S * 0.44, S * 0.3, { muzzle: 0.2 });
+    EYES(g, t, m, 203, { sep: 0.4, y: -0.28, r: 0.22, iris: '#2c2c2c' });
+    E(g, '#c46a2a', -S * 0.5, -S * 0.1, S * 0.035, S * 0.03);
+  },
+  vlamnek(g, S, t, m) {
+    const c = '#f2e0bc', d = '#37507c';
+    VE(g, d, -S * 0.5, S * 0.82, S * 0.24, S * 0.2); VE(g, d, S * 0.5, S * 0.82, S * 0.24, S * 0.2);
+    VE(g, d, 0, S * 0.14, S * 0.8, S * 0.56);
+    for (let i = 0; i < 6; i++) {
+      const f = 1 + Math.sin(t * 7 + i * 0.8) * 0.22;
+      const fx = -S * 0.5 + i * S * 0.2, fy = -S * 0.34;
+      E(g, 'rgba(255,122,31,0.35)', fx, fy, S * 0.13 * f, S * 0.26 * f);
+      E(g, '#ff7a1f', fx, fy, S * 0.09 * f, S * 0.19 * f);
+      E(g, '#ffd23d', fx, fy + S * 0.04, S * 0.05 * f, S * 0.11 * f);
+    }
+    VE(g, c, 0, S * 0.38, S * 0.66, S * 0.42);
+    RIM(g, 'rgba(255,244,214,0.6)', 0, S * 0.38, S * 0.62, S * 0.38, S * 0.05, 0.5, Math.PI - 0.3);
+    VE(g, c, -S * 0.02, -S * 0.2, S * 0.5, S * 0.36);
+    VE(g, c, -S * 0.4, -S * 0.14, S * 0.22, S * 0.17);
+    HEAD(-S * 0.02, -S * 0.24, S * 0.48, S * 0.32, { muzzle: 0.2 });
+    EYES(g, t, m, 204, { sep: 0.4, y: -0.28, r: 0.21, iris: '#2c2c2c' });
+    E(g, '#c46a2a', -S * 0.56, -S * 0.14, S * 0.038, S * 0.032);
+  },
+  vlamkraag(g, S, t, m) {
+    const c = '#f0dcb4', d = '#2f4670';
+    VE(g, d, -S * 0.56, S * 0.84, S * 0.26, S * 0.22); VE(g, d, S * 0.56, S * 0.84, S * 0.26, S * 0.22);
+    VE(g, d, 0, S * 0.16, S * 0.88, S * 0.58);
+    for (let i = 0; i < 7; i++) {                                // brede vlammenkraag
+      const f = 1 + Math.sin(t * 6.5 + i * 0.7) * 0.24;
+      const a = -1.3 + i * 0.42;
+      const fx = Math.cos(a) * S * 0.62, fy = -S * 0.2 + Math.sin(a) * S * 0.2;
+      E(g, 'rgba(255,122,31,0.32)', fx, fy, S * 0.16 * f, S * 0.3 * f);
+      E(g, '#ff7a1f', fx, fy, S * 0.11 * f, S * 0.22 * f);
+      E(g, '#ffe45c', fx, fy + S * 0.05, S * 0.06 * f, S * 0.13 * f);
+    }
+    VE(g, c, 0, S * 0.4, S * 0.72, S * 0.44);
+    VE(g, c, -S * 0.02, -S * 0.24, S * 0.54, S * 0.38);
+    VE(g, c, -S * 0.44, -S * 0.18, S * 0.24, S * 0.18);
+    HEAD(-S * 0.02, -S * 0.28, S * 0.52, S * 0.34, { muzzle: 0.2 });
+    EYES(g, t, m, 205, { sep: 0.4, y: -0.28, r: 0.2, iris: '#2c2c2c' });
+    E(g, '#c46a2a', -S * 0.62, -S * 0.18, S * 0.04, S * 0.034);
+  },
+
+  // ---- lijn 3: water. Blauwe kaaiman met rode rugkam -----------------------
+  bijtkaak(g, S, t, m) {
+    const c = '#6fc2e8', d = '#4a9cc8';
+    VE(g, d, -S * 0.42, S * 0.84, S * 0.24, S * 0.18); VE(g, d, S * 0.42, S * 0.84, S * 0.24, S * 0.18);
+    g.save(); g.translate(S * 0.62, S * 0.5); g.rotate(Math.sin(t * 2.2) * 0.1);
+    VE(g, c, S * 0.3, -S * 0.06, S * 0.34, S * 0.16, -0.25);     // staart
+    g.restore();
+    VE(g, c, 0, S * 0.3, S * 0.66, S * 0.52);
+    VE(g, '#e8f4fa', 0, S * 0.42, S * 0.42, S * 0.34);
+    for (let i = 0; i < 4; i++)                                  // rode rugkam
+      PG(g, '#e05a4a', [[-S * 0.3 + i * S * 0.2, -S * 0.02], [-S * 0.22 + i * S * 0.2, -S * 0.34], [-S * 0.14 + i * S * 0.2, -S * 0.02]]);
+    VE(g, c, 0, -S * 0.3, S * 0.5, S * 0.36);                    // kop
+    VE(g, c, S * 0.32, -S * 0.18, S * 0.34, S * 0.2);            // snuit vooruit
+    VE(g, '#e8f4fa', S * 0.38, -S * 0.12, S * 0.26, S * 0.1);
+    for (let i = 0; i < 5; i++)                                  // tandjes
+      PG(g, '#ffffff', [[S * 0.16 + i * S * 0.1, -S * 0.1], [S * 0.2 + i * S * 0.1, -S * 0.02], [S * 0.24 + i * S * 0.1, -S * 0.1]]);
+    HEAD(0, -S * 0.34, S * 0.48, S * 0.34, { muzzle: 0.24 });
+    EYES(g, t, m, 206, { sep: 0.42, y: -0.24, r: 0.22, iris: '#c04a3a' });
+  },
+  bijtklauw(g, S, t, m) {
+    const c = '#5fb6e0', d = '#3f8ebc';
+    VE(g, d, -S * 0.48, S * 0.86, S * 0.26, S * 0.2); VE(g, d, S * 0.48, S * 0.86, S * 0.26, S * 0.2);
+    g.save(); g.translate(S * 0.68, S * 0.52); g.rotate(Math.sin(t * 2.1) * 0.1);
+    VE(g, c, S * 0.34, -S * 0.08, S * 0.38, S * 0.18, -0.25);
+    g.restore();
+    VE(g, c, 0, S * 0.32, S * 0.74, S * 0.56);
+    VE(g, '#e4f2fa', 0, S * 0.44, S * 0.48, S * 0.36);
+    for (let i = 0; i < 5; i++)
+      PG(g, '#dc5244', [[-S * 0.36 + i * S * 0.19, -S * 0.04], [-S * 0.28 + i * S * 0.19, -S * 0.4], [-S * 0.2 + i * S * 0.19, -S * 0.04]]);
+    VE(g, c, 0, -S * 0.32, S * 0.54, S * 0.38);
+    VE(g, c, S * 0.36, -S * 0.2, S * 0.38, S * 0.22);
+    VE(g, '#e4f2fa', S * 0.42, -S * 0.14, S * 0.3, S * 0.11);
+    for (let i = 0; i < 6; i++)
+      PG(g, '#ffffff', [[S * 0.16 + i * S * 0.1, -S * 0.11], [S * 0.2 + i * S * 0.1, -S * 0.02], [S * 0.24 + i * S * 0.1, -S * 0.11]]);
+    HEAD(0, -S * 0.36, S * 0.52, S * 0.36, { muzzle: 0.24 });
+    EYES(g, t, m, 207, { sep: 0.42, y: -0.24, r: 0.21, iris: '#c04a3a' });
+  },
+  bijtkoning(g, S, t, m) {
+    const c = '#52aad8', d = '#3480b0';
+    VE(g, d, -S * 0.54, S * 0.88, S * 0.3, S * 0.22); VE(g, d, S * 0.54, S * 0.88, S * 0.3, S * 0.22);
+    g.save(); g.translate(S * 0.74, S * 0.54); g.rotate(Math.sin(t * 2) * 0.09);
+    VE(g, c, S * 0.38, -S * 0.1, S * 0.44, S * 0.2, -0.25);
+    for (let i = 0; i < 3; i++)
+      PG(g, '#d44a3c', [[S * 0.14 + i * S * 0.2, -S * 0.16], [S * 0.22 + i * S * 0.2, -S * 0.42], [S * 0.3 + i * S * 0.2, -S * 0.16]]);
+    g.restore();
+    VE(g, c, 0, S * 0.34, S * 0.84, S * 0.6);
+    VE(g, '#e0f0fa', 0, S * 0.46, S * 0.54, S * 0.38);
+    for (let i = 0; i < 6; i++)
+      PG(g, '#d44a3c', [[-S * 0.42 + i * S * 0.18, -S * 0.06], [-S * 0.34 + i * S * 0.18, -S * 0.46], [-S * 0.26 + i * S * 0.18, -S * 0.06]]);
+    VE(g, c, 0, -S * 0.34, S * 0.58, S * 0.4);
+    VE(g, c, S * 0.4, -S * 0.22, S * 0.44, S * 0.24);
+    VE(g, '#e0f0fa', S * 0.46, -S * 0.15, S * 0.34, S * 0.12);
+    for (let i = 0; i < 7; i++)
+      PG(g, '#ffffff', [[S * 0.14 + i * S * 0.1, -S * 0.12], [S * 0.18 + i * S * 0.1, -S * 0.02], [S * 0.22 + i * S * 0.1, -S * 0.12]]);
+    HEAD(0, -S * 0.38, S * 0.56, S * 0.38, { muzzle: 0.24 });
+    EYES(g, t, m, 208, { sep: 0.42, y: -0.24, r: 0.2, iris: '#c04a3a' });
+  },
+
   bulby(g, S, t, m) { // plant-dier met bol op de rug
     const c = '#6fc7a8', d = '#4da085';
     VE(g, d, -S * 0.72, S * 0.66, S * 0.28, S * 0.24); VE(g, d, S * 0.72, S * 0.66, S * 0.28, S * 0.24);
@@ -4822,7 +5013,13 @@ const DEX = {
   triloshell: 140, trilobig: 141, stonewing: 142, snoozle: 143, icebird: 144, voltbird: 145,
   firebird: 146, snek: 147, snekmid: 148, dragonwing: 149, psycat: 150, kittylegend: 151,
 };
-SPECIES.sort((a, b) => (DEX[a.draw] || 999) - (DEX[b.draw] || 999));
+// wereld 1 op gen-1 volgorde, daarna wereld 2 op eigen nummer
+SPECIES.sort(function (a, b) {
+  const wa = a.world || 1, wb = b.world || 1;
+  if (wa !== wb) return wa - wb;
+  if (wa === 2) return (a.dex2 || 999) - (b.dex2 || 999);
+  return (DEX[a.draw] || 999) - (DEX[b.draw] || 999);
+});
 // Waar woont welk wezen? Verdeeld over de vijf gebieden, passend bij het thema.
 const POOLS = {
   // weide-hub: de rustige beginroute
@@ -4865,6 +5062,8 @@ const POOLS = {
   voltbird:['snow'], snek:['swater'], snekmid:['swater'], dragonwing:['snow'],
 };
 SPECIES.forEach(s => { if (POOLS[s.draw]) s.pools = POOLS[s.draw]; });
+// Alles wat hierboven staat hoort bij wereld 1; wereld 2 zet zijn eigen vlag.
+SPECIES.forEach(s => { if (!s.world) s.world = 1; });
 // zeldzaamheid: kleine wezens kom je vaak tegen, imposante zelden, legendes bijna nooit
 const LEGENDARY = { icebird: 1, voltbird: 1, firebird: 1, psycat: 1, kittylegend: 1, dragonwing: 1, stonewing: 1 };
 // Tweede aanval: dezelfde aanval als de eerste, maar dan in bulk en van boven
@@ -4881,13 +5080,41 @@ const SPECIAL_EXTRA = { sparky: 1, bulby: 1, flamlet: 1, splashy: 1, ratty: 1, r
                         polyblock: 1, snek: 1, serpurple: 1, birdmid: 1 };
 const SPECIAL = {};
 SPECIES.forEach(s => { if (s.hp >= 4 || SPECIAL_EXTRA[s.draw]) SPECIAL[s.draw] = 1; });
+
+// ==========================================================================
+// WEZENS WERELD 2 - GEGEVENS
+// Elke regel is een wezen. Kolommen: hartjes, tekenfunctie, type, en op welke
+// eilanden hij voorkomt. Types: grass fire water electric wind bug rock ghost
+// fairy psychic poison normal dark steel. Eilanden: shore ravine caverns
+// terraces temple.
+//
+// Zelf een wezen toevoegen: zet hierboven bij WEZENS WERELD 2 - TEKENINGEN een
+// tekenfunctie neer, en zet hier een regel bij met dezelfde naam. Meer hartjes
+// betekent sterker en zeldzamer. Verder hoef je nergens iets aan te passen.
+// ==========================================================================
+const SPECIES_W2 = [
+  { hp: 3, draw: 'bladknop',   type: 'grass', pools: ['ravine'] },
+  { hp: 4, draw: 'bladkraag',  type: 'grass', pools: ['ravine'] },
+  { hp: 5, draw: 'bloemkraag', type: 'grass', pools: ['ravine'] },
+  { hp: 3, draw: 'vlamrug',    type: 'fire',  pools: ['terraces'] },
+  { hp: 4, draw: 'vlamnek',    type: 'fire',  pools: ['terraces'] },
+  { hp: 5, draw: 'vlamkraag',  type: 'fire',  pools: ['terraces'] },
+  { hp: 3, draw: 'bijtkaak',   type: 'water', pools: ['shore'] },
+  { hp: 4, draw: 'bijtklauw',  type: 'water', pools: ['shore'] },
+  { hp: 5, draw: 'bijtkoning', type: 'water', pools: ['shore'] },
+];
+SPECIES_W2.forEach(function (w, i) { w.world = 2; w.dex2 = i + 1; });
+SPECIES.push.apply(SPECIES, SPECIES_W2);
+
 const NSPECIES = SPECIES.length;
 const STARTER = SPECIES.findIndex(s => s.draw === 'sparky');
 const IDX_BY_NAME = {};
 SPECIES.forEach((s, i) => { IDX_BY_NAME[s.draw] = i; });
 const TYPECOL = { water: '#58b6ff', fire: '#ff7a1f', grass: '#6fc750', electric: '#ffd23d', wind: '#e8f4ff',
                   bug: '#9adb4f', rock: '#a8927a', ghost: '#a06ae0', fairy: '#ff9ec6', psychic: '#e070c0',
-                  poison: '#9a5fc8', normal: '#ffd23d' };
+                  poison: '#9a5fc8', normal: '#ffd23d',
+                  // wereld 2 brengt twee nieuwe types mee
+                  dark: '#5a4a6e', steel: '#9fb4c8' };
 
 // scratch-canvas: alle wezentjes krijgen hier een licht/schaduw-pass en evt. raak-flits
 const scr = document.createElement('canvas'); scr.width = 960; scr.height = 960;
@@ -8463,6 +8690,17 @@ function fxToken(g, type, x, y, s, t, i) {
     case 'psychic':
       ARC(g, 'rgba(224,112,192,0.85)', x, y, s * 1.15, 0, TAU, s * 0.34);
       E(g, 'rgba(255,190,240,0.6)', x, y, s * 0.5, s * 0.5);
+      break;
+    case 'dark':
+      E(g, 'rgba(40,28,58,0.55)', x, y, s * 1.5, s * 1.5);
+      E(g, '#4a3a62', x, y, s * 0.95, s * 0.95);
+      E(g, 'rgba(180,150,220,0.7)', x - s * 0.3, y - s * 0.3, s * 0.26, s * 0.26);
+      break;
+    case 'steel':
+      g.save(); g.translate(x, y); g.rotate(t * 3 + i);
+      PG(g, '#b8c8d8', [[-s, -s * 0.34], [s, -s * 0.34], [s * 0.7, s * 0.34], [-s * 0.7, s * 0.34]]);
+      PG(g, 'rgba(255,255,255,0.65)', [[-s, -s * 0.34], [s, -s * 0.34], [0, 0]]);
+      g.restore();
       break;
     case 'fairy':
       g.fillStyle = i % 2 ? '#ff9ec6' : '#ffd6e8';
