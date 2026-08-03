@@ -1334,10 +1334,10 @@ const D = {
                         [S * (0.2 + i * 0.08), S * 0.145]]);
     PG(g, '#12402c', [[-S * 0.06, -S * 0.09], [S * 0.2, -S * 0.09], [S * 0.06, -S * 0.02]]); // zware wenkbrauw
     E(g, '#12402c', S * 0.32, -S * 0.03, S * 0.02, S * 0.016);       // neusgat
-    // halo: een halve gouden ring op de bovenkant van de kop, boven het oog
-    ARC(g, goudD, S * 0.06, S * 0.0, S * 0.22, Math.PI, TAU, S * 0.062);
-    ARC(g, goud, S * 0.06, S * 0.0, S * 0.22, Math.PI, TAU, S * 0.036);
-    ARC(g, 'rgba(255,252,225,0.9)', S * 0.06, S * 0.0, S * 0.22, Math.PI * 1.15, Math.PI * 1.5, S * 0.015);
+    // halo: een omgekeerd boogje op de kop, met de twee punten op de bovenrand
+    ARC(g, goudD, S * 0.08, -S * 0.15, S * 0.15, 0, Math.PI, S * 0.04);
+    ARC(g, goud, S * 0.08, -S * 0.15, S * 0.15, 0, Math.PI, S * 0.022);
+    ARC(g, 'rgba(255,252,225,0.9)', S * 0.08, -S * 0.15, S * 0.15, Math.PI * 0.32, Math.PI * 0.68, S * 0.01);
     HEAD(S * 0.1, S * 0.005, S * 0.26, S * 0.16, { muzzle: 0.62, profile: 1 });
     EYES(g, t, m, 330, { sep: 0.0, y: -0.1, r: 0.2, iris: '#ffcc22' });
     // spleetpupil eroverheen: dat maakt het een drakenoog in plaats van een stip
