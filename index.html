@@ -540,7 +540,15 @@ const SFX = {
       case 'psychic':  tone(500, 0.36, 'sine', 0.07, 0, 540); tone(506, 0.36, 'sine', 0.06, 0.02, 532); break;
       case 'fairy':    [900, 1150, 1400].forEach((f, i) => tone(f, 0.1, 'sine', 0.06, i * 0.08, f * 1.4)); break;
       case 'poison':   [420, 340, 270].forEach((f, i) => tone(f, 0.14, 'sine', 0.08, i * 0.11, f * 0.7)); break;
-      default:         tone(600, 0.1, 'square', 0.08);
+      case 'dragon': {
+      // een schroeiende straal met een gouden kern
+      E(g, 'rgba(63,138,220,0.35)', x, y, s * 1.6, s * 1.9);
+      E(g, '#3f8adc', x, y, s * 0.95, s * 1.35);
+      E(g, '#8fd0ff', x, y - s * 0.2, s * 0.5, s * 0.7);
+      E(g, '#ffe98a', x, y + s * 0.35, s * 0.34, s * 0.42);
+      break;
+    }
+    default:         tone(600, 0.1, 'square', 0.08);
     }
   },
 };
@@ -1173,10 +1181,97 @@ const D = {
 
 
 
-  // ================= wereld 2, laatste blok ==============================
-  // Negentien wezens naar de honderd, met twee legendes als afsluiting.
-
-  // ---- Kristalkust --------------------------------------------------------
+  // ---- de hemelvorst: de grote legende van wereld 2 -----------------------
+  // Een lang slangenlijf dat zich door het beeld windt, met gouden ringen langs
+  // de flank en roodgezoomde vinnen. Hij wordt ruim groter getekend dan de rest,
+  // want hij moet indruk maken zodra je hem tegenkomt.
+  hemelvorst(g, S, t, m) {
+    const groen = '#2f8a5e', donker = '#1f6444', licht = '#5cbe88';
+    const goud = '#e8c84a', rood = '#c8455f';
+    // Een lange S-bocht die het hele beeld doorkruist. Een spiraal liep te kort
+    // en te dik, waardoor alle segmenten in elkaar liepen tot een klomp; zo
+    // blijft het lijf slank en lees je de bocht van staart naar kop.
+    const golf = Math.sin(t * 1.1) * S * 0.06;
+    const P = [[S * 0.82, S * 0.86], [-S * 1.0, S * 0.5 + golf],
+               [S * 1.05, -S * 0.4 - golf], [-S * 0.62, -S * 0.82]];
+    const N = 44, pad = [], dik = [];
+    for (let i = 0; i <= N; i++) {
+      const f = i / N, u = 1 - f;
+      pad.push([u * u * u * P[0][0] + 3 * u * u * f * P[1][0] + 3 * u * f * f * P[2][0] + f * f * f * P[3][0],
+                u * u * u * P[0][1] + 3 * u * u * f * P[1][1] + 3 * u * f * f * P[2][1] + f * f * f * P[3][1]]);
+      dik.push(S * (0.045 + f * 0.105));                     // dun bij de staart, dikker bij de nek
+    }
+    const loodrecht = function (i) {
+      const j = Math.min(i + 1, N), q = pad[i], r2 = pad[j];
+      const nx = r2[0] - q[0], ny = r2[1] - q[1], L = Math.hypot(nx, ny) || 1;
+      return [-ny / L, nx / L];
+    };
+    // staartvin
+    const st = pad[0], sp2 = loodrecht(0);
+    PG(g, rood, [[st[0] + sp2[0] * S * 0.26, st[1] + sp2[1] * S * 0.26],
+                 [st[0] + S * 0.2, st[1] + S * 0.2],
+                 [st[0] - sp2[0] * S * 0.26, st[1] - sp2[1] * S * 0.26]]);
+    // rugvinnen achter het lijf langs
+    for (let i = 4; i < N - 5; i += 5) {
+      const q = pad[i], pr = loodrecht(i), h = dik[i] * 2.6;
+      PG(g, rood, [[q[0] + pr[0] * dik[i] * 0.4, q[1] + pr[1] * dik[i] * 0.4],
+                   [q[0] + pr[0] * h, q[1] + pr[1] * h],
+                   [pad[i + 3][0] + pr[0] * dik[i] * 0.4, pad[i + 3][1] + pr[1] * dik[i] * 0.4]]);
+    }
+    // het lijf als doorlopende band
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    for (let i = 0; i < N; i++) {
+      g.strokeStyle = i % 2 ? groen : donker;
+      g.lineWidth = dik[i] * 2;
+      g.beginPath(); g.moveTo(pad[i][0], pad[i][1]); g.lineTo(pad[i + 1][0], pad[i + 1][1]); g.stroke();
+    }
+    for (let i = 0; i < N; i++) {                            // lichte buikstreep
+      const pr = loodrecht(i);
+      g.strokeStyle = 'rgba(160,225,190,0.4)';
+      g.lineWidth = dik[i] * 0.7;
+      g.beginPath();
+      g.moveTo(pad[i][0] + pr[0] * dik[i] * 0.45, pad[i][1] + pr[1] * dik[i] * 0.45);
+      g.lineTo(pad[i + 1][0] + pr[0] * dik[i] * 0.45, pad[i + 1][1] + pr[1] * dik[i] * 0.45);
+      g.stroke();
+    }
+    for (let i = 3; i < N - 2; i += 4) {                     // gouden ringen langs de flank
+      const rr = dik[i] * 0.78;
+      ARC(g, goud, pad[i][0], pad[i][1], rr, 0, TAU, S * 0.02);
+      E(g, 'rgba(255,232,140,0.4)', pad[i][0], pad[i][1], rr * 0.62, rr * 0.62);
+    }
+    for (const sg of [-1, 1]) {                              // klauwarmpjes bij de borst
+      const q = pad[Math.round(N * 0.74)];
+      g.save(); g.translate(q[0], q[1]); g.rotate(sg * 0.8 + Math.sin(t * 2) * 0.1);
+      VE(g, groen, 0, S * 0.14, S * 0.045, S * 0.12);
+      for (let k = -1; k <= 1; k++)
+        PG(g, '#f0ead8', [[k * S * 0.028, S * 0.23], [k * S * 0.045, S * 0.32], [k * S * 0.055, S * 0.23]]);
+      g.restore();
+    }
+    // kop
+    const k = pad[N], v = pad[N - 3];
+    const hk = Math.atan2(k[1] - v[1], k[0] - v[0]);
+    g.save(); g.translate(k[0], k[1]); g.rotate(hk);
+    for (const sg of [-1, 1]) {                              // lange achterwaartse hoorns
+      PG(g, goud, [[-S * 0.04, sg * S * 0.08], [-S * 0.62, sg * S * 0.3], [-S * 0.08, sg * S * 0.01]]);
+      PG(g, rood, [[-S * 0.08, sg * S * 0.13], [-S * 0.44, sg * S * 0.36], [-S * 0.1, sg * S * 0.07]]);
+    }
+    VE(g, groen, 0, 0, S * 0.26, S * 0.17);                  // schedel
+    VE(g, donker, S * 0.15, S * 0.02, S * 0.18, S * 0.115);  // snuit
+    VE(g, licht, S * 0.0, -S * 0.055, S * 0.2, S * 0.075);   // lichte bovenkant
+    PG(g, '#5a1020', [[S * 0.05, S * 0.055], [S * 0.33, S * 0.075], [S * 0.05, S * 0.125]]);
+    for (let i = 0; i < 3; i++)
+      PG(g, '#fff4e0', [[S * (0.1 + i * 0.065), S * 0.065], [S * (0.13 + i * 0.065), S * 0.115],
+                        [S * (0.15 + i * 0.065), S * 0.065]]);
+    ARC(g, goud, 0, 0, S * 0.18, -0.6, 0.6, S * 0.022);
+    HEAD(0, 0, S * 0.25, S * 0.17, { muzzle: 0.5, profile: 1 });
+    EYES(g, t, m, 330, { sep: 0.0, y: -0.16, r: 0.15, iris: '#f0d040' });
+    g.restore();
+    for (let i = 0; i < 4; i++) {                            // vonkjes eromheen
+      const a2 = t * 0.8 + i * 1.57;
+      E(g, 'rgba(255,235,150,' + (0.3 + 0.3 * Math.sin(t * 2.4 + i)) + ')',
+        Math.cos(a2) * S * 0.92, Math.sin(a2) * S * 0.78, S * 0.045, S * 0.045);
+    }
+  },
   mantazweef(g, S, t, m) {
     const c = '#4a7ab0', d = '#33587f', buik = '#cfe0f0';
     const gl = Math.sin(t * 2) * 0.18;
@@ -6976,7 +7071,7 @@ function typeOf(sp, alt) { return (alt && sp.type2) ? sp.type2 : sp.type; }
 const GEHEIM = { area: 'temple', tx: 15, ty: 4, kans: 0.14, draw: 'kittylegend' };
 
 const LEGENDARY = { icebird: 1, voltbird: 1, firebird: 1, psycat: 1, kittylegend: 1, dragonwing: 1, stonewing: 1,
-                    hemelserpent: 1, dageraadvogel: 1 };
+                    hemelserpent: 1, dageraadvogel: 1, hemelvorst: 1 };
 // Tweede aanval: dezelfde aanval als de eerste, maar dan in bulk en van boven
 // naar beneden. Twee hartjes schade, snellere mikring, geen dubbele-klap-bonus.
 // Elk zwaar wezen (vier hartjes of meer) krijgt hem, plus een handvol bekende
@@ -7031,6 +7126,8 @@ const SPECIES_W2 = [
   // Wolkentempel
   { hp: 3, draw: 'windveer',    type: 'wind',  pools: ['temple'], fly: true },
   { hp: 5, draw: 'zonneschijf', type: 'fire',  type2: 'psychic', pools: ['temple'] },
+  // de grote legende van wereld 2: alleen hoog in de lucht en op de tempel
+  { hp: 5, draw: 'hemelvorst', type: 'wind', type2: 'dragon', pools: ['temple'], fly: true },
   // de twee legendes van wereld 2
   { hp: 5, draw: 'hemelserpent', type: 'wind', type2: 'water', pools: ['temple'], fly: true },
   { hp: 5, draw: 'dageraadvogel', type: 'fairy', type2: 'fire', pools: ['temple'], fly: true },
@@ -7145,7 +7242,9 @@ const TYPECOL = { water: '#58b6ff', fire: '#ff7a1f', grass: '#6fc750', electric:
                   poison: '#9a5fc8', normal: '#ffd23d',
                   // wereld 2 brengt twee nieuwe types mee
                   dark: '#5a4a6e', steel: '#9fb4c8',
-                  ice: '#a8e4f4', fight: '#e0704a' };
+                  ice: '#a8e4f4', fight: '#e0704a',
+                  // het drakentype hoort bij de grote legende van wereld 2
+                  dragon: '#3f8adc' };
 
 
 // ====================================================== leefgebieden
@@ -7280,7 +7379,7 @@ const sg2 = scr2.getContext('2d');
 // Zo lees je een evolutielijn meteen af aan het silhouet.
 const BIG = ['bloomback','flamewing','shelltank','spikequeen','spikeking','rockking','sludgeking','muscbig',
   'boobig','snoozle','dragonwing','psycat','rhinobig','lakebeast','ragedragon','palmhead','bellpitch',
-  'jellycrown','pupbig','stonewing','icebird','voltbird','firebird','kittylegend'];
+  'jellycrown','pupbig','stonewing','icebird','voltbird','firebird','kittylegend','hemelvorst'];
 const MID = ['ivyleaf','flamejaw','shellteen','spikeblue2','spikepurp2','rockarm','muscmid','boohand',
   'birdking','sparrowbig','rattybig','catgem','ninetail','pufftall','moonfae','voltbig','dreambig','psybig',
   'tadbig','duckblue','ammobig','trilobig','kingcrab','twinklebig','goldbig','seahorsebig','sealbig','bonebig',
