@@ -1236,7 +1236,7 @@ const D = {
     }
     // rugvinnen: gebogen zeilen, achter het lijf langs
     for (let i = 8; i < N - 10; i += 11) {
-      const q = pad[i], q2 = pad[i + 7], pr = loodrecht(i), h = dik[i] * 2.3;
+      const q = pad[i], q2 = pad[i + 8], pr = loodrecht(i), h = dik[i] * 3.4;
       g.fillStyle = roodD;
       g.beginPath();
       g.moveTo(q[0], q[1]);
@@ -1254,15 +1254,15 @@ const D = {
       g.fillStyle = '#2b7d54';                                   // vrijwel de hele vin groen
       g.beginPath();
       g.moveTo(q[0], q[1]);
-      g.quadraticCurveTo(q[0] + pr[0] * h * 0.98, q[1] + pr[1] * h * 0.98,
-                         q2[0] + pr[0] * h * 0.44, q2[1] + pr[1] * h * 0.44);
+      g.quadraticCurveTo(q[0] + pr[0] * h * 0.86, q[1] + pr[1] * h * 0.86,
+                         q2[0] + pr[0] * h * 0.38, q2[1] + pr[1] * h * 0.38);
       g.lineTo(q2[0], q2[1]);
       g.closePath(); g.fill();
       g.fillStyle = '#3aa065';
       g.beginPath();
       g.moveTo(q[0], q[1]);
-      g.quadraticCurveTo(q[0] + pr[0] * h * 0.72, q[1] + pr[1] * h * 0.72,
-                         q2[0] + pr[0] * h * 0.32, q2[1] + pr[1] * h * 0.32);
+      g.quadraticCurveTo(q[0] + pr[0] * h * 0.64, q[1] + pr[1] * h * 0.64,
+                         q2[0] + pr[0] * h * 0.28, q2[1] + pr[1] * h * 0.28);
       g.lineTo(q2[0], q2[1]);
       g.closePath(); g.fill();
     }
@@ -1340,27 +1340,35 @@ const D = {
                         [S * (0.2 + i * 0.08), S * 0.145]]);
     PG(g, '#12402c', [[-S * 0.06, -S * 0.09], [S * 0.2, -S * 0.09], [S * 0.06, -S * 0.02]]); // zware wenkbrauw
     E(g, '#12402c', S * 0.32, -S * 0.03, S * 0.02, S * 0.016);       // neusgat
-    g.lineCap = 'round';                                       // band over de bovenkant van de schedel
-    g.strokeStyle = goudD; g.lineWidth = S * 0.055;
-    g.beginPath(); g.moveTo(-S * 0.13, S * 0.02);
-    g.quadraticCurveTo(S * 0.03, -S * 0.2, S * 0.19, -S * 0.04); g.stroke();
-    g.strokeStyle = goud; g.lineWidth = S * 0.03;
-    g.beginPath(); g.moveTo(-S * 0.13, S * 0.02);
-    g.quadraticCurveTo(S * 0.03, -S * 0.2, S * 0.19, -S * 0.04); g.stroke();
-    E(g, 'rgba(255,252,220,0.85)', S * 0.0, -S * 0.115, S * 0.035, S * 0.02);
+    // gevulde band dwars over de schedel, van bovenrand tot onderrand
+    g.fillStyle = goudD;
+    g.beginPath();
+    g.moveTo(-S * 0.08, -S * 0.19);
+    g.quadraticCurveTo(S * 0.0, S * 0.0, -S * 0.06, S * 0.19);
+    g.lineTo(S * 0.06, S * 0.18);
+    g.quadraticCurveTo(S * 0.13, S * 0.0, S * 0.05, -S * 0.18);
+    g.closePath(); g.fill();
+    g.fillStyle = goud;
+    g.beginPath();
+    g.moveTo(-S * 0.055, -S * 0.175);
+    g.quadraticCurveTo(S * 0.015, S * 0.0, -S * 0.04, S * 0.175);
+    g.lineTo(S * 0.035, S * 0.165);
+    g.quadraticCurveTo(S * 0.105, S * 0.0, S * 0.03, -S * 0.165);
+    g.closePath(); g.fill();
+    E(g, 'rgba(255,252,225,0.85)', -S * 0.005, -S * 0.115, S * 0.028, S * 0.035);
     // sprieten onder de kin, in hetzelfde groen als de hoorns
     for (const kin of [0, 1]) {
-      const zwaai = Math.sin(t * 1.6 + kin * 0.9) * S * 0.05;
-      const x0 = S * (0.24 - kin * 0.07), y0 = S * (0.13 + kin * 0.015);
-      g.strokeStyle = '#12402c'; g.lineWidth = S * 0.038; g.lineCap = 'round';
+      const zwaai = Math.sin(t * 1.6 + kin * 0.9) * S * 0.035;
+      const x0 = S * (0.24 - kin * 0.08), y0 = S * (0.13 + kin * 0.015);
+      const x1 = S * (0.04 - kin * 0.12), y1 = S * (0.36 + kin * 0.05) + zwaai;
+      g.lineCap = 'round';
+      g.strokeStyle = '#12402c'; g.lineWidth = S * 0.07;
       g.beginPath(); g.moveTo(x0, y0);
-      g.quadraticCurveTo(S * 0.02, S * (0.38 + kin * 0.06) + zwaai,
-                         -S * (0.3 + kin * 0.1), S * (0.34 + kin * 0.1) + zwaai);
+      g.quadraticCurveTo(S * (0.18 - kin * 0.05), S * 0.28 + zwaai, x1, y1);
       g.stroke();
-      g.strokeStyle = '#57bd85'; g.lineWidth = S * 0.02;
+      g.strokeStyle = '#57bd85'; g.lineWidth = S * 0.04;
       g.beginPath(); g.moveTo(x0, y0);
-      g.quadraticCurveTo(S * 0.02, S * (0.38 + kin * 0.06) + zwaai,
-                         -S * (0.3 + kin * 0.1), S * (0.34 + kin * 0.1) + zwaai);
+      g.quadraticCurveTo(S * (0.18 - kin * 0.05), S * 0.28 + zwaai, x1, y1);
       g.stroke();
     }
     HEAD(S * 0.1, S * 0.005, S * 0.26, S * 0.16, { muzzle: 0.62, profile: 1 });
