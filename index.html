@@ -1226,6 +1226,13 @@ const D = {
                          st[0] + S * 0.3, st[1] + S * 0.26);
       g.quadraticCurveTo(st[0] + S * 0.12, st[1] + S * 0.1, st[0], st[1]);
       g.closePath(); g.fill();
+      g.fillStyle = '#2b7d54';                                   // groene aanzet
+      g.beginPath();
+      g.moveTo(st[0], st[1]);
+      g.quadraticCurveTo(st[0] + sp2[0] * sg * S * 0.16 + S * 0.06, st[1] + sp2[1] * sg * S * 0.16 + S * 0.06,
+                         st[0] + S * 0.15, st[1] + S * 0.13);
+      g.quadraticCurveTo(st[0] + S * 0.06, st[1] + S * 0.05, st[0], st[1]);
+      g.closePath(); g.fill();
     }
     // rugvinnen: gebogen zeilen, achter het lijf langs
     for (let i = 6; i < N - 8; i += 6) {
@@ -1242,6 +1249,20 @@ const D = {
       g.moveTo(q[0], q[1]);
       g.quadraticCurveTo(q[0] + pr[0] * h * 0.7, q[1] + pr[1] * h * 0.7,
                          q2[0] + pr[0] * h * 0.3, q2[1] + pr[1] * h * 0.3);
+      g.lineTo(q2[0], q2[1]);
+      g.closePath(); g.fill();
+      g.fillStyle = '#2b7d54';                                   // groene aanzet
+      g.beginPath();
+      g.moveTo(q[0], q[1]);
+      g.quadraticCurveTo(q[0] + pr[0] * h * 0.4, q[1] + pr[1] * h * 0.4,
+                         q2[0] + pr[0] * h * 0.16, q2[1] + pr[1] * h * 0.16);
+      g.lineTo(q2[0], q2[1]);
+      g.closePath(); g.fill();
+      g.fillStyle = '#3aa065';
+      g.beginPath();
+      g.moveTo(q[0], q[1]);
+      g.quadraticCurveTo(q[0] + pr[0] * h * 0.22, q[1] + pr[1] * h * 0.22,
+                         q2[0] + pr[0] * h * 0.08, q2[1] + pr[1] * h * 0.08);
       g.lineTo(q2[0], q2[1]);
       g.closePath(); g.fill();
     }
@@ -1319,8 +1340,24 @@ const D = {
                         [S * (0.2 + i * 0.08), S * 0.145]]);
     PG(g, '#12402c', [[-S * 0.06, -S * 0.09], [S * 0.2, -S * 0.09], [S * 0.06, -S * 0.02]]); // zware wenkbrauw
     E(g, '#12402c', S * 0.32, -S * 0.03, S * 0.02, S * 0.016);       // neusgat
-    ARC(g, goudD, -S * 0.02, S * 0.0, S * 0.2, -0.9, 0.9, S * 0.035);   // gouden band
-    ARC(g, goud, -S * 0.02, S * 0.0, S * 0.2, -0.9, 0.9, S * 0.018);
+    ARC(g, goudD, S * 0.02, S * 0.02, S * 0.19, -2.35, -0.75, S * 0.04);   // band bovenop de schedel
+    ARC(g, goud, S * 0.02, S * 0.02, S * 0.19, -2.3, -0.8, S * 0.022);
+    E(g, 'rgba(255,252,220,0.7)', -S * 0.03, -S * 0.16, S * 0.03, S * 0.02);
+    // sprieten onder de kin, in hetzelfde groen als de hoorns
+    for (const kin of [0, 1]) {
+      const zwaai = Math.sin(t * 1.6 + kin * 0.9) * S * 0.05;
+      const x0 = S * (0.24 - kin * 0.07), y0 = S * (0.13 + kin * 0.015);
+      g.strokeStyle = '#12402c'; g.lineWidth = S * 0.038; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(x0, y0);
+      g.quadraticCurveTo(S * 0.02, S * (0.38 + kin * 0.06) + zwaai,
+                         -S * (0.3 + kin * 0.1), S * (0.34 + kin * 0.1) + zwaai);
+      g.stroke();
+      g.strokeStyle = '#57bd85'; g.lineWidth = S * 0.02;
+      g.beginPath(); g.moveTo(x0, y0);
+      g.quadraticCurveTo(S * 0.02, S * (0.38 + kin * 0.06) + zwaai,
+                         -S * (0.3 + kin * 0.1), S * (0.34 + kin * 0.1) + zwaai);
+      g.stroke();
+    }
     HEAD(S * 0.1, S * 0.005, S * 0.26, S * 0.16, { muzzle: 0.62, profile: 1 });
     EYES(g, t, m, 330, { sep: 0.0, y: -0.1, r: 0.2, iris: '#ffcc22' });
     // spleetpupil eroverheen: dat maakt het een drakenoog in plaats van een stip
