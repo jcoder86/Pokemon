@@ -1299,22 +1299,16 @@ const D = {
     const hk = Math.atan2(k[1] - v[1], k[0] - v[0]);
     g.save(); g.translate(k[0], k[1]); g.rotate(hk);
     if (Math.cos(hk) < 0) g.scale(1, -1);      // kijkt hij naar links, dan spiegelen
-    for (const sg of [-1, 1]) {                                  // zware taps toelopende hoorns
-      g.fillStyle = '#12402c';                                   // korte, stevige hoorns
-      g.beginPath();
-      g.moveTo(-S * 0.02, sg * S * 0.0);
-      g.quadraticCurveTo(-S * 0.2, sg * S * 0.06, -S * 0.44, sg * S * 0.24);
-      g.quadraticCurveTo(-S * 0.22, sg * S * 0.16, -S * 0.05, sg * S * 0.2);
-      g.closePath(); g.fill();
-      g.fillStyle = '#57bd85';
-      g.beginPath();
-      g.moveTo(-S * 0.04, sg * S * 0.03);
-      g.quadraticCurveTo(-S * 0.2, sg * S * 0.08, -S * 0.4, sg * S * 0.22);
-      g.quadraticCurveTo(-S * 0.21, sg * S * 0.15, -S * 0.06, sg * S * 0.17);
-      g.closePath(); g.fill();
-      g.strokeStyle = 'rgba(215,255,230,0.8)'; g.lineWidth = S * 0.02;
-      g.beginPath(); g.moveTo(-S * 0.05, sg * S * 0.04);
-      g.quadraticCurveTo(-S * 0.21, sg * S * 0.08, -S * 0.4, sg * S * 0.21); g.stroke();
+    // drie hoekige punten die naar achteren waaieren
+    for (const [hk2, lang, breed] of [[-0.44, 0.58, 0.14], [0.0, 0.68, 0.16], [0.44, 0.58, 0.14]]) {
+      const dx = -Math.cos(hk2), dy = Math.sin(hk2);
+      const bx = -dy, by = dx;
+      PG(g, '#12402c', [[dx * S * 0.02 + bx * S * breed, dy * S * 0.02 + by * S * breed],
+                        [dx * S * lang, dy * S * lang],
+                        [dx * S * 0.02 - bx * S * breed, dy * S * 0.02 - by * S * breed]]);
+      PG(g, '#57bd85', [[dx * S * 0.06 + bx * S * breed * 0.6, dy * S * 0.06 + by * S * breed * 0.6],
+                        [dx * S * (lang - 0.07), dy * S * (lang - 0.07)],
+                        [dx * S * 0.06 - bx * S * breed * 0.18, dy * S * 0.06 - by * S * breed * 0.18]]);
     }
     // langere, hoekiger kop met een duidelijke kaaklijn
     g.fillStyle = '#12402c';
@@ -1340,37 +1334,10 @@ const D = {
                         [S * (0.2 + i * 0.08), S * 0.145]]);
     PG(g, '#12402c', [[-S * 0.06, -S * 0.09], [S * 0.2, -S * 0.09], [S * 0.06, -S * 0.02]]); // zware wenkbrauw
     E(g, '#12402c', S * 0.32, -S * 0.03, S * 0.02, S * 0.016);       // neusgat
-    // gevulde band dwars over de schedel, van bovenrand tot onderrand
-    g.fillStyle = goudD;
-    g.beginPath();
-    g.moveTo(-S * 0.08, -S * 0.19);
-    g.quadraticCurveTo(S * 0.0, S * 0.0, -S * 0.06, S * 0.19);
-    g.lineTo(S * 0.06, S * 0.18);
-    g.quadraticCurveTo(S * 0.13, S * 0.0, S * 0.05, -S * 0.18);
-    g.closePath(); g.fill();
-    g.fillStyle = goud;
-    g.beginPath();
-    g.moveTo(-S * 0.055, -S * 0.175);
-    g.quadraticCurveTo(S * 0.015, S * 0.0, -S * 0.04, S * 0.175);
-    g.lineTo(S * 0.035, S * 0.165);
-    g.quadraticCurveTo(S * 0.105, S * 0.0, S * 0.03, -S * 0.165);
-    g.closePath(); g.fill();
-    E(g, 'rgba(255,252,225,0.85)', -S * 0.005, -S * 0.115, S * 0.028, S * 0.035);
-    // sprieten onder de kin, in hetzelfde groen als de hoorns
-    for (const kin of [0, 1]) {
-      const zwaai = Math.sin(t * 1.6 + kin * 0.9) * S * 0.035;
-      const x0 = S * (0.24 - kin * 0.08), y0 = S * (0.13 + kin * 0.015);
-      const x1 = S * (0.04 - kin * 0.12), y1 = S * (0.36 + kin * 0.05) + zwaai;
-      g.lineCap = 'round';
-      g.strokeStyle = '#12402c'; g.lineWidth = S * 0.07;
-      g.beginPath(); g.moveTo(x0, y0);
-      g.quadraticCurveTo(S * (0.18 - kin * 0.05), S * 0.28 + zwaai, x1, y1);
-      g.stroke();
-      g.strokeStyle = '#57bd85'; g.lineWidth = S * 0.04;
-      g.beginPath(); g.moveTo(x0, y0);
-      g.quadraticCurveTo(S * (0.18 - kin * 0.05), S * 0.28 + zwaai, x1, y1);
-      g.stroke();
-    }
+    // halo: een halve gouden ring op de bovenkant van de kop, boven het oog
+    ARC(g, goudD, S * 0.06, S * 0.0, S * 0.22, Math.PI, TAU, S * 0.062);
+    ARC(g, goud, S * 0.06, S * 0.0, S * 0.22, Math.PI, TAU, S * 0.036);
+    ARC(g, 'rgba(255,252,225,0.9)', S * 0.06, S * 0.0, S * 0.22, Math.PI * 1.15, Math.PI * 1.5, S * 0.015);
     HEAD(S * 0.1, S * 0.005, S * 0.26, S * 0.16, { muzzle: 0.62, profile: 1 });
     EYES(g, t, m, 330, { sep: 0.0, y: -0.1, r: 0.2, iris: '#ffcc22' });
     // spleetpupil eroverheen: dat maakt het een drakenoog in plaats van een stip
