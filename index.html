@@ -3155,30 +3155,152 @@ const D = {
     cheeks(g, S * 0.5, -S * 0.4, S * 0.1);
   },
   sparky(g, S, t, m) { // elektrisch muisje (de starter)
-    const y1 = '#ffd83d', yd = '#e0b32a', bk = '#4a3b28';
-    for (const s of [-1, 1]) {
-      g.save(); g.translate(s * S * 0.42, -S * 0.72); g.rotate(s * (0.45 + Math.sin(t * 2.2) * 0.05));
-      E(g, y1, 0, -S * 0.38, S * 0.16, S * 0.5);
-      E(g, yd, s * S * 0.06, -S * 0.3, S * 0.07, S * 0.32);
-      E(g, bk, 0, -S * 0.72, S * 0.13, S * 0.2);
+    // Opgebouwd uit een handvol verhoudingen in plaats van losse getallen, zodat
+    // het geheel als een coherent figuur schaalt. Alle maten hangen aan de romp.
+    const rompB = S * 0.60;                 // halve breedte van de buik
+    const kopB = rompB * 0.86, kopH = rompB * 0.76;
+    const kopY = -S * 0.50;                 // midden van de kop
+    const oorL = kopH * 2.55;               // oren fors langer dan vroeger
+    const oogR = kopB * 0.27;
+    // warmer en verzadigder geel dan het oude pastel
+    const geel = '#fbcf2b', licht = '#ffe65a', schaduw = '#e9a11f', diep = '#cf8b16';
+    const zwart = '#2e2418', rood = '#f2503c';
+
+    // ---- 1. staart: ruim groter, achter het lijf langs -----------------------
+    const zw = Math.sin(t * 1.8) * S * 0.05;
+    PG(g, schaduw, [[rompB * 0.5, S * 0.42], [rompB * 1.5, S * 0.16 + zw],
+                    [rompB * 1.2, S * 0.06 + zw], [rompB * 2.35, -S * 0.62 + zw],
+                    [rompB * 1.72, -S * 0.30 + zw], [rompB * 2.5, -S * 1.02 + zw],
+                    [rompB * 1.35, -S * 0.34 + zw], [rompB * 1.62, -S * 0.30 + zw],
+                    [rompB * 0.72, S * 0.16]]);
+    PG(g, geel, [[rompB * 0.56, S * 0.36], [rompB * 1.44, S * 0.14 + zw],
+                 [rompB * 1.16, S * 0.05 + zw], [rompB * 2.26, -S * 0.62 + zw],
+                 [rompB * 1.68, -S * 0.32 + zw], [rompB * 2.4, -S * 0.98 + zw],
+                 [rompB * 1.32, -S * 0.34 + zw], [rompB * 1.56, -S * 0.31 + zw],
+                 [rompB * 0.74, S * 0.14]]);
+    PG(g, '#a06f2c', [[rompB * 0.5, S * 0.42], [rompB * 0.95, S * 0.2],
+                      [rompB * 0.88, S * 0.04], [rompB * 0.62, S * 0.1]]);  // donkere aanzet
+
+    // ---- 2. romp: peervormig, duidelijk langer ------------------------------
+    const rompTop = kopY + kopH * 0.72, rompOnd = S * 0.74;
+    const rg = g.createLinearGradient(-rompB, rompTop, rompB * 0.7, rompOnd);
+    rg.addColorStop(0, licht); rg.addColorStop(0.45, geel); rg.addColorStop(1, schaduw);
+    g.fillStyle = rg;
+    g.beginPath();
+    g.moveTo(-rompB * 0.44, rompTop);
+    g.bezierCurveTo(-rompB * 0.95, rompTop + S * 0.2, -rompB * 1.08, rompOnd - S * 0.24,
+                    -rompB * 0.72, rompOnd);
+    g.bezierCurveTo(-rompB * 0.3, rompOnd + S * 0.12, rompB * 0.3, rompOnd + S * 0.12,
+                    rompB * 0.72, rompOnd);
+    g.bezierCurveTo(rompB * 1.08, rompOnd - S * 0.24, rompB * 0.95, rompTop + S * 0.2,
+                    rompB * 0.44, rompTop);
+    g.closePath(); g.fill();
+    E(g, 'rgba(255,240,170,0.5)', -rompB * 0.28, rompTop + S * 0.22, rompB * 0.4, S * 0.2, -0.3);
+
+    // ---- 3. benen en 4. voeten ---------------------------------------------
+    for (const sg of [-1, 1]) {
+      g.save(); g.translate(sg * rompB * 0.48, rompOnd - S * 0.04);
+      E(g, schaduw, 0, S * 0.06, rompB * 0.29, S * 0.13);             // dij, stopt boven de enkel
+      E(g, geel, 0, S * 0.03, rompB * 0.26, S * 0.115);
+      // voet: langwerpig, plat en naar buiten gericht, in het geel van het lijf
+      g.save(); g.rotate(sg * 0.26);
+      E(g, diep, sg * rompB * 0.16, S * 0.235, rompB * 0.5, S * 0.095);   // dunne donkere onderrand
+      E(g, geel, sg * rompB * 0.16, S * 0.21, rompB * 0.49, S * 0.088);
+      E(g, 'rgba(255,240,170,0.45)', sg * rompB * 0.24, S * 0.185, rompB * 0.2, S * 0.028);
+      g.restore(); g.restore();
+    }
+
+    // ---- 5. oren: lang, slank en taps, met donkere punt ---------------------
+    for (const sg of [-1, 1]) {
+      const kant = sg < 0 ? 0.30 : 0.42;                              // licht asymmetrisch
+      g.save();
+      g.translate(sg * kopB * 0.44, kopY - kopH * 0.62);
+      g.rotate(sg * (kant + Math.sin(t * 2.2 + sg) * 0.035));
+      // omtrek: smalle basis, iets breder, dan taps naar een afgeronde punt
+      const oorPad = function (br, len) {
+        g.beginPath();
+        g.moveTo(-br * 0.72, 0);
+        g.bezierCurveTo(-br * 1.0, -len * 0.34, -br * 0.62, -len * 0.72, -br * 0.24, -len);
+        g.quadraticCurveTo(0, -len * 1.06, br * 0.24, -len);
+        g.bezierCurveTo(br * 0.62, -len * 0.72, br * 1.0, -len * 0.34, br * 0.72, 0);
+        g.closePath();
+      };
+      g.fillStyle = geel; oorPad(kopB * 0.30, oorL); g.fill();
+      g.save(); oorPad(kopB * 0.30, oorL); g.clip();                  // donkere punt binnen het oor
+      g.fillStyle = zwart;
+      g.beginPath();
+      g.moveTo(-kopB * 0.5, -oorL * 0.70);
+      g.quadraticCurveTo(0, -oorL * 0.78, kopB * 0.5, -oorL * 0.66);
+      g.lineTo(kopB * 0.5, -oorL * 1.2); g.lineTo(-kopB * 0.5, -oorL * 1.2);
+      g.closePath(); g.fill();
+      g.fillStyle = 'rgba(255,240,170,0.4)';                          // lichtrand langs de voorkant
+      g.beginPath();
+      g.moveTo(-kopB * 0.16, -oorL * 0.06);
+      g.quadraticCurveTo(-kopB * 0.24, -oorL * 0.4, -kopB * 0.08, -oorL * 0.66);
+      g.lineTo(kopB * 0.02, -oorL * 0.62);
+      g.quadraticCurveTo(-kopB * 0.1, -oorL * 0.38, -kopB * 0.02, -oorL * 0.06);
+      g.closePath(); g.fill();
+      g.restore(); g.restore();
+    }
+
+    // ---- 6. kop: compacter, breder onderaan, geen perfecte cirkel -----------
+    const kg = g.createLinearGradient(-kopB * 0.7, kopY - kopH, kopB * 0.8, kopY + kopH);
+    kg.addColorStop(0, licht); kg.addColorStop(0.42, geel); kg.addColorStop(1, schaduw);
+    g.fillStyle = kg;
+    g.beginPath();
+    g.moveTo(-kopB * 0.78, kopY - kopH * 0.2);
+    g.bezierCurveTo(-kopB * 0.72, kopY - kopH * 0.86, kopB * 0.72, kopY - kopH * 0.86,
+                    kopB * 0.78, kopY - kopH * 0.2);                  // zacht afgeronde bovenkant
+    g.bezierCurveTo(kopB * 1.04, kopY + kopH * 0.42, kopB * 0.52, kopY + kopH * 0.94,
+                    0, kopY + kopH * 0.94);                           // vollere wang, smaller naar onder
+    g.bezierCurveTo(-kopB * 0.52, kopY + kopH * 0.94, -kopB * 1.04, kopY + kopH * 0.42,
+                    -kopB * 0.78, kopY - kopH * 0.2);
+    g.closePath(); g.fill();
+    E(g, 'rgba(255,242,180,0.42)', -kopB * 0.3, kopY - kopH * 0.42, kopB * 0.4, kopH * 0.26, -0.35);
+
+    // ---- 7. armen: langer, voor de romp langs ------------------------------
+    for (const sg of [-1, 1]) {
+      const hoek = sg < 0 ? 0.42 : 0.24;                              // links iets schuiner
+      g.save();
+      g.translate(sg * rompB * 0.68, rompTop + S * 0.16);
+      g.rotate(sg * (hoek + Math.sin(t * 2 + sg) * 0.05));
+      g.strokeStyle = schaduw; g.lineWidth = rompB * 0.34; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(0, 0);
+      g.quadraticCurveTo(sg * rompB * 0.12, S * 0.24, -sg * rompB * 0.04, S * 0.44); g.stroke();
+      g.strokeStyle = geel; g.lineWidth = rompB * 0.26;
+      g.beginPath(); g.moveTo(0, 0);
+      g.quadraticCurveTo(sg * rompB * 0.12, S * 0.24, -sg * rompB * 0.04, S * 0.44); g.stroke();
+      VE(g, geel, -sg * rompB * 0.04, S * 0.46, rompB * 0.2, rompB * 0.17);   // pootje
+      LN(g, 'rgba(180,120,30,0.45)', S * 0.014,
+         [[-sg * rompB * 0.12, S * 0.5], [-sg * rompB * 0.02, S * 0.53]]);    // inkeping
       g.restore();
     }
-    PG(g, y1, [[S * 0.55, S * 0.15], [S * 1.2, -S * 0.3], [S * 1.0, -S * 0.26], [S * 1.45, -S * 0.75],
-               [S * 1.28, -S * 0.32], [S * 1.5, -S * 0.36], [S * 0.92, S * 0.42]]);
-    PG(g, '#8a6a3a', [[S * 0.55, S * 0.15], [S * 0.78, S * 0.0], [S * 0.92, S * 0.42]]);
-    E(g, y1, 0, S * 0.2, S * 0.84, S * 0.76);
-    E(g, y1, 0, -S * 0.42, S * 0.66, S * 0.58);
-    ARC(g, '#a8843a', 0, S * 0.46, S * 0.62, Math.PI * 0.18, Math.PI * 0.38, S * 0.1);
-    ARC(g, '#a8843a', 0, S * 0.46, S * 0.62, Math.PI * 0.62, Math.PI * 0.82, S * 0.1);
-    E(g, y1, -S * 0.55, S * 0.3, S * 0.17, S * 0.25, 0.4); E(g, y1, S * 0.55, S * 0.3, S * 0.17, S * 0.25, -0.4);
-    E(g, yd, -S * 0.36, S * 0.9, S * 0.24, S * 0.14); E(g, yd, S * 0.36, S * 0.9, S * 0.24, S * 0.14);
-    E(g, '#ff5a5a', -S * 0.5, -S * 0.22, S * 0.16, S * 0.15); E(g, '#ff5a5a', S * 0.5, -S * 0.22, S * 0.16, S * 0.15);
-    E(g, 'rgba(255,255,255,0.4)', -S * 0.46, -S * 0.27, S * 0.05, S * 0.04);
-    E(g, 'rgba(255,255,255,0.4)', S * 0.54, -S * 0.27, S * 0.05, S * 0.04);
-    HEAD(S * 0, S * -0.42, S * 0.66, S * 0.58, { muzzle: 0.3166 });
-    EYES(g, t, m, 3, { sep: 0.4091, y: -0.1034, r: 0.2241, iris: '#3b2b1e' });
-    E(g, '#4a3b28', 0, -S * 0.32, S * 0.03, S * 0.025);
-    smileM(g, 0, -S * 0.2, S * 0.16, m);
+
+    // ---- 8/9. ogen: veel groter en donker ----------------------------------
+    HEAD(0, kopY, kopB, kopH, { muzzle: 0.34 });
+    EYES(g, t, m, 3, { sep: 0.36, y: -0.02, r: 0.29, iris: '#241a10' });
+
+    // ---- 10. wangen: groter en lager ---------------------------------------
+    for (const sg of [-1, 1]) {
+      E(g, 'rgba(242,80,60,0.25)', sg * kopB * 0.66, kopY + kopH * 0.42, kopB * 0.34, kopB * 0.31);
+      E(g, rood, sg * kopB * 0.66, kopY + kopH * 0.42, kopB * 0.27, kopB * 0.25);
+      E(g, 'rgba(255,190,170,0.55)', sg * kopB * 0.6, kopY + kopH * 0.34, kopB * 0.09, kopB * 0.07);
+    }
+
+    // ---- 11. neusje: zeer klein --------------------------------------------
+    E(g, zwart, 0, kopY + kopH * 0.30, oogR * 0.14, oogR * 0.11);
+
+    // ---- 12. mond: korte streep omlaag met twee lobben -------------------
+    const mY = kopY + kopH * 0.40, mB = kopB * 0.26;
+    g.strokeStyle = zwart; g.lineWidth = S * 0.022; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath();
+    g.moveTo(0, mY - kopH * 0.06);
+    g.lineTo(0, mY);
+    g.moveTo(0, mY);
+    g.quadraticCurveTo(-mB * 0.5, mY + kopH * 0.17, -mB, mY + kopH * 0.02);
+    g.moveTo(0, mY);
+    g.quadraticCurveTo(mB * 0.5, mY + kopH * 0.17, mB, mY + kopH * 0.02);
+    g.stroke();
   },
   puffball(g, S, t, m) { // roze zangballonnetje
     const p = '#ffb6d1', pd = '#e893b4';
